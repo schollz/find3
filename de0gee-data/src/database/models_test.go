@@ -1,4 +1,4 @@
-package sensor
+package database
 
 import (
 	"encoding/json"
@@ -37,7 +37,7 @@ func TestModels(t *testing.T) {
 			 }      
 		}
  }`
-	var p Data
+	var p SensorData
 	err := json.Unmarshal([]byte(j), &p)
 	assert.Nil(t, err)
 	assert.Equal(t, -20.0, p.Sensors["wifi"]["aa:bb:cc:dd:ee"])
@@ -63,7 +63,7 @@ func TestBackwards(t *testing.T) {
 			 }  
 		}
  }`
-	var p Data
+	var p SensorData
 	json.Unmarshal([]byte(j), &p)
 	assert.Equal(t, p, d)
 	fmt.Println(d)

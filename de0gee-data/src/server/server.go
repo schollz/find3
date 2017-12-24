@@ -1,9 +1,9 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/de0gee/datastore/src/database"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,12 +18,13 @@ func Run(port string) {
 }
 
 func learn(c *gin.Context) {
-	var j FINDFingerprint
+	var j database.FINDFingerprint
 	var err error
 	var message string
 	err = c.BindJSON(&j)
 	if err == nil {
-		fmt.Println(j)
+		d = j.Convert()
+		err = d.Save()
 	}
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})

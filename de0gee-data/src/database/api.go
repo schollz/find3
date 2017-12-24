@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/de0gee/datastore/src/sensor"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 	"github.com/schollz/mapslimmer"
@@ -105,7 +104,7 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 }
 
 // GetSensorFromTime will return a sensor data for a given timestamp
-func (d *Database) GetSensorFromTime(timestamp int) (s sensor.Data, err error) {
+func (d *Database) GetSensorFromTime(timestamp float64) (s SensorData, err error) {
 	// first get the columns
 	columnList, err := d.Columns()
 	if err != nil {
@@ -140,9 +139,9 @@ func (d *Database) GetSensorFromTime(timestamp int) (s sensor.Data, err error) {
 		return
 	}
 
-	s = sensor.Data{
+	s = SensorData{
 		// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
-		Timestamp: int((*arr[0].(*interface{})).(int64)),
+		Timestamp: float64((*arr[0].(*interface{})).(int64)),
 		Family:    string((*arr[1].(*interface{})).([]uint8)),
 		Device:    string((*arr[2].(*interface{})).([]uint8)),
 		Sensors:   make(map[string]map[string]interface{}),
@@ -163,7 +162,7 @@ func (d *Database) GetSensorFromTime(timestamp int) (s sensor.Data, err error) {
 
 // AddSensor will insert a sensor data into the database
 // TODO: AddSensor should be special case of AddSensors
-func (d *Database) AddSensor(s sensor.Data) (err error) {
+func (d *Database) AddSensor(s SensorData) (err error) {
 	// determine the current table colums
 	oldColumns := make(map[string]struct{})
 	columnList, err := d.Columns()

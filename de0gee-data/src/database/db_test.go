@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/de0gee/datastore/src/sensor"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -100,7 +99,7 @@ func TestConcurrency(t *testing.T) {
 }
 
 func TestAddSensor(t *testing.T) {
-	var s sensor.Data
+	var s SensorData
 	err := json.Unmarshal([]byte(j), &s)
 	if err != nil {
 		panic(err)
@@ -117,14 +116,14 @@ func TestAddSensor(t *testing.T) {
 }
 
 func BenchmarkAddSensor(b *testing.B) {
-	var s sensor.Data
+	var s SensorData
 	json.Unmarshal([]byte(j), &s)
 	db, _ := Open("testing")
 	defer db.Close()
 	Debug(false)
 
 	for i := 0; i < b.N; i++ {
-		s.Timestamp = i
+		s.Timestamp = float64(i)
 		err := db.AddSensor(s)
 		if err != nil {
 			panic(err)
@@ -133,7 +132,7 @@ func BenchmarkAddSensor(b *testing.B) {
 }
 
 func BenchmarkGetSensor(b *testing.B) {
-	var s sensor.Data
+	var s SensorData
 	err := json.Unmarshal([]byte(j), &s)
 	if err != nil {
 		panic(err)
