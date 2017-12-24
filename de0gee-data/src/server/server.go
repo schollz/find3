@@ -18,6 +18,7 @@ func Run(port string) {
 }
 
 func learn(c *gin.Context) {
+	AddCORS(c)
 	var j database.FINDFingerprint
 	var err error
 	var message string
