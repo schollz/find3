@@ -2,6 +2,7 @@ package sensor
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +12,7 @@ func TestModels(t *testing.T) {
 	j := `{
 		"t":1514034330040,
 		"f":"familyname",
-		"u":"username",
+		"d":"username",
 		"a":"asdlkjf.alsdkfj.aiwejciwe234",
 		"s":{
 			 "location":{
@@ -40,4 +41,30 @@ func TestModels(t *testing.T) {
 	err := json.Unmarshal([]byte(j), &p)
 	assert.Nil(t, err)
 	assert.Equal(t, -20.0, p.Sensors["wifi"]["aa:bb:cc:dd:ee"])
+}
+
+func TestBackwards(t *testing.T) {
+	jsonTest := `{"username": "zack", "group": "Find", "wifi-fingerprint": [{"rssi": -45, "mac": "80:37:73:ba:f7:d8"}], "location": "zakhome floor 2 office", "timestamp": 1439596533831, "password": "frusciante_0128"}`
+	var f FINDFingerprint
+	err := json.Unmarshal([]byte(jsonTest), &f)
+	assert.Nil(t, err)
+	d := f.Convert()
+
+	j := `{
+		"t":1439596533831,
+		"f":"Find",
+		"d":"zack",
+		"s":{
+			 "location":{
+				 "zakhome floor 2 office":1
+			 },
+			 "wifi":{
+					"80:37:73:ba:f7:d8":-45
+			 }  
+		}
+ }`
+	var p Data
+	json.Unmarshal([]byte(j), &p)
+	assert.Equal(t, p, d)
+	fmt.Println(d)
 }
