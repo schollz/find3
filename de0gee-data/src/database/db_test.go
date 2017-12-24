@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -10,6 +11,10 @@ import (
 	"github.com/de0gee/datastore/src/sensor"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	os.Remove("dGVzdGluZw==.sqlite3.db")
+}
 
 // Human is for testing purposes
 type Human struct {
