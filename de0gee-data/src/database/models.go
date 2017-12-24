@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
+	log "github.com/sirupsen/logrus"
 	flock "github.com/theckman/go-flock"
 )
 
@@ -16,4 +17,5 @@ type Database struct {
 	name     string
 	db       *sql.DB
 	fileLock *flock.Flock
+	logger   *log.Entry
 }

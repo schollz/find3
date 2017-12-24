@@ -9,7 +9,5 @@ func (d *Database) makeTables() (err error) {
 create table keystore (key text not null primary key, value text);
 `
 	_, err = d.db.Exec(sqlStmt)
-	if err != nil {
-		return
-	}
+	return
 }

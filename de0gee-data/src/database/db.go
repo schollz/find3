@@ -4,49 +4,90 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"errors"
+	"os"
 	"path"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+	log "github.com/sirupsen/logrus"
 	flock "github.com/theckman/go-flock"
 )
 
-// Init will initialize a database by authenticating (if needed).
-func Init(name string, needToAuthenticate ...bool) (d *Database, err error) {
+// Open will open the database for transactions by first aquiring a filelock.
+func Open(name string, needToAuthenticate ...bool) (d *Database, err error) {
 	d = new(Database)
+
+	// convert the name to base64 for file writing
 	d.name = path.Join(DataFolder, base64.URLEncoding.EncodeToString([]byte(name))+".sqlite3.db")
+	d.logger = log.WithFields(log.Fields{
+		"name": name + "(" + base64.URLEncoding.EncodeToString([]byte(name)) + ")",
+	})
+
+	// TODO: Authenticate
 	if len(needToAuthenticate) > 0 {
 		if needToAuthenticate[0] {
-			// TODO: Authenticate
 			err = errors.New("authentication failed (doesn't exist)")
 			if err != nil {
 				return
 			}
 		}
 	}
-	return
-}
+	d.logger.Info("authenticated")
 
-// Open will open the database for transactions by first aquiring a filelock.
-func (d *Database) Open() (err error) {
-	// Try to obtain a lock on the database
+	// obtain a lock on the database
 	d.fileLock = flock.NewFlock(d.name + ".lock")
 	for {
 		locked, err := d.fileLock.TryLock()
-		if err == nil && !locked {
+		if err == nil && locked {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	d.db, err = sql.Open("sqlite3", d.name)
-	if err == nil {
-		err = d.makeTables()
+	d.logger.Info("got filelock")
+
+	// check if it is a new database
+	newDatabase := false
+	if _, err := os.Stat(d.name); os.IsNotExist(err) {
+		newDatabase = true
 	}
+
+	// open sqlite3 database
+	d.db, err = sql.Open("sqlite3", d.name)
+	if err != nil {
+		return
+	}
+	d.logger.Info("opened sqlite3 database")
+
+	// create new database tables if needed
+	if newDatabase {
+		err = d.makeTables()
+		if err != nil {
+			return
+		}
+		d.logger.Info("made tables")
+	}
+
 	return
 }
 
 // Close will close the database connection and remove the filelock.
 func (d *Database) Close() (err error) {
-	d.fileLock.Unlock()
-	return d.db.Close()
+	// close filelock
+	err = d.fileLock.Unlock()
+	if err != nil {
+		d.logger.Error(err)
+	} else {
+		os.Remove(d.name + ".lock")
+		d.logger.Info("removed filelock")
+	}
+
+	// close database
+	err2 := d.db.Close()
+	if err2 != nil {
+		err = err2
+		d.logger.Error(err)
+	} else {
+		d.logger.Info("closed database")
+	}
+	return
 }
