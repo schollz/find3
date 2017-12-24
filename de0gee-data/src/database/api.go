@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/de0gee/datastore/src/sensor"
@@ -140,8 +139,9 @@ func (d *Database) GetSensorFromTime(timestamp int) (s sensor.Data, err error) {
 		err = errors.Wrap(err, "GetSensorFromTime")
 		return
 	}
-	fmt.Println(columnList)
+
 	s = sensor.Data{
+		// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
 		Timestamp: int((*arr[0].(*interface{})).(int64)),
 		Family:    string((*arr[1].(*interface{})).([]uint8)),
 		User:      string((*arr[2].(*interface{})).([]uint8)),
@@ -152,9 +152,7 @@ func (d *Database) GetSensorFromTime(timestamp int) (s sensor.Data, err error) {
 		if i < 3 {
 			continue
 		}
-		fmt.Println(colName)
 		unslimmed := string((*arr[i].(*interface{})).([]uint8))
-		fmt.Println(unslimmed)
 		s.Sensors[colName], err = ms.Loads(unslimmed)
 		if err != nil {
 			return
@@ -164,6 +162,7 @@ func (d *Database) GetSensorFromTime(timestamp int) (s sensor.Data, err error) {
 }
 
 // AddSensor will insert a sensor data into the database
+// TODO: AddSensor should be special case of AddSensors
 func (d *Database) AddSensor(s sensor.Data) (err error) {
 	// determine the current table colums
 	oldColumns := make(map[string]struct{})

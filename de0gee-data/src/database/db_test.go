@@ -107,6 +107,7 @@ func TestAddSensor(t *testing.T) {
 
 	s2, err := db.GetSensorFromTime(s.Timestamp)
 	assert.Nil(t, err)
+	assert.Equal(t, s, s2)
 	fmt.Println(s2)
 }
 
@@ -115,9 +116,31 @@ func BenchmarkAddSensor(b *testing.B) {
 	json.Unmarshal([]byte(j), &s)
 	db, _ := Open("testing")
 	defer db.Close()
+	Debug(false)
+
 	for i := 0; i < b.N; i++ {
 		s.Timestamp = i
 		err := db.AddSensor(s)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func BenchmarkGetSensor(b *testing.B) {
+	var s sensor.Data
+	err := json.Unmarshal([]byte(j), &s)
+	if err != nil {
+		panic(err)
+	}
+	db, _ := Open("testing")
+	defer db.Close()
+	Debug(false)
+	err = db.AddSensor(s)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := db.GetSensorFromTime(s.Timestamp)
 		if err != nil {
 			panic(err)
 		}
