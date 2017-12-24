@@ -25,7 +25,7 @@ func (d *Database) MakeTables() (err error) {
 		d.logger.Error(err)
 		return
 	}
-	sqlStmt = `create table sensors (timestamp integer not null primary key, family text, user text, location text, unique(timestamp));`
+	sqlStmt = `create table sensors (timestamp integer not null primary key, family text, device text, unique(timestamp));`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
@@ -144,7 +144,7 @@ func (d *Database) GetSensorFromTime(timestamp int) (s sensor.Data, err error) {
 		// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
 		Timestamp: int((*arr[0].(*interface{})).(int64)),
 		Family:    string((*arr[1].(*interface{})).([]uint8)),
-		User:      string((*arr[2].(*interface{})).([]uint8)),
+		Device:    string((*arr[2].(*interface{})).([]uint8)),
 		Sensors:   make(map[string]map[string]interface{}),
 	}
 	// add in the sensor data
@@ -195,7 +195,7 @@ func (d *Database) AddSensor(s sensor.Data) (err error) {
 	args := make([]interface{}, 3)
 	args[0] = s.Timestamp
 	args[1] = s.Family
-	args[2] = s.User
+	args[2] = s.Device
 	argsQ := []string{"?", "?", "?"}
 	for sensor := range s.Sensors {
 		if _, ok := oldColumns[sensor]; !ok {

@@ -26,7 +26,7 @@ type Human struct {
 var j = `{
 	"t":1514034330040,
 	"f":"familyname",
-	"u":"username",
+	"d":"devicename",
 	"s":{
 		"location": {
 			"bathroom":1
@@ -78,7 +78,7 @@ func TestKeystore(t *testing.T) {
 	var columns []string
 	columns, err = db.Columns()
 	assert.Nil(t, err)
-	assert.Equal(t, []string{"timestamp", "family", "user", "location"}, columns)
+	assert.Equal(t, []string{"timestamp", "family", "device"}, columns)
 
 	err = db.Close()
 	assert.Nil(t, err)
