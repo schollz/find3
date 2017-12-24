@@ -16,9 +16,9 @@ func init() {
 }
 func TestPing(t *testing.T) {
 	router := gin.New()
-	router.GET("/foo", ping)
+	router.GET("/ping", ping)
 
-	req, _ := http.NewRequest("GET", "/foo", nil)
+	req, _ := http.NewRequest("GET", "/ping", nil)
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
@@ -30,9 +30,9 @@ func TestLearn(t *testing.T) {
 
 	router := gin.New()
 
-	router.POST("/foo", learn)
+	router.POST("/learn", handlerFIND)
 
-	req, _ := http.NewRequest("POST", "/foo", bytes.NewBufferString(jsonTest))
+	req, _ := http.NewRequest("POST", "/learn", bytes.NewBufferString(jsonTest))
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
