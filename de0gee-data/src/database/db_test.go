@@ -2,7 +2,6 @@ package database
 
 import (
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
@@ -38,29 +37,29 @@ func TestKeystore(t *testing.T) {
 	err = db.Get("human2", &h2)
 	assert.NotNil(t, err)
 
+	// check the table columns
+	var columns []string
+	columns, err = db.Columns()
+	assert.Nil(t, err)
+	assert.Equal(t, []string{"timestamp", "family", "user", "location"}, columns)
+
 	err = db.Close()
 	assert.Nil(t, err)
 }
 
 func TestConcurrency(t *testing.T) {
 	errors := make(chan error)
-	var wg sync.WaitGroup
-	wg.Add(3)
 	for i := 0; i < 3; i++ {
 		go func(n int) {
-			defer wg.Done()
 			db, _ := Open("testing")
 			defer db.Close()
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Millisecond * 100)
 			errors <- db.Set("concurrentHuman:"+strconv.Itoa(n), Human{"Dante", 5.4})
 		}(i)
 	}
-	go func() {
-		for err := range errors {
-			assert.Nil(t, err)
-		}
-	}()
-	wg.Wait()
+	for i := 0; i < 3; i++ {
+		assert.Nil(t, <-errors)
+	}
 }
 func BenchmarkKeystoreSet(b *testing.B) {
 	db, _ := Open("testing")
@@ -73,6 +72,18 @@ func BenchmarkKeystoreSet(b *testing.B) {
 		if err != nil {
 			panic(err)
 		}
+	}
+}
+
+func BenchmarkKeystoreOpenAndSet(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		db, _ := Open("testing")
+		Debug(false)
+		err := db.Set("human:"+strconv.Itoa(i), Human{"Dante", 5.4})
+		if err != nil {
+			panic(err)
+		}
+		db.Close()
 	}
 }
 

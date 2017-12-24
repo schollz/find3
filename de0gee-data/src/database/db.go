@@ -60,7 +60,7 @@ func Open(name string, needToAuthenticate ...bool) (d *Database, err error) {
 
 	// create new database tables if needed
 	if newDatabase {
-		err = d.makeTables()
+		err = d.MakeTables()
 		if err != nil {
 			return
 		}

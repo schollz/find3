@@ -1,4 +1,4 @@
-package src
+package sensor
 
 import (
 	"encoding/json"

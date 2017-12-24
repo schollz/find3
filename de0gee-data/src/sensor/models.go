@@ -1,6 +1,6 @@
-package src
+package sensor
 
-type Payload struct {
+type Data struct {
 	Time           int64                         `json:"t"`
 	Group          string                        `json:"g"`
 	User           string                        `json:"u"`
