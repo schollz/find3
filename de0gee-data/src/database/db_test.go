@@ -1,10 +1,12 @@
 package database
 
 import (
+	"encoding/json"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/de0gee/datastore/src/sensor"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,6 +15,36 @@ type Human struct {
 	Name   string
 	Height float64
 }
+
+// for testing purposes
+var j = `{
+	"t":1514034330040,
+	"f":"familyname",
+	"u":"username",
+	"a":"asdlkjf.alsdkfj.aiwejciwe234",
+	"s":{
+		 "location":{
+			 "living room":1
+		 },
+		 "wifi":{
+				"aa:bb:cc:dd:ee":-20,
+				"ff:gg:hh:ii:jj":-80
+		 },
+		 "bluetooth":{
+				"aa:00:cc:11:ee":-42,
+				"ff:22:hh:33:jj":-50        
+		 },
+		 "temperature":{
+				"sensor1":12,
+				"sensor2":20       
+		 },
+		 "accelerometer":{
+				"x":-1.11,
+				"y":2.111,
+				"z":1.23   
+		 }      
+	}
+}`
 
 func TestKeystore(t *testing.T) {
 	db, err := Open("testing")
@@ -59,6 +91,20 @@ func TestConcurrency(t *testing.T) {
 	}
 	for i := 0; i < 3; i++ {
 		assert.Nil(t, <-errors)
+	}
+}
+
+func BenchmarkAddSensor(b *testing.B) {
+	var s sensor.Data
+	json.Unmarshal([]byte(j), &s)
+	db, _ := Open("testing")
+	defer db.Close()
+	for i := 0; i < b.N; i++ {
+		s.Time = i
+		err := db.AddSensor(s)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 func BenchmarkKeystoreSet(b *testing.B) {

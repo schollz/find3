@@ -2,7 +2,9 @@ package database
 
 import (
 	"encoding/json"
+	"strings"
 
+	"github.com/de0gee/datastore/src/sensor"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 )
@@ -22,7 +24,7 @@ func (d *Database) MakeTables() (err error) {
 		d.logger.Error(err)
 		return
 	}
-	sqlStmt = `create table sensors (timestamp integer not null primary key, family text, user text, location text);`
+	sqlStmt = `create table sensors (timestamp integer not null primary key, family text, user text, location text, unique(timestamp));`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
@@ -45,7 +47,7 @@ func (d *Database) Columns() (columns []string, err error) {
 		err = errors.Wrap(err, "Columns")
 		return
 	}
-	d.logger.Info("got columns")
+	d.logger.Info("listed columns")
 	return
 }
 
@@ -66,7 +68,7 @@ func (d *Database) Get(key string, v interface{}) (err error) {
 	if err != nil {
 		return
 	}
-	d.logger.Infof("Got %v from '%s'", v, key)
+	d.logger.Infof("got %s from '%s'", string(result), key)
 	return
 }
 
@@ -101,26 +103,74 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 	return
 }
 
-// // AddSensor will insert a sensor data into the database
-// func (d *Database) AddSensor(s sensor.Data) (err error) {
-// 	tx, err := d.db.Begin()
-// 	if err != nil {
-// 		return errors.Wrap(err, "AddSensor")
-// 	}
-// 	stmt, err := tx.Prepare("insert into sensors(key,value) values (?, ?)")
-// 	if err != nil {
-// 		return errors.Wrap(err, "AddSensor")
-// 	}
-// 	defer stmt.Close()
+// AddSensor will insert a sensor data into the database
+func (d *Database) AddSensor(s sensor.Data) (err error) {
+	// determine the current table colums
+	oldColumns := make(map[string]struct{})
+	columnList, err := d.Columns()
+	if err != nil {
+		return
+	}
+	for _, column := range columnList {
+		oldColumns[column] = struct{}{}
+	}
 
-// 	_, err = stmt.Exec(key, string(b))
-// 	if err != nil {
-// 		return errors.Wrap(err, "AddSensor")
-// 	}
+	// setup the database
+	tx, err := d.db.Begin()
+	if err != nil {
+		return errors.Wrap(err, "AddSensor")
+	}
 
-// 	err = tx.Commit()
-// 	if err != nil {
-// 		return errors.Wrap(err, "AddSensor")
-// 	}
+	// first add new columns in the sensor data
+	args := make([]interface{}, 3)
+	args[0] = s.Time
+	args[1] = s.Family
+	args[2] = s.User
+	argsQ := []string{"?", "?", "?"}
+	if s.Location != "" {
+		args = append(args, s.Location)
+		argsQ = append(argsQ, "?")
+	}
+	for sensor := range s.Sensors {
+		if _, ok := oldColumns[sensor]; !ok {
+			stmt, err := tx.Prepare("alter table sensors add column " + sensor + " text")
+			if err != nil {
+				return errors.Wrap(err, "AddSensor, adding column")
+			}
+			_, err = stmt.Exec()
+			if err != nil {
+				return errors.Wrap(err, "AddSensor, adding column")
+			}
+			d.logger.Infof("adding column %s", sensor)
+			columnList = append(columnList, sensor)
+			stmt.Close()
+		}
+		bData, err := json.Marshal(s.Sensors[sensor])
+		if err != nil {
+			return errors.Wrap(err, "AddSensor")
+		}
+		argsQ = append(argsQ, "?")
+		args = append(args, string(bData))
+	}
 
-// }
+	// insert the new data
+	sqlStatement := "insert or replace into sensors(" + strings.Join(columnList, ",") + ") values (" + strings.Join(argsQ, ",") + ")"
+	stmt, err := tx.Prepare(sqlStatement)
+	if err != nil {
+		return errors.Wrap(err, "AddSensor, prepare")
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return errors.Wrap(err, "AddSensor, execute")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return errors.Wrap(err, "AddSensor")
+	}
+	d.logger.Info("inserted sensor data")
+	return
+
+}

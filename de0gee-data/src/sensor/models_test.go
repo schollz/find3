@@ -10,7 +10,7 @@ import (
 func TestModels(t *testing.T) {
 	j := `{
 		"t":1514034330040,
-		"g":"groupname",
+		"f":"familyname",
 		"u":"username",
 		"a":"asdlkjf.alsdkfj.aiwejciwe234",
 		"s":{
@@ -36,7 +36,7 @@ func TestModels(t *testing.T) {
 			 }      
 		}
  }`
-	var p Payload
+	var p Data
 	err := json.Unmarshal([]byte(j), &p)
 	assert.Nil(t, err)
 	assert.Equal(t, -20.0, p.Sensors["wifi"]["aa:bb:cc:dd:ee"])
