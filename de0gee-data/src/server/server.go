@@ -23,8 +23,13 @@ func learn(c *gin.Context) {
 	var message string
 	err = c.BindJSON(&j)
 	if err == nil {
-		d = j.Convert()
-		err = d.Save()
+		d := j.Convert()
+		err2 := d.Save()
+		if err2 == nil {
+			message = "inserted data"
+		} else {
+			err = err2
+		}
 	}
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
