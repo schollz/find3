@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -21,11 +22,10 @@ var j = `{
 	"t":1514034330040,
 	"f":"familyname",
 	"u":"username",
-	"a":"asdlkjf.alsdkfj.aiwejciwe234",
 	"s":{
-		 "location":{
-			 "living room":1
-		 },
+		"location": {
+			"bathroom":1
+		},
 		 "wifi":{
 				"aa:bb:cc:dd:ee":-20,
 				"ff:gg:hh:ii:jj":-80
@@ -94,13 +94,29 @@ func TestConcurrency(t *testing.T) {
 	}
 }
 
+func TestAddSensor(t *testing.T) {
+	var s sensor.Data
+	err := json.Unmarshal([]byte(j), &s)
+	if err != nil {
+		panic(err)
+	}
+	db, _ := Open("testing")
+	defer db.Close()
+	err = db.AddSensor(s)
+	assert.Nil(t, err)
+
+	s2, err := db.GetSensorFromTime(s.Timestamp)
+	assert.Nil(t, err)
+	fmt.Println(s2)
+}
+
 func BenchmarkAddSensor(b *testing.B) {
 	var s sensor.Data
 	json.Unmarshal([]byte(j), &s)
 	db, _ := Open("testing")
 	defer db.Close()
 	for i := 0; i < b.N; i++ {
-		s.Time = i
+		s.Timestamp = i
 		err := db.AddSensor(s)
 		if err != nil {
 			panic(err)

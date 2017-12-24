@@ -2,11 +2,13 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/de0gee/datastore/src/sensor"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
+	"github.com/schollz/mapslimmer"
 )
 
 func (d *Database) MakeTables() (err error) {
@@ -103,6 +105,64 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 	return
 }
 
+// GetSensorFromTime will return a sensor data for a given timestamp
+func (d *Database) GetSensorFromTime(timestamp int) (s sensor.Data, err error) {
+	// first get the columns
+	columnList, err := d.Columns()
+	if err != nil {
+		return
+	}
+
+	// get the slimmer
+	var slimmer string
+	err = d.Get("slimmer", &slimmer)
+	if err != nil {
+		return
+	}
+	ms, err := mapslimmer.Init(slimmer)
+	if err != nil {
+		return
+	}
+
+	// prepare statement
+	stmt, err := d.db.Prepare("select * from sensors where timestamp = ?")
+	if err != nil {
+		err = errors.Wrap(err, "GetSensorFromTime")
+		return
+	}
+	defer stmt.Close()
+	var arr []interface{}
+	for i := 0; i < len(columnList); i++ {
+		arr = append(arr, new(interface{}))
+	}
+	err = stmt.QueryRow(timestamp).Scan(arr...)
+	if err != nil {
+		err = errors.Wrap(err, "GetSensorFromTime")
+		return
+	}
+	fmt.Println(columnList)
+	s = sensor.Data{
+		Timestamp: int((*arr[0].(*interface{})).(int64)),
+		Family:    string((*arr[1].(*interface{})).([]uint8)),
+		User:      string((*arr[2].(*interface{})).([]uint8)),
+		Sensors:   make(map[string]map[string]interface{}),
+	}
+	// add in the sensor data
+	for i, colName := range columnList {
+		if i < 3 {
+			continue
+		}
+		fmt.Println(colName)
+		unslimmed := string((*arr[i].(*interface{})).([]uint8))
+		fmt.Println(unslimmed)
+		s.Sensors[colName], err = ms.Loads(unslimmed)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
 // AddSensor will insert a sensor data into the database
 func (d *Database) AddSensor(s sensor.Data) (err error) {
 	// determine the current table colums
@@ -115,6 +175,17 @@ func (d *Database) AddSensor(s sensor.Data) (err error) {
 		oldColumns[column] = struct{}{}
 	}
 
+	// get slimmer
+	var slimmer string
+	err = d.Get("slimmer", &slimmer)
+	if err != nil {
+		return
+	}
+	ms, err := mapslimmer.Init(slimmer)
+	if err != nil {
+		return
+	}
+
 	// setup the database
 	tx, err := d.db.Begin()
 	if err != nil {
@@ -123,14 +194,10 @@ func (d *Database) AddSensor(s sensor.Data) (err error) {
 
 	// first add new columns in the sensor data
 	args := make([]interface{}, 3)
-	args[0] = s.Time
+	args[0] = s.Timestamp
 	args[1] = s.Family
 	args[2] = s.User
 	argsQ := []string{"?", "?", "?"}
-	if s.Location != "" {
-		args = append(args, s.Location)
-		argsQ = append(argsQ, "?")
-	}
 	for sensor := range s.Sensors {
 		if _, ok := oldColumns[sensor]; !ok {
 			stmt, err := tx.Prepare("alter table sensors add column " + sensor + " text")
@@ -145,17 +212,22 @@ func (d *Database) AddSensor(s sensor.Data) (err error) {
 			columnList = append(columnList, sensor)
 			stmt.Close()
 		}
-		bData, err := json.Marshal(s.Sensors[sensor])
-		if err != nil {
-			return errors.Wrap(err, "AddSensor")
+	}
+
+	// organize arguments in the correct order
+	for _, sensor := range columnList {
+		if _, ok := s.Sensors[sensor]; !ok {
+			continue
 		}
 		argsQ = append(argsQ, "?")
-		args = append(args, string(bData))
+		args = append(args, ms.Dumps(s.Sensors[sensor]))
 	}
 
 	// insert the new data
 	sqlStatement := "insert or replace into sensors(" + strings.Join(columnList, ",") + ") values (" + strings.Join(argsQ, ",") + ")"
 	stmt, err := tx.Prepare(sqlStatement)
+	d.logger.Info("columns", columnList)
+	d.logger.Info("args", args)
 	if err != nil {
 		return errors.Wrap(err, "AddSensor, prepare")
 	}
@@ -170,6 +242,10 @@ func (d *Database) AddSensor(s sensor.Data) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "AddSensor")
 	}
+
+	// update the map key slimmer
+	d.Set("slimmer", ms.Slimmer())
+
 	d.logger.Info("inserted sensor data")
 	return
 

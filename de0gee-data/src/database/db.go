@@ -9,6 +9,7 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/schollz/mapslimmer"
 	log "github.com/sirupsen/logrus"
 	flock "github.com/theckman/go-flock"
 )
@@ -65,6 +66,14 @@ func Open(name string, needToAuthenticate ...bool) (d *Database, err error) {
 			return
 		}
 		d.logger.Info("made tables")
+
+		ms, err2 := mapslimmer.Init()
+		if err2 != nil {
+			err = err2
+			return
+		}
+		err = d.Set("slimmer", ms.Slimmer())
+		d.logger.Info("initiate map key shrinker")
 	}
 
 	return
