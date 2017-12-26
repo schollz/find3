@@ -1,9 +1,9 @@
-# datastore
+# de0gee-data
 
-[![travis](https://travis-ci.org/de0gee/datastore.svg?branch=master)](https://travis-ci.org/de0gee/datastore) 
-[![go report card](https://goreportcard.com/badge/github.com/de0gee/datastore)](https://goreportcard.com/report/github.com/de0gee/datastore) 
-[![coverage](https://img.shields.io/badge/coverage-94%25-brightgreen.svg)](https://gocover.io/github.com/de0gee/datastore)
-[![godocs](https://godoc.org/github.com/de0gee/datastore?status.svg)](https://godoc.org/github.com/de0gee/datastore) 
+[![travis](https://travis-ci.org/de0gee/de0gee-data.svg?branch=master)](https://travis-ci.org/de0gee/de0gee-data) 
+[![go report card](https://goreportcard.com/badge/github.com/de0gee/de0gee-data)](https://goreportcard.com/report/github.com/de0gee/de0gee-data) 
+[![coverage](https://img.shields.io/badge/coverage-94%25-brightgreen.svg)](https://gocover.io/github.com/de0gee/de0gee-data)
+[![godocs](https://godoc.org/github.com/de0gee/de0gee-data?status.svg)](https://godoc.org/github.com/de0gee/de0gee-data) 
 
 <h3 class="section-head" id="intro"><a href="#intro">Introduction</a></h3>
 
