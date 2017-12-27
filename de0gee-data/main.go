@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	"github.com/de0gee/datastore/src/database"
-	"github.com/de0gee/datastore/src/server"
+	"github.com/de0gee/de0gee-data/src/database"
+	"github.com/de0gee/de0gee-data/src/server"
 )
 
 func main() {

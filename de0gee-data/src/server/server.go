@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/de0gee/datastore/src/database"
+	"github.com/de0gee/de0gee-data/src/database"
 	"github.com/gin-gonic/gin"
 )
 
