@@ -9,6 +9,17 @@ import (
 	"github.com/schollz/mapslimmer"
 )
 
+// MakeTables creates two tables, a `keystore` table:
+//
+// 	KEY (TEXT)	VALUE (TEXT)
+//
+// and also a `sensors` table for the sensor data:
+//
+// 	TIMESTAMP (INTEGER)	FAMILY(TEXT)	DEVICE(TEXT)	LOCATOIN(TEXT)
+//
+// the sensor table will dynamically create more columns as new types
+// of sensor data are inserted. The LOCATION column is optional and
+// only used for learning/classification.
 func (d *Database) MakeTables() (err error) {
 	sqlStmt := `create table keystore (key text not null primary key, value text);`
 	_, err = d.db.Exec(sqlStmt)
@@ -24,7 +35,7 @@ func (d *Database) MakeTables() (err error) {
 		d.logger.Error(err)
 		return
 	}
-	sqlStmt = `create table sensors (timestamp integer not null primary key, family text, device text, unique(timestamp));`
+	sqlStmt = `create table sensors (timestamp integer not null primary key, family text, device text, location text, unique(timestamp));`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
@@ -144,6 +155,7 @@ func (d *Database) GetSensorFromTime(timestamp float64) (s SensorData, err error
 		Timestamp: float64((*arr[0].(*interface{})).(int64)),
 		Family:    string((*arr[1].(*interface{})).([]uint8)),
 		Device:    string((*arr[2].(*interface{})).([]uint8)),
+		Location:  string((*arr[3].(*interface{})).([]uint8)),
 		Sensors:   make(map[string]map[string]interface{}),
 	}
 	// add in the sensor data
@@ -195,7 +207,8 @@ func (d *Database) AddSensor(s SensorData) (err error) {
 	args[0] = s.Timestamp
 	args[1] = s.Family
 	args[2] = s.Device
-	argsQ := []string{"?", "?", "?"}
+	args[3] = s.Location
+	argsQ := []string{"?", "?", "?", "?"}
 	for sensor := range s.Sensors {
 		if _, ok := oldColumns[sensor]; !ok {
 			stmt, err := tx.Prepare("alter table sensors add column " + sensor + " text")
