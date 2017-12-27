@@ -3,3 +3,5 @@ pytest
 pytest-benchmark
 pytest-cov
 sklearn
+numpy
+scipy
