@@ -1,0 +1,5 @@
+ujson
+pytest
+pytest-benchmark
+pytest-cov
+sklearn
