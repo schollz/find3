@@ -179,3 +179,12 @@ The response will give a `true` success if it succeeds, and it will also tell th
     "message": "random_file.mldata"
 }
 ```
+
+It will then generate a file `random_file.mldata` which should correspond to the following:
+
+```
+location,wifi-aa:bb:cc:dd:ee,wifi-ff:gg:hh:ii:jj:kk
+dog house,-10,-20
+dog house,-9,-18
+...
+```
