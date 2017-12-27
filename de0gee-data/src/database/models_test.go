@@ -13,11 +13,8 @@ func TestModels(t *testing.T) {
 		"t":1514034330040,
 		"f":"familyname",
 		"d":"username",
-		"a":"asdlkjf.alsdkfj.aiwejciwe234",
+		"l":"living room",
 		"s":{
-			 "location":{
-				 "living room":1
-			 },
 			 "wifi":{
 					"aa:bb:cc:dd:ee":-20,
 					"ff:gg:hh:ii:jj":-80
@@ -54,10 +51,8 @@ func TestBackwards(t *testing.T) {
 		"t":1439596533831,
 		"f":"Find",
 		"d":"zack",
+		"l":"zakhome floor 2 office",
 		"s":{
-			 "location":{
-				 "zakhome floor 2 office":1
-			 },
 			 "wifi":{
 					"80:37:73:ba:f7:d8":-45
 			 }  

@@ -160,7 +160,7 @@ func (d *Database) GetSensorFromTime(timestamp float64) (s SensorData, err error
 	}
 	// add in the sensor data
 	for i, colName := range columnList {
-		if i < 3 {
+		if i < 4 {
 			continue
 		}
 		unslimmed := string((*arr[i].(*interface{})).([]uint8))
@@ -203,7 +203,7 @@ func (d *Database) AddSensor(s SensorData) (err error) {
 	}
 
 	// first add new columns in the sensor data
-	args := make([]interface{}, 3)
+	args := make([]interface{}, 4)
 	args[0] = s.Timestamp
 	args[1] = s.Family
 	args[2] = s.Device

@@ -26,10 +26,8 @@ var j = `{
 	"t":1514034330040,
 	"f":"familyname",
 	"d":"devicename",
+	"l":"bathroom",
 	"s":{
-		"location": {
-			"bathroom":1
-		},
 		 "wifi":{
 				"aa:bb:cc:dd:ee":-20,
 				"ff:gg:hh:ii:jj":-80
@@ -77,7 +75,7 @@ func TestKeystore(t *testing.T) {
 	var columns []string
 	columns, err = db.Columns()
 	assert.Nil(t, err)
-	assert.Equal(t, []string{"timestamp", "family", "device"}, columns)
+	assert.Equal(t, []string{"timestamp", "family", "device", "location"}, columns)
 
 	err = db.Close()
 	assert.Nil(t, err)
