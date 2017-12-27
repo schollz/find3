@@ -120,3 +120,73 @@ However, FIND only supports WiFi, so you cannot use these routes for sending oth
 <h3 class="section-head" id="quick-start"><a href="#quick-start">Quick start</a></h3>
 
 First make sure that [you have installed Go](/docs/quick-start/#install-go).
+
+## API 
+
+Starting the datastore server gives you several endpoints to insert, delete, or pull information.
+
+<h3 class="section-head" id="post-slash"><a href="#post-slash"><code>POST / (insert data)</code></a></h3>
+
+**Parameters**:
+
+Requires JSON of the sensor data, e.g. 
+```json
+{
+    "t":1514034330040,
+    "f":"fido and friends",
+    "d":"fido's phone",
+    "s":{
+         "location":{
+             "living room":1
+         },
+         "wifi":{
+                "aa:bb:cc:dd:ee":-20,
+                "ff:gg:hh:ii:jj":-80
+         },
+         "bluetooth":{
+                "kk:ll:mm:nn:oo":-42,
+                "pp:qq:rr:ss:tt":-50        
+         },
+         "temperature":{
+                "sensor1":12,
+                "sensor2":20       
+         },
+         "accelerometer":{
+                "x":-1.11,
+                "y":2.111,
+                "z":1.23   
+         }      
+    }
+ }
+```
+
+**Response**:
+
+```json
+{
+    "success": true,
+    "message": "Inserted fingerprint containing 23 APs for zack at zakhome floor 2 office"
+}
+```
+
+<h3 class="section-head" id="get-learningdata"><a href="#get-learningdata"><code>GET /learningdata</code></a></h3>
+
+This route will take all of the records for a particular family that have a "location" in the **SensorData** and output them to a random file `random_file.mldata` in a format that can be used for doing the machine learning.
+
+**Parameters**:
+
+
+| Name 	| Location 	| Description  	| Required 	|
+|------	|----------	|--------------	|----------	|
+| family|query     	|determines family| yes 	|
+
+**Response**:
+
+The response will give a `true` success if it succeeds, and it will also tell the name of the file generated with the machine learning data.
+
+```json
+{
+    "success": true,
+    "message": "random_file.mldata"
+}
+```
