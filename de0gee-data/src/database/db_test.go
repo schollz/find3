@@ -46,6 +46,33 @@ var j = `{
 	}
 }`
 
+// for testing purposes
+var j2 = `{
+	"t":1514034335555,
+	"f":"familyname",
+	"d":"devicename",
+	"l":"kitchen",
+	"s":{
+		 "wifi":{
+				"22:bb:cc:dd:ee":-19,
+				"ff:gg:hh:ii:jj":-77
+		 },
+		 "bluetooth":{
+				"aa:00:cc:11:ee":-40,
+				"ff:22:hh:33:jj":-45        
+		 },
+		 "temperature":{
+				"sensor1":10,
+				"sensor2":32       
+		 },
+		 "accelerometer":{
+				"x":-2.11,
+				"y":4.111,
+				"z":0.23   
+		 }      
+	}
+}`
+
 func TestKeystore(t *testing.T) {
 	db, err := Open("testing")
 	assert.Nil(t, err)

@@ -26,6 +26,23 @@ func TestAddSensor(t *testing.T) {
 	fmt.Println(s2)
 }
 
+func TestGetAllForClassification(t *testing.T) {
+	var err error
+	var s SensorData
+	db, _ := Open("testing")
+	defer db.Close()
+	json.Unmarshal([]byte(j), &s)
+	err = db.AddSensor(s)
+	assert.Nil(t, err)
+	json.Unmarshal([]byte(j2), &s)
+	err = db.AddSensor(s)
+	assert.Nil(t, err)
+
+	ss, err := db.GetAllForClassification()
+	assert.Equal(t, 2, len(ss))
+	assert.Nil(t, err)
+}
+
 func BenchmarkAddSensor(b *testing.B) {
 	var s SensorData
 	json.Unmarshal([]byte(j), &s)

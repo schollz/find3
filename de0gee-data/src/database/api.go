@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -174,7 +173,7 @@ func (d *Database) GetSensorFromTime(timestamp float64) (s SensorData, err error
 }
 
 // GetAllForClassification will return a sensor data for classifying
-func (d *Database) GetAllForClassification() (s SensorData, err error) {
+func (d *Database) GetAllForClassification() (s []SensorData, err error) {
 	// first get the columns
 	columnList, err := d.Columns()
 	if err != nil {
@@ -192,6 +191,7 @@ func (d *Database) GetAllForClassification() (s SensorData, err error) {
 		return
 	}
 
+	d.logger.Debug("select * from sensors where location !=''")
 	rows, err := d.db.Query("select * from sensors where location !=''")
 	if err != nil {
 		err = errors.Wrap(err, "GetAllForClassification")
@@ -199,6 +199,8 @@ func (d *Database) GetAllForClassification() (s SensorData, err error) {
 	}
 	defer rows.Close()
 
+	s = make([]SensorData, 100000)
+	sI := 0
 	// loop through rows
 	for rows.Next() {
 		var arr []interface{}
@@ -210,7 +212,7 @@ func (d *Database) GetAllForClassification() (s SensorData, err error) {
 			err = errors.Wrap(err, "GetAllForClassification")
 			return
 		}
-		s = SensorData{
+		s0 := SensorData{
 			// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
 			Timestamp: float64((*arr[0].(*interface{})).(int64)),
 			Family:    string((*arr[1].(*interface{})).([]uint8)),
@@ -224,13 +226,15 @@ func (d *Database) GetAllForClassification() (s SensorData, err error) {
 				continue
 			}
 			unslimmed := string((*arr[i].(*interface{})).([]uint8))
-			s.Sensors[colName], err = ms.Loads(unslimmed)
+			s0.Sensors[colName], err = ms.Loads(unslimmed)
 			if err != nil {
 				return
 			}
 		}
-		fmt.Println(s)
+		s[sI] = s0
+		sI++
 	}
+	s = s[:sI]
 	err = rows.Err()
 	if err != nil {
 		err = errors.Wrap(err, "GetAllForClassification")
