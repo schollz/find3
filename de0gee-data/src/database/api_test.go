@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
 
@@ -27,6 +28,8 @@ func TestAddSensor(t *testing.T) {
 }
 
 func TestGetAllForClassification(t *testing.T) {
+	os.Remove("test.csv")
+
 	var err error
 	var s SensorData
 	db, _ := Open("testing")
@@ -41,6 +44,27 @@ func TestGetAllForClassification(t *testing.T) {
 	ss, err := db.GetAllForClassification()
 	assert.Equal(t, 2, len(ss))
 	assert.Nil(t, err)
+
+	err = DumpSensorsToCSV(ss, "test.csv")
+	assert.Nil(t, err)
+}
+
+func BenchmarkDumpToCSV(b *testing.B) {
+	var s SensorData
+	db, _ := Open("testing")
+	defer db.Close()
+	json.Unmarshal([]byte(j), &s)
+	db.AddSensor(s)
+	json.Unmarshal([]byte(j2), &s)
+	db.AddSensor(s)
+	ss, _ := db.GetAllForClassification()
+
+	Debug(false)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		DumpSensorsToCSV(ss, "test.csv")
+	}
+
 }
 
 func BenchmarkAddSensor(b *testing.B) {
