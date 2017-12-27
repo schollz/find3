@@ -18,18 +18,21 @@ The main element of the datastore server is the **SensorData**. **SensorData** i
     "t":1514034330040,
     "f":"fido and friends",
     "d":"fido's phone",
+    "l":"dog house",
     "s":{     
     }
  }
 ```
 
-The keys in this **SensorData** are shorthand (single characters) to cut down on bandwidth for sending/receiving JSON. They characters are "t" for "timestamp", "f" for "family", "d" for "device" and "s" is for the "sensor readings." 
+The keys in this **SensorData** are shorthand (single characters) to cut down on bandwidth for sending/receiving JSON. They characters are "t" for "timestamp", "f" for "family", "d" for "device", "l" for "location" and "s" is for the "sensor readings." 
 
 A timestamp ("t") uniquely identifies a piece of **SensorData**, as it is the UNIX epoch time *in milliseconds*, making it highly unlikely for clashes to exist. 
 
 The family ("f") is the group in which the device belongs. A family can have many devices associated with it (your phone, your computer, your dog's collar), but each device can only be associated with one family.
 
 The device ("d") uniquely identifies the current device in that particular family.
+
+The location ("l") classifies the location of the current **SensorData**. This is optional, and it is used for classifying the location in preparation for machine learning.
 
 The sensor readings ("s") here is empty. The sensor readings in this most basic JSON are blank, as they are optional, although they are the most important part of the **SensorData**. Sensor readings are added to the JSON as maps of sensor data. For example, if you are taking WiFi data from access points, you would format your sensor readings as:
 
@@ -50,27 +53,15 @@ The first key explains the sensor type ("wifi") and the key and values inside th
 }
 ```
 
-In this case the sensor name is the coordinate and the value is the acceleration in that direction. The only special sensor reading is the location, which you also input as sensor data (since it is sensed by you):
-
-```
-"location": {
-    "living room":1
-}
-```
-
-The "location" is useful for machine learning and classification further down the road.
-
-So in the end, if your phone collects a lot of data you will end up sending the following **SensorData** JSON to the datastore server:
+In this case the sensor name is the coordinate and the value is the acceleration in that direction. So in the end, if your phone collects a lot of data you will end up sending the following **SensorData** JSON to the datastore server:
 
 ```json
 {
     "t":1514034330040,
     "f":"fido and friends",
     "d":"fido's phone",
+    "l":"dog house",
     "s":{
-         "location":{
-             "living room":1
-         },
          "wifi":{
                 "aa:bb:cc:dd:ee":-20,
                 "ff:gg:hh:ii:jj":-80
@@ -135,10 +126,8 @@ Requires JSON of the sensor data, e.g.
     "t":1514034330040,
     "f":"fido and friends",
     "d":"fido's phone",
+    "l":"dog house",
     "s":{
-         "location":{
-             "living room":1
-         },
          "wifi":{
                 "aa:bb:cc:dd:ee":-20,
                 "ff:gg:hh:ii:jj":-80
@@ -165,7 +154,7 @@ Requires JSON of the sensor data, e.g.
 ```json
 {
     "success": true,
-    "message": "Inserted fingerprint containing 23 APs for zack at zakhome floor 2 office"
+    "message": "inserted sensor data",
 }
 ```
 
