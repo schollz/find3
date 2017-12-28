@@ -1,9 +1,12 @@
 #!/usr/bin/python3
 
-import ujson as json
+import json
 import csv
 from random import shuffle
 import warnings
+import _pickle as pickle
+import gzip
+import operator
 
 import numpy
 from sklearn.ensemble import RandomForestClassifier
@@ -28,11 +31,11 @@ class AI(object):
         self.x = []
         self.naming = {'from': {}, 'to': {}}
 
-    def load(self):
+    def load_data(self,fname):
         header = []
         rows = []
         naming_num = 0
-        with open('../testing/testdb.csv', 'r') as csvfile:
+        with open(fname, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             for i, row in enumerate(reader):
                 if i == 0:
@@ -64,15 +67,24 @@ class AI(object):
         print(self.x[0], self.y[0])
 
     def classify(self):
+        print(self.naming['to'])
+        payload = {'location_names':self.naming['to'],'predictions':[]}
         for name in self.algorithms:
             try:
                 prediction = self.algorithms[name].predict_proba(self.x[0].reshape(1, -1))
             except:
                 continue
-            print(name,prediction)
-        return 
+            predict = {}
+            for i,pred in enumerate(prediction[0]):
+                predict[i] = pred
+            predict_payload = {'name':name,'locations':[],'probabilities':[]}
+            for tup in sorted(predict.items(), key=operator.itemgetter(1),reverse=True):
+                predict_payload['locations'].append(str(tup[0]))
+                predict_payload['probabilities'].append(tup[1])
+            payload['predictions'].append(predict_payload)
+        return payload
 
-    def learn(self):
+    def learn(self,save_file=None):
         split_for_learning = int(0.70 * len(self.y))
         names = [
             "Nearest Neighbors",
@@ -108,6 +120,17 @@ class AI(object):
                 print(name, score)
             except:
                 pass
+
+    def save(self, save_file):
+        f = gzip.open(save_file, 'wb')
+        pickle.dump(self.__dict__, f, 2)
+        f.close()
+    
+    def load(self, save_file):
+        f = gzip.open(save_file, 'rb')
+        tmp_dict = pickle.load(f)
+        f.close()
+        self.__dict__.update(tmp_dict)
 
 
 def do():
@@ -195,11 +218,3 @@ def do():
                 print(
                     k, g, len(set(known_groups[k]).intersection(guessed_groups[g])))
 
-
-def hello():
-    return "hello"
-
-ai = AI()
-ai.load()
-ai.learn()
-ai.classify()
