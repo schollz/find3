@@ -16,5 +16,7 @@ func main() {
 		database.Debug(true)
 		server.Debug(true)
 	}
-	server.Run(*port, *aiPort)
+	database.AIPort = *aiPort
+	server.Port = *port
+	server.Run()
 }

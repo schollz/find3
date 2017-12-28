@@ -1,50 +1,15 @@
 package server
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/de0gee/de0gee-data/src/database"
 	"github.com/gin-gonic/gin"
-	cache "github.com/robfig/go-cache"
-	log "github.com/sirupsen/logrus"
 )
 
-var (
-	httpClient   *http.Client
-	aiClientPort string
-	routeCache   *cache.Cache
-)
+var Port = "8003"
 
-const (
-	MaxIdleConnections int = 20
-	RequestTimeout     int = 5
-)
-
-// init HTTPClient
-func init() {
-	httpClient = createHTTPClient()
-	routeCache = cache.New(5*time.Minute, 10*time.Minute)
-}
-
-// createHTTPClient for connection re-use
-func createHTTPClient() *http.Client {
-	client := &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost: MaxIdleConnections,
-		},
-		Timeout: time.Duration(RequestTimeout) * time.Second,
-	}
-
-	return client
-}
-
-func Run(port string, aiPort string) {
-	aiClientPort = aiPort
+func Run() {
 	r := gin.Default()
 	r.GET("/ping", ping)
 	r.HEAD("/", func(c *gin.Context) {
@@ -54,14 +19,10 @@ func Run(port string, aiPort string) {
 	r.POST("/learn", handlerFIND) // backwards-compatible with FIND
 	r.POST("/track", handlerFIND) // backwards-compatible with FIND
 	r.GET("/location", handlerLocation)
-	r.Run(":" + port) // listen and serve on 0.0.0.0:8080
+	r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
 }
 
 func handlerLocation(c *gin.Context) {
-	logger := log.WithFields(log.Fields{
-		"name": "handlerLocation",
-	})
-	start := time.Now()
 	AddCORS(c)
 	type Payload struct {
 		Family string `json:"family" binding:"required"`
@@ -80,62 +41,13 @@ func handlerLocation(c *gin.Context) {
 			if err != nil {
 				message = err.Error()
 			} else {
-				type AIResponse struct {
-					Data struct {
-						LocationNames map[string]string `json:"location_names"`
-						Predictions   []struct {
-							Locations     []string  `json:"locations"`
-							Name          string    `json:"name"`
-							Probabilities []float64 `json:"probabilities"`
-						} `json:"predictions"`
-					} `json:"data"`
-					Message string `json:"message"`
-					Success bool   `json:"success"`
-				}
-				var target AIResponse
-
-				cachedName := fmt.Sprintf("%s-%s-%f", p.Family, p.Device, s.Timestamp)
-				responseCache, found := routeCache.Get(cachedName)
-				logger.Info(found)
-				if found {
-					logger.Info("using cache")
-					target = responseCache.(AIResponse)
+				target, err := d.Classify(s)
+				if err != nil {
+					message = err.Error()
 				} else {
-					type ClassifyPayload struct {
-						Sensor       database.SensorData `json:"sensor_data"`
-						DataLocation string              `json:"data_location"`
-					}
-					var p2 ClassifyPayload
-					p2.Sensor = s
-					dir, err := os.Getwd()
-					if err != nil {
-						logger.Fatal(err)
-					}
-					p2.DataLocation = dir
-					logger.Info(time.Since(start))
-					url := "http://localhost:" + aiClientPort + "/classify"
-					bPayload, err := json.Marshal(p2)
-					if err != nil {
-						panic(err)
-					}
-					logger.Info(time.Since(start))
-					req, err := http.NewRequest("POST", url, bytes.NewBuffer(bPayload))
-					req.Header.Set("Content-Type", "application/json")
-					resp, err := httpClient.Do(req)
-					if err != nil {
-						panic(err)
-					}
-					defer resp.Body.Close()
-					logger.Info(time.Since(start))
-					err = json.NewDecoder(resp.Body).Decode(&target)
-					if err != nil {
-						panic(err)
-					}
-					routeCache.Set(cachedName, target, 10*time.Second)
+					c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
+					return
 				}
-				c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
-				logger.Info(time.Since(start))
-				return
 			}
 		}
 	} else {

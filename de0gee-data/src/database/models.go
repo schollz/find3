@@ -11,6 +11,7 @@ import (
 
 // DataFolder is set to where you want each Sqlite3 database to be stored
 var DataFolder = "."
+var AIPort = "8002"
 
 // Database is the main structure for holding the information
 // pertaining to the name of the database.
