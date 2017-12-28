@@ -4,7 +4,7 @@ import json
 import csv
 from random import shuffle
 import warnings
-import _pickle as pickle
+import pickle
 import gzip
 import operator
 import time
@@ -155,16 +155,19 @@ class AI(object):
     def save(self, save_file):
         t = time.time()
         f = gzip.open(save_file, 'wb')
-        pickle.dump(self.__dict__, f, 2)
+        pickle.dump(self.header, f)
+        pickle.dump(self.naming, f)
+        pickle.dump(self.algorithms, f)
         f.close()
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
 
     def load(self, save_file):
         t = time.time()
         f = gzip.open(save_file, 'rb')
-        tmp_dict = pickle.load(f)
+        self.header = pickle.load(f)
+        self.naming = pickle.load(f)
+        self.algorithms = pickle.load(f)
         f.close()
-        self.__dict__.update(tmp_dict)
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
 
 
