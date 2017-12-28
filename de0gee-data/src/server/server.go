@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	httpClient *http.Client
+	httpClient   *http.Client
+	aiClientPort string
 )
 
 const (
@@ -38,7 +39,8 @@ func createHTTPClient() *http.Client {
 	return client
 }
 
-func Run(port string) {
+func Run(port string, aiPort string) {
+	aiClientPort = aiPort
 	r := gin.Default()
 	r.GET("/ping", ping)
 	r.HEAD("/", func(c *gin.Context) {
@@ -98,7 +100,7 @@ func handlerLocation(c *gin.Context) {
 					Message string `json:"message"`
 					Success bool   `json:"success"`
 				}
-				url := "http://localhost:5001/classify"
+				url := "http://localhost:" + aiClientPort + "/classify"
 				bPayload, err := json.Marshal(p2)
 				if err != nil {
 					panic(err)

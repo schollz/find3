@@ -188,3 +188,27 @@ dog house,-10,-20
 dog house,-9,-18
 ...
 ```
+
+
+### Testing
+
+
+```
+# Start machine learning server
+cd $GOPATH/de0gee/de0gee-ai/src
+export FLASK_DEBUG=1 && export FLASK_APP=server.py && flask run --debugger --port 8002
+
+# Load machine learning data
+cd $GOPATH/de0gee/de0gee-ai/testing
+http --json POST localhost:8002/learn family='testdb' csv_file='../testing/testdb.csv'
+
+# Test classification
+http localhost:8002/classify < testdb_single_rec.json
+
+# Start datastore server
+cd $GOPATH/de0gee/de0gee-data
+go build && ./de0gee-data
+
+# Test getting the classification of the latest location
+http --json GET localhost:8003/location family=testdb device=zack2@gmail.com
+```
