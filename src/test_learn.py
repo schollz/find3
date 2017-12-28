@@ -6,8 +6,7 @@ def test_to_base64():
 
 def basic_learning():
     ai = AI()
-    ai.load_data('../testing/testdb.csv')
-    ai.learn()
+    ai.learn('../testing/testdb.csv')
     ai.save('dGVzdGRi.de0gee.ai')
 
 def test_basic_learning(benchmark):
@@ -20,3 +19,12 @@ def basic_classifying():
 
 def test_basic_classifying(benchmark):
     result = benchmark(basic_classifying)
+
+def basic_reloading():
+    ai = AI()
+    ai.load('dGVzdGRi.de0gee.ai')
+    return True
+
+def test_basic_reloading(benchmark):
+    result = benchmark(basic_reloading)
+    

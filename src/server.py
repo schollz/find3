@@ -41,10 +41,9 @@ def learn():
 
     ai = AI()
     try:
-        ai.load_data(payload['csv_file'])
+        ai.learn(payload['csv_file'])
     except FileNotFoundError:
         return jsonify({"success": False, "message": "could not find '{p[csv_file]}s'".format(p=payload)})
-    ai.learn()
     ai.save(fname)
     return jsonify({"success": True, "message": "saved as '{p}'".format(p=fname)})
 

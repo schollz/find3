@@ -27,11 +27,28 @@ from sklearn.neighbors import kneighbors_graph
 class AI(object):
 
     def __init__(self):
-        self.header = []
-        self.x = []
         self.naming = {'from': {}, 'to': {}}
 
-    def load_data(self,fname):
+    def classify(self):
+        print(self.naming['to'])
+        payload = {'location_names':self.naming['to'],'predictions':[]}
+        for name in self.algorithms:
+            try:
+                prediction = self.algorithms[name].predict_proba(self.x[0].reshape(1, -1))
+            except:
+                continue
+            predict = {}
+            for i,pred in enumerate(prediction[0]):
+                predict[i] = pred
+            predict_payload = {'name':name,'locations':[],'probabilities':[]}
+            for tup in sorted(predict.items(), key=operator.itemgetter(1),reverse=True):
+                predict_payload['locations'].append(str(tup[0]))
+                predict_payload['probabilities'].append(tup[1])
+            payload['predictions'].append(predict_payload)
+        return payload
+
+    def learn(self,fname):
+        # load CSV file
         header = []
         rows = []
         naming_num = 0
@@ -56,36 +73,17 @@ class AI(object):
                     rows.append(row)
 
         # first column in row is the classification, Y
-        self.y = numpy.zeros(len(rows))
-        self.x = numpy.zeros((len(rows), len(rows[0]) - 1))
+        y = numpy.zeros(len(rows))
+        x = numpy.zeros((len(rows), len(rows[0]) - 1))
 
+        # shuffle it up for training
         record_range = list(range(len(rows)))
         shuffle(record_range)
         for i in record_range:
-            self.y[i] = rows[i][0]
-            self.x[i, :] = numpy.array(rows[i][1:])
-        print(self.x[0], self.y[0])
+            y[i] = rows[i][0]
+            x[i, :] = numpy.array(rows[i][1:])
 
-    def classify(self):
-        print(self.naming['to'])
-        payload = {'location_names':self.naming['to'],'predictions':[]}
-        for name in self.algorithms:
-            try:
-                prediction = self.algorithms[name].predict_proba(self.x[0].reshape(1, -1))
-            except:
-                continue
-            predict = {}
-            for i,pred in enumerate(prediction[0]):
-                predict[i] = pred
-            predict_payload = {'name':name,'locations':[],'probabilities':[]}
-            for tup in sorted(predict.items(), key=operator.itemgetter(1),reverse=True):
-                predict_payload['locations'].append(str(tup[0]))
-                predict_payload['probabilities'].append(tup[1])
-            payload['predictions'].append(predict_payload)
-        return payload
-
-    def learn(self,save_file=None):
-        split_for_learning = int(0.70 * len(self.y))
+        split_for_learning = int(0.70 * len(y))
         names = [
             "Nearest Neighbors",
             "Linear SVM",
@@ -113,9 +111,9 @@ class AI(object):
         for name, clf in zip(names, classifiers):
             self.algorithms[name] = clf
             try:
-                self.algorithms[name].fit(self.x[:split_for_learning],
-                        self.y[:split_for_learning])
-                score = self.algorithms[name].score(self.x[split_for_learning:], self.y[
+                self.algorithms[name].fit(x[:split_for_learning],
+                        y[:split_for_learning])
+                score = self.algorithms[name].score(x[split_for_learning:], y[
                                   split_for_learning:])
                 print(name, score)
             except:
