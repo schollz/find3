@@ -229,9 +229,10 @@ stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-data.err.log
 [program:de0gee-ai]
 directory=/home/zns/go/src/github.com/de0gee/de0gee-ai/src
 environment = 
-    FLASK_APP=setup.py,
+    FLASK_APP=server.py,
     FLASK_DEBUG=1
 command=/usr/local/bin/flask run --debugger --port 8002
 stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-ai.std.log
 stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-ai.err.log
+
 ```
