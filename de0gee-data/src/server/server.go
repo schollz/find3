@@ -3,13 +3,40 @@ package server
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/de0gee/de0gee-data/src/database"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
+
+var (
+	httpClient *http.Client
+)
+
+const (
+	MaxIdleConnections int = 20
+	RequestTimeout     int = 5
+)
+
+// init HTTPClient
+func init() {
+	httpClient = createHTTPClient()
+}
+
+// createHTTPClient for connection re-use
+func createHTTPClient() *http.Client {
+	client := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost: MaxIdleConnections,
+		},
+		Timeout: time.Duration(RequestTimeout) * time.Second,
+	}
+
+	return client
+}
 
 func Run(port string) {
 	r := gin.Default()
@@ -25,6 +52,10 @@ func Run(port string) {
 }
 
 func handlerLocation(c *gin.Context) {
+	logger := log.WithFields(log.Fields{
+		"name": "handlerLocation",
+	})
+	start := time.Now()
 	AddCORS(c)
 	type Payload struct {
 		Family string `json:"family" binding:"required"`
@@ -51,10 +82,10 @@ func handlerLocation(c *gin.Context) {
 				p2.Sensor = s
 				dir, err := os.Getwd()
 				if err != nil {
-					log.Fatal(err)
+					logger.Fatal(err)
 				}
 				p2.DataLocation = dir
-
+				logger.Info(time.Since(start))
 				type AIResponse struct {
 					Data struct {
 						LocationNames map[string]string `json:"location_names"`
@@ -67,26 +98,27 @@ func handlerLocation(c *gin.Context) {
 					Message string `json:"message"`
 					Success bool   `json:"success"`
 				}
-				url := "http://localhost:5000/classify"
+				url := "http://localhost:5001/classify"
 				bPayload, err := json.Marshal(p2)
 				if err != nil {
 					panic(err)
 				}
+				logger.Info(time.Since(start))
 				req, err := http.NewRequest("POST", url, bytes.NewBuffer(bPayload))
 				req.Header.Set("Content-Type", "application/json")
-				client := &http.Client{}
-				resp, err := client.Do(req)
+				resp, err := httpClient.Do(req)
 				if err != nil {
 					panic(err)
 				}
 				defer resp.Body.Close()
-
+				logger.Info(time.Since(start))
 				var target AIResponse
 				err = json.NewDecoder(resp.Body).Decode(&target)
 				if err != nil {
 					panic(err)
 				}
 				c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
+				logger.Info(time.Since(start))
 				return
 			}
 		}
