@@ -258,3 +258,16 @@ mosquitto_pub -u zack -P 1234 -t 'someother' -m 'hello'
 
 # if you start labs with -t '#' it should not see anything, but admin can
 ```
+
+Starting up everything
+
+```
+cd $GOPATH/src/github.com/de0gee/de0gee-data/src/mqtt && /usr/sbin/mosquitto -c mosquitto_config/mosquitto.conf -d
+cd $GOPATH/src/github.com/de0gee/de0gee-data && ./de0gee-data
+
+# for debugging
+cd $GOPATH/src/github.com/de0gee/de0gee-ai/src && export FLASK_APP=server.py && export FLASK_DEBUG=1 && flask run --debugger --port 8002
+
+# for production
+cd $GOPATH/src/github.com/de0gee/de0gee-ai/src && gunicorn server:app -b 0.0.0.0:8002 -w 8
+```
