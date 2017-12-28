@@ -15,6 +15,7 @@ func Run() {
 	r.HEAD("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "OK")
 	})
+	r.GET("/ws", wshandler)
 	r.POST("/data", handlerData)        // typical data handler
 	r.POST("/learn", handlerFIND)       // backwards-compatible with FIND
 	r.POST("/track", handlerFIND)       // backwards-compatible with FIND
