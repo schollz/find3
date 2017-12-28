@@ -153,3 +153,16 @@ func BenchmarkKeystoreGet(b *testing.B) {
 		db.Get("human:"+strconv.Itoa(i), &h2)
 	}
 }
+
+func BenchmarkGetLatest(b *testing.B) {
+	var s1 SensorData
+	json.Unmarshal([]byte(j), &s1)
+	Debug(false)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		db, _ := Open("testing")
+		db.GetLatest(s1.Device)
+		db.Close()
+	}
+}
