@@ -79,7 +79,7 @@ func (d *Database) Get(key string, v interface{}) (err error) {
 	if err != nil {
 		return
 	}
-	d.logger.Infof("got %s from '%s'", string(result), key)
+	// d.logger.Infof("got %s from '%s'", string(result), key)
 	return
 }
 
@@ -110,7 +110,7 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 		return errors.Wrap(err, "Set")
 	}
 
-	d.logger.Infof("set '%s' to '%s'", key, string(b))
+	// d.logger.Infof("set '%s' to '%s'", key, string(b))
 	return
 }
 

@@ -131,7 +131,7 @@ func handlerLocation(c *gin.Context) {
 					if err != nil {
 						panic(err)
 					}
-					routeCache.Set(cachedName, target, 1*time.Minute)
+					routeCache.Set(cachedName, target, 10*time.Second)
 				}
 				c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
 				logger.Info(time.Since(start))
