@@ -32,7 +32,7 @@ class AI(object):
         header = []
         rows = []
         naming_num = 0
-        with open('testing/testdb.csv', 'r') as csvfile:
+        with open('../testing/testdb.csv', 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             for i, row in enumerate(reader):
                 if i == 0:
@@ -63,6 +63,15 @@ class AI(object):
             self.x[i, :] = numpy.array(rows[i][1:])
         print(self.x[0], self.y[0])
 
+    def classify(self):
+        for name in self.algorithms:
+            try:
+                prediction = self.algorithms[name].predict_proba(self.x[0].reshape(1, -1))
+            except:
+                continue
+            print(name,prediction)
+        return 
+
     def learn(self):
         split_for_learning = int(0.70 * len(self.y))
         names = [
@@ -88,11 +97,13 @@ class AI(object):
             AdaBoostClassifier(),
             GaussianNB(),
             QuadraticDiscriminantAnalysis()]
+        self.algorithms = {}
         for name, clf in zip(names, classifiers):
+            self.algorithms[name] = clf
             try:
-                clf.fit(self.x[:split_for_learning],
+                self.algorithms[name].fit(self.x[:split_for_learning],
                         self.y[:split_for_learning])
-                score = clf.score(self.x[split_for_learning:], self.y[
+                score = self.algorithms[name].score(self.x[split_for_learning:], self.y[
                                   split_for_learning:])
                 print(name, score)
             except:
@@ -187,3 +198,8 @@ def do():
 
 def hello():
     return "hello"
+
+ai = AI()
+ai.load()
+ai.learn()
+ai.classify()
