@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -42,8 +44,8 @@ func handlerLocation(c *gin.Context) {
 				message = err.Error()
 			} else {
 				type ClassifyPayload struct {
-					Sensor       database.SensorData `json:"sensor-data"`
-					DataLocation string              `json:"data-location"`
+					Sensor       database.SensorData `json:"sensor_data"`
+					DataLocation string              `json:"data_location"`
 				}
 				var p2 ClassifyPayload
 				p2.Sensor = s
@@ -52,7 +54,39 @@ func handlerLocation(c *gin.Context) {
 					log.Fatal(err)
 				}
 				p2.DataLocation = dir
-				c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "payload": p2})
+
+				type AIResponse struct {
+					Data struct {
+						LocationNames map[string]string `json:"location_names"`
+						Predictions   []struct {
+							Locations     []string  `json:"locations"`
+							Name          string    `json:"name"`
+							Probabilities []float64 `json:"probabilities"`
+						} `json:"predictions"`
+					} `json:"data"`
+					Message string `json:"message"`
+					Success bool   `json:"success"`
+				}
+				url := "http://localhost:5000/classify"
+				bPayload, err := json.Marshal(p2)
+				if err != nil {
+					panic(err)
+				}
+				req, err := http.NewRequest("POST", url, bytes.NewBuffer(bPayload))
+				req.Header.Set("Content-Type", "application/json")
+				client := &http.Client{}
+				resp, err := client.Do(req)
+				if err != nil {
+					panic(err)
+				}
+				defer resp.Body.Close()
+
+				var target AIResponse
+				err = json.NewDecoder(resp.Body).Decode(&target)
+				if err != nil {
+					panic(err)
+				}
+				c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
 				return
 			}
 		}
