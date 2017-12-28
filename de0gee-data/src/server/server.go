@@ -1,7 +1,9 @@
 package server
 
 import (
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/de0gee/de0gee-data/src/database"
 	"github.com/gin-gonic/gin"
@@ -13,17 +15,51 @@ func Run(port string) {
 	r.HEAD("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "OK")
 	})
-	r.GET("/location", handlerLocation)
-	r.POST("/", handlerData)      // typical data handler
+	r.POST("/data", handlerData)  // typical data handler
 	r.POST("/learn", handlerFIND) // backwards-compatible with FIND
 	r.POST("/track", handlerFIND) // backwards-compatible with FIND
-	r.Run(":" + port)             // listen and serve on 0.0.0.0:8080
+	r.GET("/location", handlerLocation)
+	r.Run(":" + port) // listen and serve on 0.0.0.0:8080
 }
 
 func handlerLocation(c *gin.Context) {
 	AddCORS(c)
+	type Payload struct {
+		Family string `json:"family" binding:"required"`
+		Device string `json:"device" binding:"required"`
+	}
+	success := false
 	var message string
-	c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
+	var p Payload
+	if errBind := c.ShouldBindJSON(&p); errBind == nil {
+		d, err := database.Open(p.Family)
+		defer d.Close()
+		if err != nil {
+			message = err.Error()
+		} else {
+			s, err := d.GetLatest(p.Device)
+			if err != nil {
+				message = err.Error()
+			} else {
+				type ClassifyPayload struct {
+					Sensor       database.SensorData `json:"sensor-data"`
+					DataLocation string              `json:"data-location"`
+				}
+				var p2 ClassifyPayload
+				p2.Sensor = s
+				dir, err := os.Getwd()
+				if err != nil {
+					log.Fatal(err)
+				}
+				p2.DataLocation = dir
+				c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "payload": p2})
+				return
+			}
+		}
+	} else {
+		message = errBind.Error()
+	}
+	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
 }
 
 func handlerData(c *gin.Context) {
