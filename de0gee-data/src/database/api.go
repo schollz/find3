@@ -206,7 +206,7 @@ func (d *Database) AddSensor(s SensorData) (err error) {
 
 // GetSensorFromTime will return a sensor data for a given timestamp
 func (d *Database) GetSensorFromTime(timestamp interface{}) (s SensorData, err error) {
-	sensors, err := d.GetAllFromPreparedQuery("select * from sensors where timestamp = ?", timestamp)
+	sensors, err := d.GetAllFromPreparedQuery("SELECT * FROM sensors WHERE timestamp = ?", timestamp)
 	if err != nil {
 		err = errors.Wrap(err, "GetSensorFromTime")
 	} else {
@@ -221,9 +221,9 @@ func (d *Database) GetAllForClassification() (s []SensorData, err error) {
 }
 
 // GetLatest will return a sensor data for classifying
-func (d *Database) GetLatest() (s SensorData, err error) {
+func (d *Database) GetLatest(device interface{}) (s SensorData, err error) {
 	var sensors []SensorData
-	sensors, err = d.GetAllFromQuery("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT 1")
+	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM sensors WHERE device = ? ORDER BY timestamp DESC LIMIT 1", device)
 	if err != nil {
 		return
 	}

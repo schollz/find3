@@ -32,7 +32,7 @@ func TestAddSensor(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, s1test, s1)
 
-	sLatest, err := db.GetLatest()
+	sLatest, err := db.GetLatest(s2.Device)
 	assert.Nil(t, err)
 	assert.Equal(t, s2, sLatest)
 
