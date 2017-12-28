@@ -7,7 +7,26 @@ import warnings
 import _pickle as pickle
 import gzip
 import operator
+import time
 import logging
+
+# create logger with 'spam_application'
+logger = logging.getLogger('learn')
+logger.setLevel(logging.DEBUG)
+# create file handler which logs even debug messages
+fh = logging.FileHandler('learn.log')
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+# create formatter and add it to the handlers
+formatter = logging.Formatter(
+    '%(asctime)s - [%(name)s/%(funcName)s] - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(ch)
 
 import numpy
 from sklearn.ensemble import RandomForestClassifier
@@ -25,36 +44,42 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn import cluster, mixture
 from sklearn.neighbors import kneighbors_graph
 
+
 class AI(object):
 
     def __init__(self):
+        self.logger = logging.getLogger('learn.AI')
         self.naming = {'from': {}, 'to': {}}
 
-
-    def classify(self,sensor_data):
+    def classify(self, sensor_data):
+        t = time.time()
         header = self.header[1:]
         csv_data = numpy.zeros(len(header))
         for sensorType in sensor_data['s']:
             for sensor in sensor_data['s'][sensorType]:
-                sensorName = sensorType+"-"+sensor 
+                sensorName = sensorType + "-" + sensor
                 if sensorName in header:
-                    csv_data[header.index(sensorName)] = sensor_data['s'][sensorType][sensor]
+                    csv_data[header.index(sensorName)] = sensor_data[
+                        's'][sensorType][sensor]
 
-        payload = {'location_names':self.naming['to'],'predictions':[]}
+        payload = {'location_names': self.naming['to'], 'predictions': []}
         for name in self.algorithms:
-            print(name)
-            prediction = self.algorithms[name].predict_proba(csv_data.reshape(1, -1))
+            prediction = self.algorithms[
+                name].predict_proba(csv_data.reshape(1, -1))
             predict = {}
-            for i,pred in enumerate(prediction[0]):
+            for i, pred in enumerate(prediction[0]):
                 predict[i] = pred
-            predict_payload = {'name':name,'locations':[],'probabilities':[]}
-            for tup in sorted(predict.items(), key=operator.itemgetter(1),reverse=True):
+            predict_payload = {'name': name,
+                               'locations': [], 'probabilities': []}
+            for tup in sorted(predict.items(), key=operator.itemgetter(1), reverse=True):
                 predict_payload['locations'].append(str(tup[0]))
                 predict_payload['probabilities'].append(tup[1])
             payload['predictions'].append(predict_payload)
+        self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
         return payload
 
-    def learn(self,fname):
+    def learn(self, fname):
+        t = time.time()
         # load CSV file
         self.header = []
         rows = []
@@ -104,8 +129,8 @@ class AI(object):
             "QDA"]
         classifiers = [
             KNeighborsClassifier(3),
-            SVC(kernel="linear", C=0.025,probability=True),
-            SVC(gamma=2, C=1,probability=True),
+            SVC(kernel="linear", C=0.025, probability=True),
+            SVC(gamma=2, C=1, probability=True),
             GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
             DecisionTreeClassifier(max_depth=5),
             RandomForestClassifier(
@@ -119,23 +144,28 @@ class AI(object):
             self.algorithms[name] = clf
             try:
                 self.algorithms[name].fit(x[:split_for_learning],
-                        y[:split_for_learning])
+                                          y[:split_for_learning])
                 score = self.algorithms[name].score(x[split_for_learning:], y[
-                                  split_for_learning:])
+                    split_for_learning:])
                 print(name, score)
             except:
                 pass
+        self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
 
     def save(self, save_file):
+        t = time.time()
         f = gzip.open(save_file, 'wb')
         pickle.dump(self.__dict__, f, 2)
         f.close()
-    
+        self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
+
     def load(self, save_file):
+        t = time.time()
         f = gzip.open(save_file, 'rb')
         tmp_dict = pickle.load(f)
         f.close()
         self.__dict__.update(tmp_dict)
+        self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
 
 
 def do():
@@ -217,7 +247,6 @@ def do():
             if group not in guessed_groups:
                 guessed_groups[group] = []
             guessed_groups[group].append(i)
-        print(name)
         for k in known_groups:
             for g in guessed_groups:
                 print(
