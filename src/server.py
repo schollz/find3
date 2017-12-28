@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 from learn import AI
 
+cache = {}
 
 def to_base64(family):
     return urlsafe_b64encode(family.encode('utf-8')).decode('utf-8')
@@ -19,12 +20,15 @@ def classify():
     if 'data_folder' in payload:
         data_folder = payload['data_folder']
     fname = os.path.join(data_folder, to_base64(payload['family']) + ".de0gee.ai")
-    ai = AI()
-    try:
-        ai.load(fname)
-    except FileNotFoundError:
-        return jsonify({"success": False, "message": "could not find '{p}'".format(p=fname)})
-    classified = ai.classify()
+    if fname not in cache:
+        ai = AI()
+        try:
+            ai.load(fname)
+        except FileNotFoundError:
+            return jsonify({"success": False, "message": "could not find '{p}'".format(p=fname)})
+        cache[fname] = ai
+        ai.classify()
+    classified = cache[fname].classify()
     return jsonify({"success": True, "message": "data classified",'data':classified})
 
 @app.route('/learn', methods=['POST'])

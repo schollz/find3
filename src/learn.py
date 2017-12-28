@@ -29,7 +29,9 @@ class AI(object):
     def __init__(self):
         self.naming = {'from': {}, 'to': {}}
 
+
     def classify(self):
+        # TODO: ACCEPT INPUT FOR THE ROW OF DATA TO CLASSIFY
         print(self.naming['to'])
         payload = {'location_names':self.naming['to'],'predictions':[]}
         for name in self.algorithms:
