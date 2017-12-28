@@ -237,3 +237,24 @@ stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-ai.err.log
 ```
 
 http://www.steves-internet-guide.com/install-mosquitto-linux/
+
+MOSQUITTO
+
+```
+# bootstrap
+cd $GOPATH/src/github.com/de0gee/de0gee-data/src/mqtt
+go test 
+pkill -9 mosquitto
+mosquitto -c mosquitto_config/mosquitto.conf -d
+
+# this should allow you to subscribe (change password though)
+mosquitto_sub -h localhost -p 1883 -u labs -P de7r3 -t 'labs/#'
+
+# labs should see this
+mosquitto_pub -u zack -P 1234 -t 'labs/location' -m 'hello'
+
+# labs should not see this
+mosquitto_pub -u zack -P 1234 -t 'someother' -m 'hello'
+
+# if you start labs with -t '#' it should not see anything, but admin can
+```
