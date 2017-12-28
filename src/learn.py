@@ -7,6 +7,7 @@ import warnings
 import _pickle as pickle
 import gzip
 import operator
+import logging
 
 import numpy
 from sklearn.ensemble import RandomForestClassifier
@@ -30,15 +31,19 @@ class AI(object):
         self.naming = {'from': {}, 'to': {}}
 
 
-    def classify(self):
-        # TODO: ACCEPT INPUT FOR THE ROW OF DATA TO CLASSIFY
-        print(self.naming['to'])
+    def classify(self,sensor_data):
+        header = self.header[1:]
+        csv_data = numpy.zeros(len(header))
+        for sensorType in sensor_data['s']:
+            for sensor in sensor_data['s'][sensorType]:
+                sensorName = sensorType+"-"+sensor 
+                if sensorName in header:
+                    csv_data[header.index(sensorName)] = sensor_data['s'][sensorType][sensor]
+
         payload = {'location_names':self.naming['to'],'predictions':[]}
         for name in self.algorithms:
-            try:
-                prediction = self.algorithms[name].predict_proba(self.x[0].reshape(1, -1))
-            except:
-                continue
+            print(name)
+            prediction = self.algorithms[name].predict_proba(csv_data.reshape(1, -1))
             predict = {}
             for i,pred in enumerate(prediction[0]):
                 predict[i] = pred
@@ -51,14 +56,14 @@ class AI(object):
 
     def learn(self,fname):
         # load CSV file
-        header = []
+        self.header = []
         rows = []
         naming_num = 0
         with open(fname, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             for i, row in enumerate(reader):
                 if i == 0:
-                    header = row
+                    self.header = row
                 else:
                     for j, val in enumerate(row):
                         if val == '':
@@ -99,8 +104,8 @@ class AI(object):
             "QDA"]
         classifiers = [
             KNeighborsClassifier(3),
-            SVC(kernel="linear", C=0.025),
-            SVC(gamma=2, C=1),
+            SVC(kernel="linear", C=0.025,probability=True),
+            SVC(gamma=2, C=1,probability=True),
             GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
             DecisionTreeClassifier(max_depth=5),
             RandomForestClassifier(
@@ -218,3 +223,11 @@ def do():
                 print(
                     k, g, len(set(known_groups[k]).intersection(guessed_groups[g])))
 
+
+# ai = AI()
+# ai.learn("../testing/testdb.csv")
+# ai.save("dGVzdGRi.de0gee.ai")
+# ai.load("dGVzdGRi.de0gee.ai")
+# a = json.load(open('../testing/testdb_single_rec.json'))
+# classified = ai.classify(a)
+# print(json.dumps(classified,indent=2))

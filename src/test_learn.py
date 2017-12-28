@@ -14,10 +14,14 @@ def test_basic_learning(benchmark):
 
 def basic_classifying():
     ai = AI()
-    ai.load('dGVzdGRi.de0gee.ai')
-    return ai.classify()
+    ai.load("test.ai")
+    a = json.load(open('../testing/testdb_single_rec.json'))
+    classified = ai.classify(a['sensor_data'])
 
 def test_basic_classifying(benchmark):
+    ai = AI()
+    ai.learn("../testing/testdb.csv")
+    ai.save("test.ai")
     result = benchmark(basic_classifying)
 
 def basic_reloading():

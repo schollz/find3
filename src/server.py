@@ -1,5 +1,6 @@
 import os
 from base64 import urlsafe_b64encode, urlsafe_b64decode
+import logging 
 
 from flask import Flask, request, jsonify
 app = Flask(__name__)
@@ -14,21 +15,18 @@ def to_base64(family):
 @app.route('/classify', methods=['POST'])
 def classify():
     payload = request.get_json()
-    if 'family' not in payload:
-        return jsonify({'success': False, 'message': 'must provide family'})
+    if 'sensor_data' not in payload:
+        return jsonify({'success': False, 'message': 'must provide sensor data'})
     data_folder = '.'
     if 'data_folder' in payload:
         data_folder = payload['data_folder']
-    fname = os.path.join(data_folder, to_base64(payload['family']) + ".de0gee.ai")
-    if fname not in cache:
-        ai = AI()
-        try:
-            ai.load(fname)
-        except FileNotFoundError:
-            return jsonify({"success": False, "message": "could not find '{p}'".format(p=fname)})
-        cache[fname] = ai
-        ai.classify()
-    classified = cache[fname].classify()
+    fname = os.path.join(data_folder, to_base64(payload['sensor_data']['f']) + ".de0gee.ai")
+    ai = AI()
+    try:
+        ai.load(fname)
+    except FileNotFoundError:
+        return jsonify({"success": False, "message": "could not find '{p}'".format(p=fname)})
+    classified = ai.classify(payload['sensor_data'])
     return jsonify({"success": True, "message": "data classified",'data':classified})
 
 @app.route('/learn', methods=['POST'])
@@ -47,7 +45,7 @@ def learn():
     try:
         ai.learn(payload['csv_file'])
     except FileNotFoundError:
-        return jsonify({"success": False, "message": "could not find '{p[csv_file]}s'".format(p=payload)})
+        return jsonify({"success": False, "message": "could not find '{p[csv_file]}'".format(p=payload)})
     ai.save(fname)
     return jsonify({"success": True, "message": "saved as '{p}'".format(p=fname)})
 
