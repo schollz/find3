@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"encoding/base64"
+	"fmt"
 	"os"
 	"path"
 	"time"
@@ -15,7 +16,7 @@ import (
 )
 
 // Open will open the database for transactions by first aquiring a filelock.
-func Open(name string, needToAuthenticate ...bool) (d *Database, err error) {
+func Open(name string, readOnly ...bool) (d *Database, err error) {
 	d = new(Database)
 
 	// convert the name to base64 for file writing
@@ -24,16 +25,11 @@ func Open(name string, needToAuthenticate ...bool) (d *Database, err error) {
 		"name": name + "(" + base64.URLEncoding.EncodeToString([]byte(name)) + ")",
 	})
 
-	// TODO: Authenticate
-	if len(needToAuthenticate) > 0 {
-		if needToAuthenticate[0] {
-			err = errors.New("authentication failed (doesn't exist)")
-			if err != nil {
-				return
-			}
-		}
+	// if read-only, make sure the database exists
+	if _, err = os.Stat(d.name); err != nil && len(readOnly) > 0 && readOnly[0] {
+		err = errors.New(fmt.Sprintf("group '%s' does not exist", name))
+		return
 	}
-	d.logger.Info("authenticated")
 
 	// obtain a lock on the database
 	d.fileLock = flock.NewFlock(d.name + ".lock")

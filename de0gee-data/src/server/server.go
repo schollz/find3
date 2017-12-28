@@ -15,11 +15,11 @@ func Run() {
 	r.HEAD("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "OK")
 	})
-	r.POST("/data", handlerData)  // typical data handler
-	r.POST("/learn", handlerFIND) // backwards-compatible with FIND
-	r.POST("/track", handlerFIND) // backwards-compatible with FIND
-	r.GET("/location", handlerLocation)
-	r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
+	r.POST("/data", handlerData)        // typical data handler
+	r.POST("/learn", handlerFIND)       // backwards-compatible with FIND
+	r.POST("/track", handlerFIND)       // backwards-compatible with FIND
+	r.GET("/location", handlerLocation) // get the latest location
+	r.Run(":" + Port)                   // listen and serve on 0.0.0.0:8080
 }
 
 func handlerLocation(c *gin.Context) {
@@ -32,11 +32,11 @@ func handlerLocation(c *gin.Context) {
 	var message string
 	var p Payload
 	if errBind := c.ShouldBindJSON(&p); errBind == nil {
-		d, err := database.Open(p.Family)
-		defer d.Close()
+		d, err := database.Open(p.Family, true)
 		if err != nil {
 			message = err.Error()
 		} else {
+			defer d.Close()
 			s, err := d.GetLatest(p.Device)
 			if err != nil {
 				message = err.Error()
