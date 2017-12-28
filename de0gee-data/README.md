@@ -234,5 +234,6 @@ environment =
 command=/usr/local/bin/flask run --debugger --port 8002
 stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-ai.std.log
 stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-ai.err.log
-
 ```
+
+http://www.steves-internet-guide.com/install-mosquitto-linux/
