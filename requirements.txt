@@ -5,3 +5,4 @@ pytest-cov
 sklearn
 numpy
 scipy
+flask
