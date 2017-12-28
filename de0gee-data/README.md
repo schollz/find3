@@ -212,3 +212,26 @@ go build && ./de0gee-data
 # Test getting the classification of the latest location
 http --json GET localhost:8003/location family=testdb device=zack2@gmail.com
 ```
+
+Supervisord file:
+
+```
+[supervisorctl]
+
+[supervisord]
+
+[program:de0gee-data]
+directory=/home/zns/go/src/github.com/de0gee/de0gee-data
+command=de0gee-data
+stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-data.std.log
+stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-data.err.log
+
+[program:de0gee-ai]
+directory=/home/zns/go/src/github.com/de0gee/de0gee-ai/src
+environment = 
+    FLASK_APP=setup.py,
+    FLASK_DEBUG=1
+command=/usr/local/bin/flask run --debugger --port 8002
+stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-ai.std.log
+stdout_logfile: /home/zns/go/src/github.com/de0gee/de0gee-ai.err.log
+```
