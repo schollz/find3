@@ -6,7 +6,10 @@ serve: clean
 	cd src && flask run --debugger
 
 test: clean
-	cd src && py.test --cov=learn test_learn.py
+	cd src && py.test --benchmark-skip --cov=learn test_learn.py
+
+benchmark: clean
+	cd src && py.test test_learn.py
 
 install:
 	python -m pip install --no-cache-dir --upgrade -r requirements.txt
