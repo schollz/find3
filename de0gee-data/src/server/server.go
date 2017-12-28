@@ -13,10 +13,17 @@ func Run(port string) {
 	r.HEAD("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "OK")
 	})
+	r.GET("/location", handlerLocation)
 	r.POST("/", handlerData)      // typical data handler
 	r.POST("/learn", handlerFIND) // backwards-compatible with FIND
 	r.POST("/track", handlerFIND) // backwards-compatible with FIND
 	r.Run(":" + port)             // listen and serve on 0.0.0.0:8080
+}
+
+func handlerLocation(c *gin.Context) {
+	AddCORS(c)
+	var message string
+	c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
 }
 
 func handlerData(c *gin.Context) {

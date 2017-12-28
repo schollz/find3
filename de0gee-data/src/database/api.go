@@ -114,135 +114,6 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 	return
 }
 
-// GetSensorFromTime will return a sensor data for a given timestamp
-func (d *Database) GetSensorFromTime(timestamp float64) (s SensorData, err error) {
-	// first get the columns
-	columnList, err := d.Columns()
-	if err != nil {
-		return
-	}
-
-	// get the slimmer
-	var slimmer string
-	err = d.Get("slimmer", &slimmer)
-	if err != nil {
-		return
-	}
-	ms, err := mapslimmer.Init(slimmer)
-	if err != nil {
-		return
-	}
-
-	// prepare statement
-	stmt, err := d.db.Prepare("select * from sensors where timestamp = ?")
-	if err != nil {
-		err = errors.Wrap(err, "GetSensorFromTime")
-		return
-	}
-	defer stmt.Close()
-	var arr []interface{}
-	for i := 0; i < len(columnList); i++ {
-		arr = append(arr, new(interface{}))
-	}
-	err = stmt.QueryRow(timestamp).Scan(arr...)
-	if err != nil {
-		err = errors.Wrap(err, "GetSensorFromTime")
-		return
-	}
-
-	s = SensorData{
-		// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
-		Timestamp: float64((*arr[0].(*interface{})).(int64)),
-		Family:    string((*arr[1].(*interface{})).([]uint8)),
-		Device:    string((*arr[2].(*interface{})).([]uint8)),
-		Location:  string((*arr[3].(*interface{})).([]uint8)),
-		Sensors:   make(map[string]map[string]interface{}),
-	}
-	// add in the sensor data
-	for i, colName := range columnList {
-		if i < 4 {
-			continue
-		}
-		unslimmed := string((*arr[i].(*interface{})).([]uint8))
-		s.Sensors[colName], err = ms.Loads(unslimmed)
-		if err != nil {
-			return
-		}
-	}
-	return
-}
-
-// GetAllForClassification will return a sensor data for classifying
-func (d *Database) GetAllForClassification() (s []SensorData, err error) {
-	// first get the columns
-	columnList, err := d.Columns()
-	if err != nil {
-		return
-	}
-
-	// get the slimmer
-	var slimmer string
-	err = d.Get("slimmer", &slimmer)
-	if err != nil {
-		return
-	}
-	ms, err := mapslimmer.Init(slimmer)
-	if err != nil {
-		return
-	}
-
-	d.logger.Debug("select * from sensors where location !=''")
-	rows, err := d.db.Query("select * from sensors where location !=''")
-	if err != nil {
-		err = errors.Wrap(err, "GetAllForClassification")
-		return
-	}
-	defer rows.Close()
-
-	s = make([]SensorData, 100000)
-	sI := 0
-	// loop through rows
-	for rows.Next() {
-		var arr []interface{}
-		for i := 0; i < len(columnList); i++ {
-			arr = append(arr, new(interface{}))
-		}
-		err = rows.Scan(arr...)
-		if err != nil {
-			err = errors.Wrap(err, "GetAllForClassification")
-			return
-		}
-		s0 := SensorData{
-			// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
-			Timestamp: float64((*arr[0].(*interface{})).(int64)),
-			Family:    string((*arr[1].(*interface{})).([]uint8)),
-			Device:    string((*arr[2].(*interface{})).([]uint8)),
-			Location:  string((*arr[3].(*interface{})).([]uint8)),
-			Sensors:   make(map[string]map[string]interface{}),
-		}
-		// add in the sensor data
-		for i, colName := range columnList {
-			if i < 4 {
-				continue
-			}
-			unslimmed := string((*arr[i].(*interface{})).([]uint8))
-			s0.Sensors[colName], err = ms.Loads(unslimmed)
-			if err != nil {
-				return
-			}
-		}
-		s[sI] = s0
-		sI++
-	}
-	s = s[:sI]
-	err = rows.Err()
-	if err != nil {
-		err = errors.Wrap(err, "GetAllForClassification")
-		return
-	}
-	return
-}
-
 // AddSensor will insert a sensor data into the database
 // TODO: AddSensor should be special case of AddSensors
 func (d *Database) AddSensor(s SensorData) (err error) {
@@ -331,4 +202,35 @@ func (d *Database) AddSensor(s SensorData) (err error) {
 	d.logger.Info("inserted sensor data")
 	return
 
+}
+
+// GetSensorFromTime will return a sensor data for a given timestamp
+func (d *Database) GetSensorFromTime(timestamp interface{}) (s SensorData, err error) {
+	sensors, err := d.GetAllFromPreparedQuery("select * from sensors where timestamp = ?", timestamp)
+	if err != nil {
+		err = errors.Wrap(err, "GetSensorFromTime")
+	} else {
+		s = sensors[0]
+	}
+	return
+}
+
+// GetAllForClassification will return a sensor data for classifying
+func (d *Database) GetAllForClassification() (s []SensorData, err error) {
+	return d.GetAllFromQuery("SELECT * FROM sensors WHERE location !=''")
+}
+
+// GetLatest will return a sensor data for classifying
+func (d *Database) GetLatest() (s SensorData, err error) {
+	var sensors []SensorData
+	sensors, err = d.GetAllFromQuery("SELECT * FROM sensors ORDER BY timestamp DESC LIMIT 1")
+	if err != nil {
+		return
+	}
+	if len(sensors) > 0 {
+		s = sensors[0]
+	} else {
+		err = errors.New("no rows found")
+	}
+	return
 }

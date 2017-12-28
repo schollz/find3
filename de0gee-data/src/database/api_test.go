@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -11,20 +10,35 @@ import (
 )
 
 func TestAddSensor(t *testing.T) {
-	var s SensorData
-	err := json.Unmarshal([]byte(j), &s)
+	var s1 SensorData
+	var s2 SensorData
+	err := json.Unmarshal([]byte(j), &s1)
 	if err != nil {
 		panic(err)
 	}
+	err = json.Unmarshal([]byte(j2), &s2)
+	if err != nil {
+		panic(err)
+	}
+
 	db, _ := Open("testing")
 	defer db.Close()
-	err = db.AddSensor(s)
+	err = db.AddSensor(s1)
+	assert.Nil(t, err)
+	err = db.AddSensor(s2)
 	assert.Nil(t, err)
 
-	s2, err := db.GetSensorFromTime(s.Timestamp)
+	s1test, err := db.GetSensorFromTime(s1.Timestamp)
 	assert.Nil(t, err)
-	assert.Equal(t, s, s2)
-	fmt.Println(s2)
+	assert.Equal(t, s1test, s1)
+
+	sLatest, err := db.GetLatest()
+	assert.Nil(t, err)
+	assert.Equal(t, s2, sLatest)
+
+	sPrepared, err := db.GetAllFromPreparedQuery("select * from sensors where timestamp = ?", s1.Timestamp)
+	assert.Nil(t, err)
+	assert.Equal(t, s1, sPrepared[0])
 }
 
 func TestGetAllForClassification(t *testing.T) {

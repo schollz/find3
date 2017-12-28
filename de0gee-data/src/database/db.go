@@ -3,12 +3,12 @@ package database
 import (
 	"database/sql"
 	"encoding/base64"
-	"errors"
 	"os"
 	"path"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pkg/errors"
 	"github.com/schollz/mapslimmer"
 	log "github.com/sirupsen/logrus"
 	flock "github.com/theckman/go-flock"
@@ -97,6 +97,106 @@ func (d *Database) Close() (err error) {
 		d.logger.Error(err)
 	} else {
 		d.logger.Info("closed database")
+	}
+	return
+}
+
+func (d *Database) GetAllFromQuery(query string) (s []SensorData, err error) {
+	d.logger.Debug(query)
+	rows, err := d.db.Query(query)
+	if err != nil {
+		err = errors.Wrap(err, "GetAllFromQuery")
+		return
+	}
+	defer rows.Close()
+
+	// parse rows
+	s, err = d.getRows(rows)
+	if err != nil {
+		err = errors.Wrap(err, query)
+	}
+	return
+}
+
+// GetAllFromPreparedQuery
+func (d *Database) GetAllFromPreparedQuery(query string, args ...interface{}) (s []SensorData, err error) {
+	// prepare statement
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(args...)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+	s, err = d.getRows(rows)
+	if err != nil {
+		err = errors.Wrap(err, query)
+	}
+	return
+}
+
+func (d *Database) getRows(rows *sql.Rows) (s []SensorData, err error) {
+	// first get the columns
+	columnList, err := d.Columns()
+	if err != nil {
+		return
+	}
+
+	// get the slimmer
+	var slimmer string
+	err = d.Get("slimmer", &slimmer)
+	if err != nil {
+		return
+	}
+	ms, err := mapslimmer.Init(slimmer)
+	if err != nil {
+		return
+	}
+
+	s = make([]SensorData, 100000)
+	sI := 0
+	// loop through rows
+	for rows.Next() {
+		var arr []interface{}
+		for i := 0; i < len(columnList); i++ {
+			arr = append(arr, new(interface{}))
+		}
+		err = rows.Scan(arr...)
+		if err != nil {
+			err = errors.Wrap(err, "getRows")
+			return
+		}
+		s0 := SensorData{
+			// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
+			Timestamp: float64((*arr[0].(*interface{})).(int64)),
+			Family:    string((*arr[1].(*interface{})).([]uint8)),
+			Device:    string((*arr[2].(*interface{})).([]uint8)),
+			Location:  string((*arr[3].(*interface{})).([]uint8)),
+			Sensors:   make(map[string]map[string]interface{}),
+		}
+		// add in the sensor data
+		for i, colName := range columnList {
+			if i < 4 {
+				continue
+			}
+			unslimmed := string((*arr[i].(*interface{})).([]uint8))
+			s0.Sensors[colName], err = ms.Loads(unslimmed)
+			if err != nil {
+				return
+			}
+		}
+		s[sI] = s0
+		sI++
+	}
+	s = s[:sI]
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "getRows")
 	}
 	return
 }
