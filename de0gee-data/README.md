@@ -273,3 +273,5 @@ cd $GOPATH/src/github.com/de0gee/de0gee-ai/src && gunicorn server:app -b 0.0.0.0
 ```
 
 Ideas: use one-time-pass API keys for accessing pieces of the AI server or the datastore server directly (mainly things like websockets).
+
+Overview of program: https://swimlanes.io/u/S1r5LsmmG
