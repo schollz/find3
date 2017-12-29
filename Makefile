@@ -1,9 +1,7 @@
 .PHONY: install test
 
 serve: clean
-	export FLASK_APP=server.py
-	export FLASK_DEBUG=1
-	cd src && flask run --debugger
+	export FLASK_APP=server.py && export FLASK_DEBUG=1 && cd src && flask run --debugger
 
 test: clean
 	cd src && py.test --benchmark-skip --cov=learn test_learn.py
