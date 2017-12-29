@@ -274,4 +274,60 @@ cd $GOPATH/src/github.com/de0gee/de0gee-ai/src && gunicorn server:app -b 0.0.0.0
 
 Ideas: use one-time-pass API keys for accessing pieces of the AI server or the datastore server directly (mainly things like websockets).
 
-Overview of program: https://swimlanes.io/u/S1r5LsmmG
+Overview of program: https://swimlanes.io/u/S1r5LsmmG:
+
+Title: Uploading Sensor Data
+
+_: **Data collection** 
+
+Note de0gee, Auth: You can collect data via the de0gee device.
+
+de0gee -> de0gee: Collect **Sensor Data**
+
+
+de0gee -> User Phone: **Sensor Data** via bluetooth
+
+User Phone -> Auth: `POST /data`: **Sensor Data** + User IOT stuff API Key via HTTPS
+
+
+Note de0gee, Auth: Or, you can collect data via the phone.
+
+User Phone -> User Phone: Collect **Sensor Data**
+
+
+User Phone -> Auth: `POST /data`: **Sensor Data** + User API Key via HTTPS
+
+
+_: **Data storage** 
+
+Auth -> Auth: Validate user using API key
+
+Auth -->> User Phone: `Response`: _Return if invalid_
+
+Auth -> Data: `POST /data`: **Sensor Data** via LAN
+
+
+
+
+Data -> Data: Store **Sensor Data**
+
+Data -> Auth: `Response`: success/failure
+
+Auth -> User Phone: `Response`: success/failure 
+
+_: **Data analysis** (via Goroutine)
+
+Data -> AI: `POST /classify`: **Sensor Data** via LAN
+
+AI -> AI: Classify **Sensor Data** to get Location Data
+
+AI -> Data: `Response`: **Location Data**
+
+Data -> Data: Store **Location Data**
+
+Data -->> User IOT stuff: **Location Data** via authenticated MQTT
+
+Data -> Auth: `POST /location`: **Location data** via LAN
+
+
+Auth -->> User Browser: **Location Data** via secure websockets
