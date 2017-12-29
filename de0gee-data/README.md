@@ -331,3 +331,5 @@ Data -> Auth: `POST /location`: **Location data** via LAN
 
 
 Auth -->> User Browser: **Location Data** via secure websockets
+
+![Flow](https://user-images.githubusercontent.com/6550035/34440974-2002dd90-ec76-11e7-89fb-481e4fadea28.png)
