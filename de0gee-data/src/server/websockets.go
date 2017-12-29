@@ -25,10 +25,16 @@ func init() {
 }
 
 func wshandler(c *gin.Context) {
+	otp := c.DefaultQuery("otp", "")
 	family := c.DefaultQuery("family", "")
 	if family == "" {
 		return
 	}
+	if otp == "" {
+		return
+	}
+	// TODO: validate one-time-pass (otp)
+
 	var w http.ResponseWriter = c.Writer
 	var r *http.Request = c.Request
 

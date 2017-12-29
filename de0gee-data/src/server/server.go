@@ -1,26 +1,53 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/de0gee/de0gee-data/src/database"
+	"github.com/de0gee/de0gee-data/src/mqtt"
 	"github.com/gin-gonic/gin"
 )
 
 var Port = "8003"
 
+// Run will start the server listening on the specified port
 func Run() {
+	mqtt.Setup() // setup MQTT
+
 	r := gin.Default()
-	r.GET("/ping", ping)
-	r.HEAD("/", func(c *gin.Context) {
+	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
 	})
-	r.GET("/ws", wshandler)
+	r.GET("/ws", wshandler)             // handler for the web sockets (see websockets.go)
+	r.POST("/mqtt", handlerMQTT)        // handler for setting MQTT
 	r.POST("/data", handlerData)        // typical data handler
 	r.POST("/learn", handlerFIND)       // backwards-compatible with FIND
 	r.POST("/track", handlerFIND)       // backwards-compatible with FIND
 	r.GET("/location", handlerLocation) // get the latest location
 	r.Run(":" + Port)                   // listen and serve on 0.0.0.0:8080
+}
+
+func handlerMQTT(c *gin.Context) {
+	type Payload struct {
+		Family string `json:"family" binding:"required"`
+		OTP    string `json:"otp" binding:"required"`
+	}
+	success := false
+	var message string
+	var p Payload
+	if errBind := c.ShouldBindJSON(&p); errBind == nil {
+		// authenticate p.OTP
+		passphrase, err := mqtt.AddFamily(p.Family)
+		if err != nil {
+			message = err.Error()
+		} else {
+			message = fmt.Sprintf("Added '%s' for mqtt. Your passphrase is '%s'", p.Family, passphrase)
+		}
+	} else {
+		message = errBind.Error()
+	}
+	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
 }
 
 func handlerLocation(c *gin.Context) {
@@ -64,7 +91,7 @@ func handlerData(c *gin.Context) {
 	var d database.SensorData
 	err = c.BindJSON(&d)
 	if err == nil {
-		err2 := d.Save()
+		err2 := processFingerprint(d)
 		if err2 == nil {
 			message = "inserted data"
 		} else {
@@ -89,7 +116,7 @@ func handlerFIND(c *gin.Context) {
 			j.Location = ""
 		}
 		d := j.Convert()
-		err2 := d.Save()
+		err2 := processFingerprint(d)
 		if err2 == nil {
 			message = "inserted data"
 		} else {
@@ -103,8 +130,12 @@ func handlerFIND(c *gin.Context) {
 	}
 }
 
-func ping(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
+func processFingerprint(d database.SensorData) (err error) {
+	err = d.Save()
+	if err != nil {
+		return
+	}
+
+	// TODO: use MQTT to push the latest classification
+	return
 }

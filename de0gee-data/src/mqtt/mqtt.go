@@ -57,11 +57,6 @@ func Setup() (err error) {
 	return
 }
 
-type Pass struct {
-	User     string
-	Password string
-}
-
 func updateMosquittoConfig() (err error) {
 	logger := log.WithFields(log.Fields{
 		"name": "updateMosquittoConfig",
@@ -126,7 +121,7 @@ func updateMosquittoConfig() (err error) {
 		return
 	}
 
-	// give mosquitto HUP signal
+	// regenerate mosquitto
 	bPID, errPID := ioutil.ReadFile(path.Join(MosquittoConfigDirectory, "pid"))
 	if errPID != nil {
 		logger.Debug("could not get PID, running")
@@ -148,6 +143,7 @@ func updateMosquittoConfig() (err error) {
 	return
 }
 
+// add pushes a new family into the database
 func add(family string) (password string, err error) {
 	// open the database that stores the basic parameters
 	db, err := database.Open("mosquitto")
