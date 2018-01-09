@@ -3,7 +3,6 @@ package database
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -55,13 +54,13 @@ type AIData struct {
 }
 
 func (d *Database) Classify(s SensorData) (aidata AIData, err error) {
-	cachedName := fmt.Sprintf("%s-%s-%f", s.Family, s.Device, s.Timestamp)
-	responseCache, found := routeCache.Get(cachedName)
-	if found {
-		d.logger.Info("using cache")
-		aidata = responseCache.(AIData)
+	// check if its already been classified
+	aidata, err = d.GetPrediction(s.Timestamp)
+	if err == nil {
 		return
 	}
+
+	// inquire the AI
 	var target AIResponse
 	type ClassifyPayload struct {
 		Sensor       SensorData `json:"sensor_data"`
@@ -92,7 +91,12 @@ func (d *Database) Classify(s SensorData) (aidata AIData, err error) {
 		return
 	}
 	aidata = target.Data
-	routeCache.Set(cachedName, aidata, 10*time.Second)
+
+	// add prediction to the database
+	err = d.AddPrediction(s.Timestamp, aidata)
+	if err != nil {
+		return
+	}
 
 	return
 }
