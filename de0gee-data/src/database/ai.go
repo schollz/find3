@@ -40,26 +40,29 @@ func createHTTPClient() *http.Client {
 }
 
 type AIResponse struct {
-	Data struct {
-		LocationNames map[string]string `json:"location_names"`
-		Predictions   []struct {
-			Locations     []string  `json:"locations"`
-			Name          string    `json:"name"`
-			Probabilities []float64 `json:"probabilities"`
-		} `json:"predictions"`
-	} `json:"data"`
+	Data    AIData `json:"data"`
 	Message string `json:"message"`
 	Success bool   `json:"success"`
 }
 
-func (d *Database) Classify(s SensorData) (target AIResponse, err error) {
+type AIData struct {
+	LocationNames map[string]string `json:"location_names"`
+	Predictions   []struct {
+		Locations     []string  `json:"locations"`
+		Name          string    `json:"name"`
+		Probabilities []float64 `json:"probabilities"`
+	} `json:"predictions"`
+}
+
+func (d *Database) Classify(s SensorData) (aidata AIData, err error) {
 	cachedName := fmt.Sprintf("%s-%s-%f", s.Family, s.Device, s.Timestamp)
 	responseCache, found := routeCache.Get(cachedName)
 	if found {
 		d.logger.Info("using cache")
-		target = responseCache.(AIResponse)
+		aidata = responseCache.(AIData)
 		return
 	}
+	var target AIResponse
 	type ClassifyPayload struct {
 		Sensor       SensorData `json:"sensor_data"`
 		DataLocation string     `json:"data_location"`
@@ -88,7 +91,8 @@ func (d *Database) Classify(s SensorData) (target AIResponse, err error) {
 	if err != nil {
 		return
 	}
-	routeCache.Set(cachedName, target, 10*time.Second)
+	aidata = target.Data
+	routeCache.Set(cachedName, aidata, 10*time.Second)
 
 	return
 }
