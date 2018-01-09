@@ -1,10 +1,9 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -18,22 +17,31 @@ var wsupgrader = websocket.Upgrader{
 	},
 }
 
-var connections map[string]*websocket.Conn
+type Websockets struct {
+	connections map[string]*websocket.Conn
+	sync.Mutex
+}
+
+var (
+	ws Websockets
+)
 
 func init() {
-	connections = make(map[string]*websocket.Conn)
+	ws.Lock()
+	defer ws.Unlock()
+	ws.connections = make(map[string]*websocket.Conn)
 }
 
 func wshandler(c *gin.Context) {
-	otp := c.DefaultQuery("otp", "")
 	family := c.DefaultQuery("family", "")
 	if family == "" {
 		return
 	}
-	if otp == "" {
-		return
-	}
 	// TODO: validate one-time-pass (otp)
+	// otp := c.DefaultQuery("otp", "")
+	// if otp == "" {
+	// 	return
+	// }
 
 	var w http.ResponseWriter = c.Writer
 	var r *http.Request = c.Request
@@ -43,24 +51,31 @@ func wshandler(c *gin.Context) {
 		fmt.Println("Failed to set websocket upgrade: %+v", err)
 		return
 	}
-	connections[family] = conn
-	go tt()
-	for {
-		t, msg, err := conn.ReadMessage()
-		if err != nil {
-			break
-		}
-		fmt.Println(t, msg)
+	ws.Lock()
+	ws.connections[family] = conn
+	ws.Unlock()
+	// Listen to the websockets
+	// for {
+	// 	t, msg, err := conn.ReadMessage()
+	// 	if err != nil {
+	// 		break
+	// 	}
+	// 	fmt.Println(t, msg)
 
-		newMsg, err := json.Marshal("hi")
-		if err != nil {
-			panic(err)
-		}
-		conn.WriteMessage(t, newMsg)
-	}
+	// 	newMsg, err := json.Marshal("hi")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	conn.WriteMessage(t, newMsg)
+	// }
 }
 
-func tt() {
-	time.Sleep(3 * time.Second)
-	connections["zack"].WriteMessage(1, []byte("hi zack"))
+//  SendMessageOverWebsockets will send a message over the websockets
+func SendMessageOverWebsockets(family string, msg []byte) (err error) {
+	ws.Lock()
+	defer ws.Unlock()
+	if _, ok := ws.connections[family]; ok {
+		err = ws.connections[family].WriteMessage(1, msg)
+	}
+	return
 }

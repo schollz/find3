@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -22,8 +23,8 @@ func Run() {
 	r.GET("/ws", wshandler)             // handler for the web sockets (see websockets.go)
 	r.POST("/mqtt", handlerMQTT)        // handler for setting MQTT
 	r.POST("/data", handlerData)        // typical data handler
-	r.POST("/learn", handlerFIND)       // backwards-compatible with FIND
-	r.POST("/track", handlerFIND)       // backwards-compatible with FIND
+	r.POST("/learn", handlerFIND)       // backwards-compatible with FIND for learning
+	r.POST("/track", handlerFIND)       // backwards-compatible with FIND for tracking
 	r.GET("/location", handlerLocation) // get the latest location
 	r.Run(":" + Port)                   // listen and serve on 0.0.0.0:8080
 }
@@ -73,6 +74,13 @@ func handlerLocation(c *gin.Context) {
 				if err != nil {
 					message = err.Error()
 				} else {
+
+					bTarget, err := json.Marshal(target)
+					if err != nil {
+						fmt.Println(err)
+					}
+					SendMessageOverWebsockets(p.Family, bTarget)
+
 					c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
 					return
 				}

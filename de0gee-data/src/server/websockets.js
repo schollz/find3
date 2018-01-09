@@ -1,6 +1,6 @@
 $(document).ready(function () {
     // websockets
-    url = 'ws://localhost:8003/ws?family=none';
+    url = 'ws://localhost:8003/ws?family=testdb';
     c = new WebSocket(url);
 
     send = function (data) {
