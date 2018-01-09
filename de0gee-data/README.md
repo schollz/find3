@@ -158,37 +158,6 @@ Requires JSON of the sensor data, e.g.
 }
 ```
 
-<h3 class="section-head" id="get-learningdata"><a href="#get-learningdata"><code>GET /learningdata</code></a></h3>
-
-This route will take all of the records for a particular family that have a "location" in the **SensorData** and output them to a random file `random_file.mldata` in a format that can be used for doing the machine learning.
-
-**Parameters**:
-
-
-| Name 	| Location 	| Description  	| Required 	|
-|------	|----------	|--------------	|----------	|
-| family|query     	|determines family| yes 	|
-
-**Response**:
-
-The response will give a `true` success if it succeeds, and it will also tell the name of the file generated with the machine learning data.
-
-```json
-{
-    "success": true,
-    "message": "random_file.mldata"
-}
-```
-
-It will then generate a file `random_file.mldata` which should correspond to the following:
-
-```
-location,wifi-aa:bb:cc:dd:ee,wifi-ff:gg:hh:ii:jj:kk
-dog house,-10,-20
-dog house,-9,-18
-...
-```
-
 
 ### Testing
 
@@ -200,7 +169,7 @@ export FLASK_DEBUG=1 && export FLASK_APP=server.py && flask run --debugger --por
 
 # Load machine learning data
 cd $GOPATH/de0gee/de0gee-ai/testing
-http --json POST localhost:8002/learn family='testdb' csv_file='../testing/testdb.csv'
+./learn.sh
 
 # Test classification
 http localhost:8002/classify < testdb_single_rec.json
@@ -248,7 +217,8 @@ pkill -9 mosquitto
 mosquitto -c mosquitto_config/mosquitto.conf -d
 
 # this should allow you to subscribe (change password though)
-mosquitto_sub -h localhost -p 1883 -u labs -P de7r3 -t 'labs/#'
+http POST localhost:8003/mqtt family=testdb
+mosquitto_sub -h localhost -p 1883 -u testdb -P de7r3 -t 'testdb/#'
 
 # labs should see this
 mosquitto_pub -u zack -P 1234 -t 'labs/location' -m 'hello'
