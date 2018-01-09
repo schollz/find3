@@ -9,7 +9,7 @@ $(document).ready(function () {
     }
 
     c.onmessage = function (msg) {
-        console.log(msg)
+        console.log(msg.data)
     }
 
     c.onopen = function () {
