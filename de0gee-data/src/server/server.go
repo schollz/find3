@@ -37,13 +37,13 @@ func Run() {
 func handlerMQTT(c *gin.Context) {
 	type Payload struct {
 		Family string `json:"family" binding:"required"`
-		OTP    string `json:"otp" binding:"required"`
+		//	OTP    string `json:"otp" binding:"required"`
 	}
 	success := false
 	var message string
 	var p Payload
 	if errBind := c.ShouldBindJSON(&p); errBind == nil {
-		// authenticate p.OTP
+		// TODO: authenticate p.OTP
 		passphrase, err := mqtt.AddFamily(p.Family)
 		if err != nil {
 			message = err.Error()
@@ -85,6 +85,7 @@ func handlerLocation(c *gin.Context) {
 						fmt.Println(err)
 					}
 					SendMessageOverWebsockets(p.Family, bTarget)
+					mqtt.Publish(p.Family, p.Device, string(bTarget))
 
 					c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
 					return
