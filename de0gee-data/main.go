@@ -14,7 +14,6 @@ func main() {
 	flag.Parse()
 	if *debug {
 		database.Debug(true)
-		server.Debug(true)
 	}
 	database.AIPort = *aiPort
 	server.Port = *port

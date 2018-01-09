@@ -6,17 +6,22 @@ import (
 	"net/http"
 
 	"github.com/de0gee/de0gee-data/src/database"
+	"github.com/de0gee/de0gee-data/src/logging"
 	"github.com/de0gee/de0gee-data/src/mqtt"
 	"github.com/gin-gonic/gin"
 )
 
 var Port = "8003"
 
+var log = logging.Log
+
 // Run will start the server listening on the specified port
 func Run() {
 	mqtt.Setup() // setup MQTT
 
-	r := gin.Default()
+	r := gin.New()
+	// Standardize logs
+	r.Use(MiddleWareHandler(), gin.Recovery())
 	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
 	})
@@ -146,4 +151,15 @@ func processFingerprint(d database.SensorData) (err error) {
 
 	// TODO: use MQTT to push the latest classification
 	return
+}
+
+func MiddleWareHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Log request
+		log.Debug(fmt.Sprintf("%v %v %v", c.Request.RemoteAddr, c.Request.Method, c.Request.URL))
+		// Add base headers
+		AddCORS(c)
+		// Run next function
+		c.Next()
+	}
 }
