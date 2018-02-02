@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Port defines the public port
 var Port = "8003"
 
 var log = logging.Log
@@ -21,7 +22,7 @@ func Run() {
 
 	r := gin.New()
 	// Standardize logs
-	r.Use(MiddleWareHandler(), gin.Recovery())
+	r.Use(middleWareHandler(), gin.Recovery())
 	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
 	})
@@ -57,7 +58,6 @@ func handlerMQTT(c *gin.Context) {
 }
 
 func handlerLocation(c *gin.Context) {
-	AddCORS(c)
 	type Payload struct {
 		Family string `json:"family" binding:"required"`
 		Device string `json:"device" binding:"required"`
@@ -99,7 +99,6 @@ func handlerLocation(c *gin.Context) {
 }
 
 func handlerData(c *gin.Context) {
-	AddCORS(c)
 	var err error
 	var message string
 	var d database.SensorData
@@ -120,7 +119,6 @@ func handlerData(c *gin.Context) {
 }
 
 func handlerFIND(c *gin.Context) {
-	AddCORS(c)
 	var j database.FINDFingerprint
 	var err error
 	var message string
@@ -154,7 +152,7 @@ func processFingerprint(d database.SensorData) (err error) {
 	return
 }
 
-func MiddleWareHandler() gin.HandlerFunc {
+func middleWareHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Log request
 		log.Debug(fmt.Sprintf("%v %v %v", c.Request.RemoteAddr, c.Request.Method, c.Request.URL))
