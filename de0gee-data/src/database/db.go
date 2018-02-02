@@ -169,7 +169,7 @@ func (d *Database) getRows(rows *sql.Rows) (s []SensorData, err error) {
 		}
 		s0 := SensorData{
 			// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
-			Timestamp: float64((*arr[0].(*interface{})).(int64)),
+			Timestamp: int64((*arr[0].(*interface{})).(int64)),
 			Family:    string((*arr[1].(*interface{})).([]uint8)),
 			Device:    string((*arr[2].(*interface{})).([]uint8)),
 			Location:  string((*arr[3].(*interface{})).([]uint8)),

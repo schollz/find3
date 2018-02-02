@@ -24,11 +24,16 @@ type Database struct {
 
 // SensorData is the typical data structure for storing sensor data.
 type SensorData struct {
-	Timestamp float64                           `json:"t"` // Timestamp is the unique identifier
-	Family    string                            `json:"f"` // Family is a group of devices
-	Device    string                            `json:"d"` // Devices are unique within a family
-	Location  string                            `json:"l"` // Location is optional, used for classification
-	Sensors   map[string]map[string]interface{} `json:"s"` // Sensors contains a map of map of sensor data
+	// Timestamp is the unique identifier, the time in milliseconds
+	Timestamp int64 `json:"t"`
+	// Family is a group of devices
+	Family string `json:"f"`
+	// Device are unique within a family
+	Device string `json:"d"`
+	// Location is optional, used for classification
+	Location string `json:"l"`
+	// Sensors contains a map of map of sensor data
+	Sensors map[string]map[string]interface{} `json:"s"`
 }
 
 // Save will inserts the fingerprint into a database
@@ -68,7 +73,7 @@ type Router struct {
 // for backwards compatibility with FIND.
 func (f FINDFingerprint) Convert() (d SensorData) {
 	d = SensorData{
-		Timestamp: float64(f.Timestamp),
+		Timestamp: int64(f.Timestamp),
 		Family:    f.Group,
 		Device:    f.Username,
 		Location:  f.Location,

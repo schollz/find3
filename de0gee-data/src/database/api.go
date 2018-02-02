@@ -122,7 +122,7 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 }
 
 // AddPrediction will insert or update a prediction in the database
-func (d *Database) AddPrediction(timestamp float64, aidata AIData) (err error) {
+func (d *Database) AddPrediction(timestamp int64, aidata AIData) (err error) {
 	var b []byte
 	b, err = json.Marshal(aidata)
 	if err != nil {
@@ -151,7 +151,7 @@ func (d *Database) AddPrediction(timestamp float64, aidata AIData) (err error) {
 }
 
 // GetPrediction will retrieve AIData associated with that timestamp
-func (d *Database) GetPrediction(timestamp float64) (aidata AIData, err error) {
+func (d *Database) GetPrediction(timestamp int64) (aidata AIData, err error) {
 	stmt, err := d.db.Prepare("SELECT prediction FROM location_predictions WHERE timestamp = ?")
 	if err != nil {
 		err = errors.Wrap(err, "problem preparing SQL")

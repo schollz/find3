@@ -89,7 +89,7 @@ func BenchmarkAddSensor(b *testing.B) {
 	Debug(false)
 
 	for i := 0; i < b.N; i++ {
-		s.Timestamp = float64(i)
+		s.Timestamp = int64(i)
 		err := db.AddSensor(s)
 		if err != nil {
 			panic(err)
