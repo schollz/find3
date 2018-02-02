@@ -256,7 +256,7 @@ func (d *Database) AddSensor(s SensorData) (err error) {
 	}
 
 	// update the map key slimmer
-	d.Set("slimmer", ms.Slimmer())
+	d.Set("slimmer", ms.JSON())
 
 	d.logger.Info("inserted sensor data")
 	return

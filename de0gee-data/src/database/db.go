@@ -68,7 +68,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 			err = err2
 			return
 		}
-		err = d.Set("slimmer", ms.Slimmer())
+		err = d.Set("slimmer", ms.JSON())
 		d.logger.Info("initiate map key shrinker")
 	}
 
