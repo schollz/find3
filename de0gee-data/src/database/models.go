@@ -4,13 +4,15 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/de0gee/de0gee-data/src/logging"
 	_ "github.com/mattn/go-sqlite3"
-	log "github.com/sirupsen/logrus"
 	flock "github.com/theckman/go-flock"
 )
 
 // DataFolder is set to where you want each Sqlite3 database to be stored
 var DataFolder = "."
+
+// AIPort designates the port for the AI processing
 var AIPort = "8002"
 
 // Database is the main structure for holding the information
@@ -19,7 +21,7 @@ type Database struct {
 	name     string
 	db       *sql.DB
 	fileLock *flock.Flock
-	logger   *log.Entry
+	logger   *logging.SeelogWrapper
 }
 
 // SensorData is the typical data structure for storing sensor data.

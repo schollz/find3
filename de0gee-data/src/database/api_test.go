@@ -9,6 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	Debug = false
+}
 func TestAddSensor(t *testing.T) {
 	var s1 SensorData
 	var s2 SensorData
@@ -20,7 +23,6 @@ func TestAddSensor(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-
 	db, _ := Open("testing")
 	defer db.Close()
 	err = db.AddSensor(s1)
@@ -73,7 +75,7 @@ func BenchmarkDumpToCSV(b *testing.B) {
 	db.AddSensor(s)
 	ss, _ := db.GetAllForClassification()
 
-	Debug(false)
+	db.Debug(false)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		DumpSensorsToCSV(ss, "test.csv")
@@ -86,7 +88,7 @@ func BenchmarkAddSensor(b *testing.B) {
 	json.Unmarshal([]byte(j), &s)
 	db, _ := Open("testing")
 	defer db.Close()
-	Debug(false)
+	db.Debug(false)
 
 	for i := 0; i < b.N; i++ {
 		s.Timestamp = int64(i)
@@ -105,7 +107,7 @@ func BenchmarkGetSensor(b *testing.B) {
 	}
 	db, _ := Open("testing")
 	defer db.Close()
-	Debug(false)
+	db.Debug(false)
 	err = db.AddSensor(s)
 	b.ResetTimer()
 
@@ -119,7 +121,7 @@ func BenchmarkGetSensor(b *testing.B) {
 func BenchmarkKeystoreSet(b *testing.B) {
 	db, _ := Open("testing")
 	defer db.Close()
-	Debug(false)
+	db.Debug(false)
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -133,7 +135,7 @@ func BenchmarkKeystoreSet(b *testing.B) {
 func BenchmarkKeystoreOpenAndSet(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		db, _ := Open("testing")
-		Debug(false)
+		db.Debug(false)
 		err := db.Set("human:"+strconv.Itoa(i), Human{"Dante", 5.4})
 		if err != nil {
 			panic(err)
@@ -145,7 +147,7 @@ func BenchmarkKeystoreOpenAndSet(b *testing.B) {
 func BenchmarkKeystoreGet(b *testing.B) {
 	db, _ := Open("testing")
 	defer db.Close()
-	Debug(false)
+	db.Debug(false)
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -157,11 +159,11 @@ func BenchmarkKeystoreGet(b *testing.B) {
 func BenchmarkGetLatest(b *testing.B) {
 	var s1 SensorData
 	json.Unmarshal([]byte(j), &s1)
-	Debug(false)
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
 		db, _ := Open("testing")
+		db.Debug(false)
 		db.GetLatest(s1.Device)
 		db.Close()
 	}

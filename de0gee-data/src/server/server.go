@@ -18,8 +18,11 @@ var log = logging.Log
 
 // Run will start the server listening on the specified port
 func Run() {
-	mqtt.Setup() // setup MQTT
+	// setup MQTT
+	mqtt.Setup()
 
+	// setup gin server
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	// Standardize logs
 	r.Use(middleWareHandler(), gin.Recovery())

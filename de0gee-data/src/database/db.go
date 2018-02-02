@@ -8,12 +8,14 @@ import (
 	"path"
 	"time"
 
+	"github.com/de0gee/de0gee-data/src/logging"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 	"github.com/schollz/mapslimmer"
-	log "github.com/sirupsen/logrus"
 	flock "github.com/theckman/go-flock"
 )
+
+var Debug bool
 
 // Open will open the database for transactions by first aquiring a filelock.
 func Open(name string, readOnly ...bool) (d *Database, err error) {
@@ -21,9 +23,11 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 
 	// convert the name to base64 for file writing
 	d.name = path.Join(DataFolder, base64.URLEncoding.EncodeToString([]byte(name))+".sqlite3.db")
-	d.logger = log.WithFields(log.Fields{
-		"name": name + "(" + base64.URLEncoding.EncodeToString([]byte(name)) + ")",
-	})
+	d.logger, err = logging.New()
+	if err != nil {
+		return
+	}
+	d.Debug(Debug)
 
 	// if read-only, make sure the database exists
 	if _, err = os.Stat(d.name); err != nil && len(readOnly) > 0 && readOnly[0] {
@@ -40,7 +44,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	d.logger.Info("got filelock")
+	d.logger.Log.Debug("got filelock")
 
 	// check if it is a new database
 	newDatabase := false
@@ -53,7 +57,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 	if err != nil {
 		return
 	}
-	d.logger.Info("opened sqlite3 database")
+	d.logger.Log.Debug("opened sqlite3 database")
 
 	// create new database tables if needed
 	if newDatabase {
@@ -61,7 +65,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 		if err != nil {
 			return
 		}
-		d.logger.Info("made tables")
+		d.logger.Log.Debug("made tables")
 
 		ms, err2 := mapslimmer.Init()
 		if err2 != nil {
@@ -69,10 +73,18 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 			return
 		}
 		err = d.Set("slimmer", ms.JSON())
-		d.logger.Info("initiate map key shrinker")
+		d.logger.Log.Debug("initiate map key shrinker")
 	}
 
 	return
+}
+
+func (d *Database) Debug(debugMode bool) {
+	if debugMode {
+		d.logger.SetLevel("debug")
+	} else {
+		d.logger.SetLevel("info")
+	}
 }
 
 // Close will close the database connection and remove the filelock.
@@ -80,25 +92,25 @@ func (d *Database) Close() (err error) {
 	// close filelock
 	err = d.fileLock.Unlock()
 	if err != nil {
-		d.logger.Error(err)
+		d.logger.Log.Error(err)
 	} else {
 		os.Remove(d.name + ".lock")
-		d.logger.Info("removed filelock")
+		d.logger.Log.Debug("removed filelock")
 	}
 
 	// close database
 	err2 := d.db.Close()
 	if err2 != nil {
 		err = err2
-		d.logger.Error(err)
+		d.logger.Log.Error(err)
 	} else {
-		d.logger.Info("closed database")
+		d.logger.Log.Debug("closed database")
 	}
 	return
 }
 
 func (d *Database) GetAllFromQuery(query string) (s []SensorData, err error) {
-	d.logger.Debug(query)
+	d.logger.Log.Debug(query)
 	rows, err := d.db.Query(query)
 	if err != nil {
 		err = errors.Wrap(err, "GetAllFromQuery")

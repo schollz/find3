@@ -25,28 +25,28 @@ func (d *Database) MakeTables() (err error) {
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Error(err)
+		d.logger.Log.Error(err)
 		return
 	}
 	sqlStmt = `create index keystore_idx on keystore(key);`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Error(err)
+		d.logger.Log.Error(err)
 		return
 	}
 	sqlStmt = `create table sensors (timestamp integer not null primary key, family text, device text, location text, unique(timestamp));`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Error(err)
+		d.logger.Log.Error(err)
 		return
 	}
 	sqlStmt = `CREATE TABLE location_predictions (timestamp integer NOT NULL PRIMARY KEY, prediction TEXT, UNIQUE(timestamp));`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Error(err)
+		d.logger.Log.Error(err)
 		return
 	}
 	return
@@ -65,7 +65,7 @@ func (d *Database) Columns() (columns []string, err error) {
 		err = errors.Wrap(err, "Columns")
 		return
 	}
-	d.logger.Info("listed columns")
+	d.logger.Log.Debug("listed columns")
 	return
 }
 
@@ -86,7 +86,7 @@ func (d *Database) Get(key string, v interface{}) (err error) {
 	if err != nil {
 		return
 	}
-	// d.logger.Infof("got %s from '%s'", string(result), key)
+	// d.logger.Log.Debugf("got %s from '%s'", string(result), key)
 	return
 }
 
@@ -117,7 +117,7 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 		return errors.Wrap(err, "Set")
 	}
 
-	// d.logger.Infof("set '%s' to '%s'", key, string(b))
+	// d.logger.Log.Debugf("set '%s' to '%s'", key, string(b))
 	return
 }
 
@@ -169,7 +169,7 @@ func (d *Database) GetPrediction(timestamp int64) (aidata AIData, err error) {
 	if err != nil {
 		return
 	}
-	// d.logger.Infof("got %s from '%s'", string(result), key)
+	// d.logger.Log.Debugf("got %s from '%s'", string(result), key)
 	return
 }
 
@@ -220,7 +220,7 @@ func (d *Database) AddSensor(s SensorData) (err error) {
 			if err != nil {
 				return errors.Wrap(err, "AddSensor, adding column")
 			}
-			d.logger.Infof("adding column %s", sensor)
+			d.logger.Log.Debugf("adding column %s", sensor)
 			columnList = append(columnList, sensor)
 			stmt.Close()
 		}
@@ -238,8 +238,8 @@ func (d *Database) AddSensor(s SensorData) (err error) {
 	// insert the new data
 	sqlStatement := "insert or replace into sensors(" + strings.Join(columnList, ",") + ") values (" + strings.Join(argsQ, ",") + ")"
 	stmt, err := tx.Prepare(sqlStatement)
-	d.logger.Info("columns", columnList)
-	d.logger.Info("args", args)
+	d.logger.Log.Debug("columns", columnList)
+	d.logger.Log.Debug("args", args)
 	if err != nil {
 		return errors.Wrap(err, "AddSensor, prepare")
 	}
@@ -258,7 +258,7 @@ func (d *Database) AddSensor(s SensorData) (err error) {
 	// update the map key slimmer
 	d.Set("slimmer", ms.JSON())
 
-	d.logger.Info("inserted sensor data")
+	d.logger.Log.Debug("inserted sensor data")
 	return
 
 }
