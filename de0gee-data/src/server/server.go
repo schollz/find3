@@ -14,10 +14,25 @@ import (
 // Port defines the public port
 var Port = "8003"
 
-var log = logging.Log
+var Debug = true
+
+var logger *logging.SeelogWrapper
+
+func init() {
+	logger, _ = logging.New()
+	if Debug {
+		logger.SetLevel("debug")
+	}
+}
 
 // Run will start the server listening on the specified port
 func Run() {
+	// setup debugging
+	logger, _ = logging.New()
+	if Debug {
+		logger.SetLevel("debug")
+	}
+
 	// setup MQTT
 	mqtt.Setup()
 
@@ -29,6 +44,7 @@ func Run() {
 	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
 	})
+	r.GET("/ping", ping)
 	r.GET("/ws", wshandler)             // handler for the web sockets (see websockets.go)
 	r.POST("/mqtt", handlerMQTT)        // handler for setting MQTT
 	r.POST("/data", handlerData)        // typical data handler
@@ -36,6 +52,10 @@ func Run() {
 	r.POST("/track", handlerFIND)       // backwards-compatible with FIND for tracking
 	r.GET("/location", handlerLocation) // get the latest location
 	r.Run(":" + Port)                   // listen and serve on 0.0.0.0:8080
+}
+
+func ping(c *gin.Context) {
+	c.String(http.StatusOK, "pong")
 }
 
 func handlerMQTT(c *gin.Context) {
@@ -158,10 +178,18 @@ func processFingerprint(d database.SensorData) (err error) {
 func middleWareHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Log request
-		log.Debug(fmt.Sprintf("%v %v %v", c.Request.RemoteAddr, c.Request.Method, c.Request.URL))
+		logger.Log.Infof("%v %v %v", c.Request.RemoteAddr, c.Request.Method, c.Request.URL)
 		// Add base headers
-		AddCORS(c)
+		addCORS(c)
 		// Run next function
 		c.Next()
 	}
+}
+
+func addCORS(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	c.Writer.Header().Set("Access-Control-Max-Age", "86400")
+	c.Writer.Header().Set("Access-Control-Allow-Methods", "GET")
+	c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, X-Max")
+	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 }

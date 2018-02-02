@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/de0gee/de0gee-data/src/database"
+	"github.com/de0gee/de0gee-data/src/mqtt"
 	"github.com/de0gee/de0gee-data/src/server"
 )
 
@@ -12,9 +13,12 @@ func main() {
 	port := flag.String("port", "8003", "port for the data (this) server")
 	debug := flag.Bool("debug", false, "turn on debug mode")
 	flag.Parse()
-	if *debug {
-		database.Debug(true)
-	}
+
+	// setup debugging
+	database.Debug = *debug
+	server.Debug = *debug
+	mqtt.Debug = *debug
+
 	database.AIPort = *aiPort
 	server.Port = *port
 	server.Run()

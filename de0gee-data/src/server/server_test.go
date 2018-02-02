@@ -22,7 +22,7 @@ func TestPing(t *testing.T) {
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
-	assert.Equal(t, "{\"message\":\"pong\"}", resp.Body.String())
+	assert.Equal(t, "pong", resp.Body.String())
 }
 
 func TestLearn(t *testing.T) {

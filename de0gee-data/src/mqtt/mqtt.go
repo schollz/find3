@@ -9,15 +9,17 @@ import (
 	"strings"
 
 	"github.com/de0gee/de0gee-data/src/database"
+	"github.com/de0gee/de0gee-data/src/logging"
 	"github.com/de0gee/de0gee-data/src/utils"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
 	// Server is the address of the broker to use for MQTT
 	Server                   = "localhost:1883"
+	Debug                    = false
+	logger                   *logging.SeelogWrapper
 	Existing                 = false
 	AdminUser                = "zack"
 	AdminPassword            = "1234"
@@ -29,18 +31,22 @@ var (
 )
 
 func Setup() (err error) {
-	logger := log.WithFields(log.Fields{
-		"name": "Setup",
-	})
-	logger.Info("setting up")
+	logger, _ = logging.New()
+	if Debug {
+		logger.SetLevel("debug")
+	} else {
+		logger.SetLevel("info")
+	}
+
+	logger.Log.Debug("setting up")
 
 	server := "tcp://" + Server
 	opts := MQTT.NewClientOptions()
 	if Existing {
-		logger.Debug("using existing setup")
+		logger.Log.Debug("using existing setup")
 		opts.AddBroker(server).SetClientID(utils.RandomString(5)).SetCleanSession(true)
 	} else {
-		logger.Debug("using current setup")
+		logger.Log.Debug("using current setup")
 		err = updateMosquittoConfig()
 		if err != nil {
 			return
@@ -53,14 +59,11 @@ func Setup() (err error) {
 	if token := adminClient.Connect(); token.Wait() && token.Error() != nil {
 		err = token.Error()
 	}
-	logger.Debug("finished setup")
+	logger.Log.Debug("finished setup")
 	return
 }
 
 func updateMosquittoConfig() (err error) {
-	logger := log.WithFields(log.Fields{
-		"name": "updateMosquittoConfig",
-	})
 	// open the database that stores the basic parameters
 	db, err := database.Open("mosquitto")
 	if err != nil {
@@ -73,17 +76,17 @@ func updateMosquittoConfig() (err error) {
 	var acl, passwd, conf string
 	errGet = db.Get("acl", &acl)
 	if errGet != nil {
-		logger.Debug("making acl")
+		logger.Log.Debug("making acl")
 		acl = fmt.Sprintf("user %s\ntopic readwrite #\n\n", AdminUser)
 	}
 	errGet = db.Get("passwd", &passwd)
 	if errGet != nil {
-		logger.Debug("making passwd")
+		logger.Log.Debug("making passwd")
 		passwd = fmt.Sprintf("%s:%s\n", AdminUser, AdminPassword)
 	}
 	errGet = db.Get("conf", &conf)
 	if errGet != nil {
-		logger.Debug("making conf")
+		logger.Log.Debug("making conf")
 		conf = fmt.Sprintf("allow_anonymous false\n\nacl_file %s/acl\n\npassword_file %s/passwd\n\npid_file %s/pid", MosquittoConfigDirectory, MosquittoConfigDirectory, MosquittoConfigDirectory)
 	}
 
@@ -124,7 +127,7 @@ func updateMosquittoConfig() (err error) {
 	// regenerate mosquitto
 	bPID, errPID := ioutil.ReadFile(path.Join(MosquittoConfigDirectory, "pid"))
 	if errPID != nil {
-		logger.Debug("could not get PID, running")
+		logger.Log.Debug("could not get PID, running")
 		// try running by itself
 		cmd = "mosquitto"
 		args = []string{"-c", fmt.Sprintf("%s/mosquitto.conf", MosquittoConfigDirectory), "-d"}
@@ -139,7 +142,7 @@ func updateMosquittoConfig() (err error) {
 		err = errors.Wrap(err, "problem giving HUP")
 		return
 	}
-	logger.Debug("setup mosquitto and gave HUP signal")
+	logger.Log.Debug("setup mosquitto and gave HUP signal")
 	return
 }
 
