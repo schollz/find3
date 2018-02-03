@@ -103,7 +103,7 @@ func handleLocation(c *gin.Context) (err error) {
 	if err != nil {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
+	c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "classified": target, "sensors": s})
 	return
 }
 
@@ -158,6 +158,16 @@ func handlerFIND(c *gin.Context) {
 	}
 }
 
+func processFingerprint(p database.SensorData) (err error) {
+	err = p.Save()
+	if err != nil {
+		return
+	}
+
+	go sendOutData(p)
+	return
+}
+
 func sendOutData(p database.SensorData) (aidata database.AIData, err error) {
 	d, err := database.Open(p.Family, true)
 	if err != nil {
@@ -176,16 +186,6 @@ func sendOutData(p database.SensorData) (aidata database.AIData, err error) {
 	}
 	SendMessageOverWebsockets(p.Family, bTarget)
 	mqtt.Publish(p.Family, p.Device, string(bTarget))
-	return
-}
-
-func processFingerprint(p database.SensorData) (err error) {
-	err = p.Save()
-	if err != nil {
-		return
-	}
-
-	_, err = sendOutData(p)
 	return
 }
 
