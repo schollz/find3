@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/de0gee/de0gee-data/src/api"
 	"github.com/de0gee/de0gee-data/src/database"
@@ -29,12 +30,13 @@ func Run() {
 		c.String(http.StatusOK, "OK")
 	})
 	r.GET("/ping", ping)
-	r.GET("/ws", wshandler)             // handler for the web sockets (see websockets.go)
-	r.POST("/mqtt", handlerMQTT)        // handler for setting MQTT
-	r.POST("/data", handlerData)        // typical data handler
-	r.POST("/learn", handlerFIND)       // backwards-compatible with FIND for learning
-	r.POST("/track", handlerFIND)       // backwards-compatible with FIND for tracking
-	r.GET("/location", handlerLocation) // get the latest location
+	r.GET("/ws", wshandler)                  // handler for the web sockets (see websockets.go)
+	r.POST("/mqtt", handlerMQTT)             // handler for setting MQTT
+	r.POST("/data", handlerData)             // typical data handler
+	r.POST("/learn", handlerFIND)            // backwards-compatible with FIND for learning
+	r.POST("/track", handlerFIND)            // backwards-compatible with FIND for tracking
+	r.GET("/location", handlerLocation)      // get the latest location
+	r.POST("/calibrate", handlerCalibration) // get the latest location
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
 	r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
 }
@@ -66,6 +68,7 @@ func handlerMQTT(c *gin.Context) {
 }
 
 func handleLocation(c *gin.Context) (err error) {
+	t := time.Now()
 	type Payload struct {
 		Family string `json:"family" binding:"required"`
 		Device string `json:"device" binding:"required"`
@@ -88,8 +91,31 @@ func handleLocation(c *gin.Context) (err error) {
 	if err != nil {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "analysis": analysis, "sensors": s})
+	c.JSON(http.StatusOK, gin.H{"message": "got latest in " + time.Since(t).String(), "success": true, "analysis": analysis, "sensors": s})
 	return
+}
+
+func handleCalibration(c *gin.Context) (err error) {
+	type Payload struct {
+		Family string `json:"family" binding:"required"`
+	}
+	var p Payload
+	err = c.BindJSON(&p)
+	if err != nil {
+		return
+	}
+	err = api.Calibrate(p.Family)
+	return
+}
+
+func handlerCalibration(c *gin.Context) {
+	t := time.Now()
+	err := handleCalibration(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "calibrated data in " + time.Since(t).String(), "success": true})
+	}
 }
 
 func handlerLocation(c *gin.Context) {

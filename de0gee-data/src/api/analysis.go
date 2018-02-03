@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 	"time"
@@ -43,7 +44,7 @@ func createHTTPClient() *http.Client {
 	return client
 }
 
-type aiResponse struct {
+type AnalysisResponse struct {
 	Data    models.LocationAnalysis `json:"analysis"`
 	Message string                  `json:"message"`
 	Success bool                    `json:"success"`
@@ -57,16 +58,16 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	defer d.Close()
 
 	// check if its already been classified
-	aidata, err = d.GetPrediction(s.Timestamp)
-	if err == nil {
-		return
-	}
+	// aidata, err = d.GetPrediction(s.Timestamp)
+	// if err == nil {
+	// 	return
+	// }
 
 	// inquire the AI
-	var target aiResponse
+	var target AnalysisResponse
 	type ClassifyPayload struct {
-		Sensor       models.SensorData `json:"sensor_data"`
-		DataLocation string            `json:"data_location"`
+		Sensor     models.SensorData `json:"sensor_data"`
+		DataFolder string            `json:"data_folder"`
 	}
 	var p2 ClassifyPayload
 	p2.Sensor = s
@@ -74,7 +75,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	if err != nil {
 		return
 	}
-	p2.DataLocation = dir
+	p2.DataFolder = dir
 	url := "http://localhost:" + AIPort + "/classify"
 	bPayload, err := json.Marshal(p2)
 	if err != nil {
@@ -92,8 +93,16 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	if err != nil {
 		return
 	}
-	aidata = target.Data
+	if !target.Success {
+		err = errors.New("unable to analyze: " + target.Message)
+		return
+	}
+	if len(target.Data.Predictions) == 0 {
+		err = errors.New("problem analyzing: no predictions")
+		return
+	}
 
+	aidata = target.Data
 	// add prediction to the database
 	err = d.AddPrediction(s.Timestamp, aidata)
 	if err != nil {
