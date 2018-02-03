@@ -4,9 +4,7 @@ go:
   - tip
 
 before_install:
-  - apt-get install -y wget
-  - wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
-  - apt-key add mosquitto-repo.gpg.key
-  - apt-get update
-  - apt-get install -y mosquitto
-  
+  - go get github.com/de0gee/de0gee-data
+script:
+  - cd $GOPATH/src/github.com/de0gee/de0gee-data
+  - make
