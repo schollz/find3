@@ -51,7 +51,8 @@ func Run() {
 	r.POST("/learn", handlerFIND)       // backwards-compatible with FIND for learning
 	r.POST("/track", handlerFIND)       // backwards-compatible with FIND for tracking
 	r.GET("/location", handlerLocation) // get the latest location
-	r.Run(":" + Port)                   // listen and serve on 0.0.0.0:8080
+	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
+	r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
 }
 
 func ping(c *gin.Context) {
