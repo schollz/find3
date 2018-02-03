@@ -1,13 +1,14 @@
-package database
+package api
 
 import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/de0gee/de0gee-data/src/models"
 )
 
-// DumpSensorsToCSV
-func DumpSensorsToCSV(datas []SensorData, csvFile string) (err error) {
+func dumpSensorsToCSV(datas []models.SensorData, csvFile string) (err error) {
 	// open CSV file for writing
 	f, err := os.Create(csvFile)
 	if err != nil {

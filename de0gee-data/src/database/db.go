@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/de0gee/de0gee-data/src/logging"
+	"github.com/de0gee/de0gee-data/src/models"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 	"github.com/schollz/mapslimmer"
@@ -109,7 +110,7 @@ func (d *Database) Close() (err error) {
 	return
 }
 
-func (d *Database) GetAllFromQuery(query string) (s []SensorData, err error) {
+func (d *Database) GetAllFromQuery(query string) (s []models.SensorData, err error) {
 	d.logger.Log.Debug(query)
 	rows, err := d.db.Query(query)
 	if err != nil {
@@ -127,7 +128,7 @@ func (d *Database) GetAllFromQuery(query string) (s []SensorData, err error) {
 }
 
 // GetAllFromPreparedQuery
-func (d *Database) GetAllFromPreparedQuery(query string, args ...interface{}) (s []SensorData, err error) {
+func (d *Database) GetAllFromPreparedQuery(query string, args ...interface{}) (s []models.SensorData, err error) {
 	// prepare statement
 	stmt, err := d.db.Prepare(query)
 	if err != nil {
@@ -148,7 +149,7 @@ func (d *Database) GetAllFromPreparedQuery(query string, args ...interface{}) (s
 	return
 }
 
-func (d *Database) getRows(rows *sql.Rows) (s []SensorData, err error) {
+func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 	// first get the columns
 	columnList, err := d.Columns()
 	if err != nil {
@@ -166,7 +167,7 @@ func (d *Database) getRows(rows *sql.Rows) (s []SensorData, err error) {
 		return
 	}
 
-	s = make([]SensorData, 100000)
+	s = make([]models.SensorData, 100000)
 	sI := 0
 	// loop through rows
 	for rows.Next() {
@@ -179,7 +180,7 @@ func (d *Database) getRows(rows *sql.Rows) (s []SensorData, err error) {
 			err = errors.Wrap(err, "getRows")
 			return
 		}
-		s0 := SensorData{
+		s0 := models.SensorData{
 			// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
 			Timestamp: int64((*arr[0].(*interface{})).(int64)),
 			Family:    string((*arr[1].(*interface{})).([]uint8)),

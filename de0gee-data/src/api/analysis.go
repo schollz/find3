@@ -1,4 +1,4 @@
-package database
+package api
 
 import (
 	"bytes"
@@ -7,8 +7,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/de0gee/de0gee-data/src/database"
+	"github.com/de0gee/de0gee-data/src/models"
 	cache "github.com/robfig/go-cache"
 )
+
+// AIPort designates the port for the AI processing
+var AIPort = "8002"
 
 var (
 	httpClient *http.Client
@@ -38,22 +43,19 @@ func createHTTPClient() *http.Client {
 	return client
 }
 
-type AIResponse struct {
-	Data    AIData `json:"data"`
-	Message string `json:"message"`
-	Success bool   `json:"success"`
+type aiResponse struct {
+	Data    models.LocationAnalysis `json:"analysis"`
+	Message string                  `json:"message"`
+	Success bool                    `json:"success"`
 }
 
-type AIData struct {
-	LocationNames map[string]string `json:"location_names"`
-	Predictions   []struct {
-		Locations     []string  `json:"locations"`
-		Name          string    `json:"name"`
-		Probabilities []float64 `json:"probabilities"`
-	} `json:"predictions"`
-}
+func Classify(s models.SensorData) (aidata models.LocationAnalysis, err error) {
+	d, err := database.Open(s.Family)
+	if err != nil {
+		return
+	}
+	defer d.Close()
 
-func (d *Database) Classify(s SensorData) (aidata AIData, err error) {
 	// check if its already been classified
 	aidata, err = d.GetPrediction(s.Timestamp)
 	if err == nil {
@@ -61,10 +63,10 @@ func (d *Database) Classify(s SensorData) (aidata AIData, err error) {
 	}
 
 	// inquire the AI
-	var target AIResponse
+	var target aiResponse
 	type ClassifyPayload struct {
-		Sensor       SensorData `json:"sensor_data"`
-		DataLocation string     `json:"data_location"`
+		Sensor       models.SensorData `json:"sensor_data"`
+		DataLocation string            `json:"data_location"`
 	}
 	var p2 ClassifyPayload
 	p2.Sensor = s

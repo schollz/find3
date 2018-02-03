@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/de0gee/de0gee-data/src/models"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pkg/errors"
 	"github.com/schollz/mapslimmer"
@@ -122,7 +123,7 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 }
 
 // AddPrediction will insert or update a prediction in the database
-func (d *Database) AddPrediction(timestamp int64, aidata AIData) (err error) {
+func (d *Database) AddPrediction(timestamp int64, aidata models.LocationAnalysis) (err error) {
 	var b []byte
 	b, err = json.Marshal(aidata)
 	if err != nil {
@@ -150,8 +151,8 @@ func (d *Database) AddPrediction(timestamp int64, aidata AIData) (err error) {
 	return
 }
 
-// GetPrediction will retrieve AIData associated with that timestamp
-func (d *Database) GetPrediction(timestamp int64) (aidata AIData, err error) {
+// GetPrediction will retrieve models.LocationAnalysis associated with that timestamp
+func (d *Database) GetPrediction(timestamp int64) (aidata models.LocationAnalysis, err error) {
 	stmt, err := d.db.Prepare("SELECT prediction FROM location_predictions WHERE timestamp = ?")
 	if err != nil {
 		err = errors.Wrap(err, "problem preparing SQL")
@@ -175,7 +176,7 @@ func (d *Database) GetPrediction(timestamp int64) (aidata AIData, err error) {
 
 // AddSensor will insert a sensor data into the database
 // TODO: AddSensor should be special case of AddSensors
-func (d *Database) AddSensor(s SensorData) (err error) {
+func (d *Database) AddSensor(s models.SensorData) (err error) {
 	// determine the current table colums
 	oldColumns := make(map[string]struct{})
 	columnList, err := d.Columns()
@@ -264,7 +265,7 @@ func (d *Database) AddSensor(s SensorData) (err error) {
 }
 
 // GetSensorFromTime will return a sensor data for a given timestamp
-func (d *Database) GetSensorFromTime(timestamp interface{}) (s SensorData, err error) {
+func (d *Database) GetSensorFromTime(timestamp interface{}) (s models.SensorData, err error) {
 	sensors, err := d.GetAllFromPreparedQuery("SELECT * FROM sensors WHERE timestamp = ?", timestamp)
 	if err != nil {
 		err = errors.Wrap(err, "GetSensorFromTime")
@@ -275,13 +276,13 @@ func (d *Database) GetSensorFromTime(timestamp interface{}) (s SensorData, err e
 }
 
 // GetAllForClassification will return a sensor data for classifying
-func (d *Database) GetAllForClassification() (s []SensorData, err error) {
+func (d *Database) GetAllForClassification() (s []models.SensorData, err error) {
 	return d.GetAllFromQuery("SELECT * FROM sensors WHERE location !=''")
 }
 
 // GetLatest will return a sensor data for classifying
-func (d *Database) GetLatest(device interface{}) (s SensorData, err error) {
-	var sensors []SensorData
+func (d *Database) GetLatest(device interface{}) (s models.SensorData, err error) {
+	var sensors []models.SensorData
 	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM sensors WHERE device = ? ORDER BY timestamp DESC LIMIT 1", device)
 	if err != nil {
 		return

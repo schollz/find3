@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/de0gee/de0gee-data/src/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,8 +14,8 @@ func init() {
 	Debug = false
 }
 func TestAddSensor(t *testing.T) {
-	var s1 SensorData
-	var s2 SensorData
+	var s1 models.SensorData
+	var s2 models.SensorData
 	err := json.Unmarshal([]byte(j), &s1)
 	if err != nil {
 		panic(err)
@@ -47,7 +48,7 @@ func TestGetAllForClassification(t *testing.T) {
 	os.Remove("test.csv")
 
 	var err error
-	var s SensorData
+	var s models.SensorData
 	db, _ := Open("testing")
 	defer db.Close()
 	json.Unmarshal([]byte(j), &s)
@@ -61,30 +62,10 @@ func TestGetAllForClassification(t *testing.T) {
 	assert.Equal(t, 2, len(ss))
 	assert.Nil(t, err)
 
-	err = DumpSensorsToCSV(ss, "test.csv")
-	assert.Nil(t, err)
-}
-
-func BenchmarkDumpToCSV(b *testing.B) {
-	var s SensorData
-	db, _ := Open("testing")
-	defer db.Close()
-	json.Unmarshal([]byte(j), &s)
-	db.AddSensor(s)
-	json.Unmarshal([]byte(j2), &s)
-	db.AddSensor(s)
-	ss, _ := db.GetAllForClassification()
-
-	db.Debug(false)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		DumpSensorsToCSV(ss, "test.csv")
-	}
-
 }
 
 func BenchmarkAddSensor(b *testing.B) {
-	var s SensorData
+	var s models.SensorData
 	json.Unmarshal([]byte(j), &s)
 	db, _ := Open("testing")
 	defer db.Close()
@@ -100,7 +81,7 @@ func BenchmarkAddSensor(b *testing.B) {
 }
 
 func BenchmarkGetSensor(b *testing.B) {
-	var s SensorData
+	var s models.SensorData
 	err := json.Unmarshal([]byte(j), &s)
 	if err != nil {
 		panic(err)
@@ -157,7 +138,7 @@ func BenchmarkKeystoreGet(b *testing.B) {
 }
 
 func BenchmarkGetLatest(b *testing.B) {
-	var s1 SensorData
+	var s1 models.SensorData
 	json.Unmarshal([]byte(j), &s1)
 	b.ResetTimer()
 
