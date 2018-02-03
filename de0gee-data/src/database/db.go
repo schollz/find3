@@ -16,8 +16,6 @@ import (
 	flock "github.com/theckman/go-flock"
 )
 
-var Debug bool
-
 // Open will open the database for transactions by first aquiring a filelock.
 func Open(name string, readOnly ...bool) (d *Database, err error) {
 	d = new(Database)
@@ -28,7 +26,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 	if err != nil {
 		return
 	}
-	d.Debug(Debug)
+	d.Debug(DebugMode)
 
 	// if read-only, make sure the database exists
 	if _, err = os.Stat(d.name); err != nil && len(readOnly) > 0 && readOnly[0] {

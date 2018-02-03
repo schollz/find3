@@ -49,7 +49,7 @@ type aiResponse struct {
 	Success bool                    `json:"success"`
 }
 
-func Classify(s models.SensorData) (aidata models.LocationAnalysis, err error) {
+func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err error) {
 	d, err := database.Open(s.Family)
 	if err != nil {
 		return

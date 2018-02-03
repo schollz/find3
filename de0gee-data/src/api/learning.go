@@ -9,6 +9,7 @@ import (
 )
 
 func dumpSensorsToCSV(datas []models.SensorData, csvFile string) (err error) {
+	logger.Log.Infof("dumping %d fingerprints to %s", len(datas), csvFile)
 	// open CSV file for writing
 	f, err := os.Create(csvFile)
 	if err != nil {

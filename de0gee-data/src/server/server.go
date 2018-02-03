@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/de0gee/de0gee-data/src/api"
 	"github.com/de0gee/de0gee-data/src/database"
-	"github.com/de0gee/de0gee-data/src/logging"
+	"github.com/de0gee/de0gee-data/src/models"
 	"github.com/de0gee/de0gee-data/src/mqtt"
 	"github.com/gin-gonic/gin"
 )
@@ -14,25 +15,8 @@ import (
 // Port defines the public port
 var Port = "8003"
 
-var Debug = true
-
-var logger *logging.SeelogWrapper
-
-func init() {
-	logger, _ = logging.New()
-	if Debug {
-		logger.SetLevel("debug")
-	}
-}
-
 // Run will start the server listening on the specified port
 func Run() {
-	// setup debugging
-	logger, _ = logging.New()
-	if Debug {
-		logger.SetLevel("debug")
-	}
-
 	// setup MQTT
 	mqtt.Setup()
 
@@ -118,7 +102,7 @@ func handlerLocation(c *gin.Context) {
 func handlerData(c *gin.Context) {
 	var err error
 	var message string
-	var d database.SensorData
+	var d models.SensorData
 	err = c.BindJSON(&d)
 	if err == nil {
 		err2 := processFingerprint(d)
@@ -136,7 +120,7 @@ func handlerData(c *gin.Context) {
 }
 
 func handlerFIND(c *gin.Context) {
-	var j database.FINDFingerprint
+	var j models.FINDFingerprint
 	var err error
 	var message string
 	err = c.BindJSON(&j)
@@ -159,8 +143,8 @@ func handlerFIND(c *gin.Context) {
 	}
 }
 
-func processFingerprint(p database.SensorData) (err error) {
-	err = p.Save()
+func processFingerprint(p models.SensorData) (err error) {
+	err = api.SaveSensorData(p)
 	if err != nil {
 		return
 	}
@@ -169,21 +153,15 @@ func processFingerprint(p database.SensorData) (err error) {
 	return
 }
 
-func sendOutData(p database.SensorData) (analysis database.AIData, err error) {
-	d, err := database.Open(p.Family, true)
-	if err != nil {
-		return
-	}
-	defer d.Close()
-
-	analysis, err = d.Classify(p)
+func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err error) {
+	analysis, err = api.AnalyzeSensorData(p)
 	if err != nil {
 		return
 	}
 
 	type Payload struct {
-		Sensors  database.SensorData `json:"sensors"`
-		Analysis database.AIData     `json:"analysis"`
+		Sensors  models.SensorData       `json:"sensors"`
+		Analysis models.LocationAnalysis `json:"analysis"`
 	}
 	payload := Payload{
 		Sensors:  p,

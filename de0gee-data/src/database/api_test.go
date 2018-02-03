@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	Debug = false
+	Debug(false)
 }
 func TestAddSensor(t *testing.T) {
 	var s1 models.SensorData

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"github.com/de0gee/de0gee-data/src/api"
 	"github.com/de0gee/de0gee-data/src/database"
 	"github.com/de0gee/de0gee-data/src/mqtt"
 	"github.com/de0gee/de0gee-data/src/server"
@@ -15,11 +16,12 @@ func main() {
 	flag.Parse()
 
 	// setup debugging
-	database.Debug = *debug
-	server.Debug = *debug
+	database.Debug(*debug)
+	api.Debug(*debug)
+	server.Debug(*debug)
 	mqtt.Debug = *debug
 
-	database.AIPort = *aiPort
+	api.AIPort = *aiPort
 	server.Port = *port
 	server.Run()
 }
