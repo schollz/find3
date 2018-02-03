@@ -21,6 +21,7 @@ var (
 	Debug                    = false
 	logger                   *logging.SeelogWrapper
 	Existing                 = false
+	IsSetup                  = false
 	AdminUser                = "zack"
 	AdminPassword            = "1234"
 	MosquittoConfigDirectory = "mosquitto_config"
@@ -60,6 +61,7 @@ func Setup() (err error) {
 		err = token.Error()
 	}
 	logger.Log.Debug("finished setup")
+	IsSetup = true
 	return
 }
 
@@ -176,6 +178,9 @@ func AddFamily(family string) (password string, err error) {
 }
 
 func Publish(family, device, message string) (err error) {
+	if !IsSetup {
+		return errors.New("mqtt not setup")
+	}
 	pubTopic := strings.Join([]string{family, "/location/", device}, "")
 
 	if token := adminClient.Publish(pubTopic, 1, false, message); token.Wait() && token.Error() != nil {

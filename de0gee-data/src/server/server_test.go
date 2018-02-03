@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -35,6 +36,6 @@ func TestLearn(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/learn", bytes.NewBufferString(jsonTest))
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
-
+	fmt.Println(resp.Body.String())
 	assert.Equal(t, true, strings.Contains(resp.Body.String(), "\"success\":true"))
 }

@@ -2,3 +2,6 @@ language: go
 
 go:
   - tip
+
+install:
+  - apt-get install mosquitto

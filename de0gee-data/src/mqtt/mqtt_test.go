@@ -8,7 +8,7 @@ import (
 )
 
 func TestMQTT(t *testing.T) {
-	Debug(true)
+	Debug = true
 	err := Setup()
 	assert.Nil(t, err)
 	err = Publish("labs", "fido", "hello, world")
