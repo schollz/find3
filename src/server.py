@@ -1,34 +1,36 @@
 import os
 import time
 from base64 import urlsafe_b64encode, urlsafe_b64decode
-import logging 
+import logging
+
+
 # create logger with 'spam_application'
 logger = logging.getLogger('server')
 logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
 fh = logging.FileHandler('server.log')
 fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-# create formatter and add it to the handlers
 formatter = logging.Formatter(
     '%(asctime)s - [%(name)s/%(funcName)s] - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
-# add the handlers to the logger
 logger.addHandler(fh)
 logger.addHandler(ch)
 
+
 from flask import Flask, request, jsonify
 app = Flask(__name__)
+
 
 from learn import AI
 
 cache = {}
 
+
 def to_base64(family):
     return urlsafe_b64encode(family.encode('utf-8')).decode('utf-8')
+
 
 @app.route('/classify', methods=['POST'])
 def classify():
@@ -40,7 +42,8 @@ def classify():
     data_folder = '.'
     if 'data_folder' in payload:
         data_folder = payload['data_folder']
-    fname = os.path.join(data_folder, to_base64(payload['sensor_data']['f']) + ".de0gee.ai")
+    fname = os.path.join(data_folder, to_base64(
+        payload['sensor_data']['f']) + ".de0gee.ai")
     ai = AI()
     try:
         ai.load(fname)
@@ -49,7 +52,8 @@ def classify():
     classified = ai.classify(payload['sensor_data'])
 
     logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
-    return jsonify({"success": True, "message": "data classified",'data':classified})
+    return jsonify({"success": True, "message": "data classified", 'data': classified})
+
 
 @app.route('/learn', methods=['POST'])
 def learn():
@@ -61,7 +65,8 @@ def learn():
     data_folder = '.'
     if 'data_folder' in payload:
         data_folder = payload['data_folder']
-    fname = os.path.join(data_folder, to_base64(payload['family']) + ".de0gee.ai")
+    fname = os.path.join(data_folder, to_base64(
+        payload['family']) + ".de0gee.ai")
 
     ai = AI()
     try:
@@ -70,4 +75,3 @@ def learn():
         return jsonify({"success": False, "message": "could not find '{p[csv_file]}'".format(p=payload)})
     ai.save(fname)
     return jsonify({"success": True, "message": "saved as '{p}'".format(p=fname)})
-

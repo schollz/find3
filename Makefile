@@ -1,4 +1,4 @@
-.PHONY: install test
+.PHONY: install test clean benchmark production serve
 
 serve: clean
 	export FLASK_APP=server.py && \
