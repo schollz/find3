@@ -99,11 +99,11 @@ func handleLocation(c *gin.Context) (err error) {
 	if err != nil {
 		return
 	}
-	target, err := sendOutData(s)
+	analysis, err := sendOutData(s)
 	if err != nil {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "classified": target, "sensors": s})
+	c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "analysis": analysis, "sensors": s})
 	return
 }
 
@@ -168,19 +168,27 @@ func processFingerprint(p database.SensorData) (err error) {
 	return
 }
 
-func sendOutData(p database.SensorData) (aidata database.AIData, err error) {
+func sendOutData(p database.SensorData) (analysis database.AIData, err error) {
 	d, err := database.Open(p.Family, true)
 	if err != nil {
 		return
 	}
 	defer d.Close()
 
-	aidata, err = d.Classify(p)
+	analysis, err = d.Classify(p)
 	if err != nil {
 		return
 	}
 
-	bTarget, err := json.Marshal(aidata)
+	type Payload struct {
+		Sensors  database.SensorData `json:"sensors"`
+		Analysis database.AIData     `json:"analysis"`
+	}
+	payload := Payload{
+		Sensors:  p,
+		Analysis: analysis,
+	}
+	bTarget, err := json.Marshal(payload)
 	if err != nil {
 		return
 	}
