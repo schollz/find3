@@ -45,14 +45,15 @@ def classify():
     fname = os.path.join(data_folder, to_base64(
         payload['sensor_data']['f']) + ".de0gee.ai")
     ai = AI()
+    logger.debug("loading {}".format(fname))
     try:
         ai.load(fname)
     except FileNotFoundError:
         return jsonify({"success": False, "message": "could not find '{p}'".format(p=fname)})
     classified = ai.classify(payload['sensor_data'])
-
+    logger.debug(classified)
     logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
-    return jsonify({"success": True, "message": "data classified", 'data': classified})
+    return jsonify({"success": True, "message": "data analyzed", 'analysis': classified})
 
 
 @app.route('/learn', methods=['POST'])
@@ -65,13 +66,13 @@ def learn():
     data_folder = '.'
     if 'data_folder' in payload:
         data_folder = payload['data_folder']
-    fname = os.path.join(data_folder, to_base64(
-        payload['family']) + ".de0gee.ai")
 
     ai = AI()
     try:
-        ai.learn(payload['csv_file'])
+        ai.learn(os.path.join(data_folder, payload['csv_file']))
     except FileNotFoundError:
         return jsonify({"success": False, "message": "could not find '{p[csv_file]}'".format(p=payload)})
-    ai.save(fname)
-    return jsonify({"success": True, "message": "saved as '{p}'".format(p=fname)})
+
+    ai.save(os.path.join(data_folder, to_base64(
+        payload['family']) + ".de0gee.ai"))
+    return jsonify({"success": True, "message": "calibrated data"})
