@@ -1,7 +1,16 @@
 .PHONY: install test
 
 serve: clean
-	export FLASK_APP=server.py && export FLASK_DEBUG=1 && cd src && flask run --debugger --port 8002
+	export FLASK_APP=server.py && \
+	export FLASK_DEBUG=1 && \
+	cd src && \
+	flask run --debugger --port 8002
+
+production: clean
+	export FLASK_APP=server.py && \
+	export FLASK_DEBUG=0 && \
+	cd src && \
+	flask run --port 8002
 
 test: clean
 	cd src && py.test --benchmark-skip --cov=learn test_learn.py
