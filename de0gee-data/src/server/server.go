@@ -80,45 +80,38 @@ func handlerMQTT(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
 }
 
-func handlerLocation(c *gin.Context) {
+func handleLocation(c *gin.Context) (err error) {
 	type Payload struct {
 		Family string `json:"family" binding:"required"`
 		Device string `json:"device" binding:"required"`
 	}
-	success := false
-	var message string
 	var p Payload
-	if errBind := c.ShouldBindJSON(&p); errBind == nil {
-		d, err := database.Open(p.Family, true)
-		if err != nil {
-			message = err.Error()
-		} else {
-			defer d.Close()
-			s, err := d.GetLatest(p.Device)
-			if err != nil {
-				message = err.Error()
-			} else {
-				target, err := d.Classify(s)
-				if err != nil {
-					message = err.Error()
-				} else {
-
-					bTarget, err := json.Marshal(target)
-					if err != nil {
-						fmt.Println(err)
-					}
-					SendMessageOverWebsockets(p.Family, bTarget)
-					mqtt.Publish(p.Family, p.Device, string(bTarget))
-
-					c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
-					return
-				}
-			}
-		}
-	} else {
-		message = errBind.Error()
+	err = c.ShouldBindJSON(&p)
+	if err != nil {
+		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
+	d, err := database.Open(p.Family, true)
+	if err != nil {
+		return
+	}
+	s, err := d.GetLatest(p.Device)
+	d.Close()
+	if err != nil {
+		return
+	}
+	target, err := sendOutData(s)
+	if err != nil {
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "got latest", "success": true, "response": target})
+	return
+}
+
+func handlerLocation(c *gin.Context) {
+	err := handleLocation(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	}
 }
 
 func handlerData(c *gin.Context) {
@@ -165,13 +158,34 @@ func handlerFIND(c *gin.Context) {
 	}
 }
 
-func processFingerprint(d database.SensorData) (err error) {
-	err = d.Save()
+func sendOutData(p database.SensorData) (aidata database.AIData, err error) {
+	d, err := database.Open(p.Family, true)
+	if err != nil {
+		return
+	}
+	defer d.Close()
+
+	aidata, err = d.Classify(p)
 	if err != nil {
 		return
 	}
 
-	// TODO: use MQTT to push the latest classification
+	bTarget, err := json.Marshal(aidata)
+	if err != nil {
+		return
+	}
+	SendMessageOverWebsockets(p.Family, bTarget)
+	mqtt.Publish(p.Family, p.Device, string(bTarget))
+	return
+}
+
+func processFingerprint(p database.SensorData) (err error) {
+	err = p.Save()
+	if err != nil {
+		return
+	}
+
+	_, err = sendOutData(p)
 	return
 }
 
