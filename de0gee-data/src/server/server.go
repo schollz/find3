@@ -36,7 +36,7 @@ func Run() {
 	r.POST("/learn", handlerFIND)            // backwards-compatible with FIND for learning
 	r.POST("/track", handlerFIND)            // backwards-compatible with FIND for tracking
 	r.GET("/location", handlerLocation)      // get the latest location
-	r.POST("/calibrate", handlerCalibration) // get the latest location
+	r.POST("/calibrate", handlerCalibration) // calibrate to get the latest location
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
 	r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
 }
