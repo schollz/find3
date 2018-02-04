@@ -15,7 +15,7 @@ import (
 	"github.com/montanaflynn/stats"
 )
 
-func main() {
+func main2() {
 	t := time.Now()
 	s, _ := runCommand(60*time.Second, "l2ping", "-c", "300", "-f", "0C:3E:9F:28:22:6A")
 	milliseconds := make([]float64, 300)
@@ -42,13 +42,12 @@ func main() {
 	fmt.Println(time.Since(t) / 300)
 }
 
-func main2() {
-	log.Println("Testing")
+func main() {
 	payload := models.SensorData{}
 	payload.Timestamp = time.Now().UnixNano() / int64(time.Millisecond)
 	payload.Device = "dell"
 	payload.Family = "test"
-	payload.Location = "kitchen"
+	payload.Location = ""
 	payload.Sensors = make(map[string]map[string]interface{})
 	wifiData := iw()
 	fmt.Println(wifiData)
@@ -61,6 +60,9 @@ func main2() {
 	// if len(bluetoothData) > 0 {
 	// 	payload.Sensors["bluetooth"] = bluetoothData
 	// }
+	if len(payload.Sensors) == 0 {
+		log.Fatal(errors.New("collected no data"))
+	}
 	bPayload, err := json.MarshalIndent(payload, "", " ")
 	fmt.Println(string(bPayload), err)
 	err = postData(payload)
