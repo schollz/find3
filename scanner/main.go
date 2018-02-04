@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/de0gee/de0gee-data/src/database"
+	"github.com/de0gee/de0gee-data/src/models"
 )
 
 func main() {
-	payload := database.SensorData{}
+	payload := models.SensorData{}
 	payload.Timestamp = time.Now().UnixNano() / int64(time.Millisecond)
 	payload.Device = "dell"
 	payload.Family = "test"

@@ -10,16 +10,19 @@ import (
 	"time"
 )
 
+// sudo apt-get install bluez
+// use btmgmt find instead
+
 func scanBluetooth() map[string]interface{} {
-	log.Println("reseting bluetooth")
-	log.Println(runCommand(1*time.Second, "service", "bluetooth", "restart"))
-	time.Sleep(2 * time.Second)
+	// log.Println("reseting bluetooth")
+	// log.Println(runCommand(1*time.Second, "service", "bluetooth", "restart"))
+	// time.Sleep(2 * time.Second)
 	c := make(chan string)
 	log.Println("starting btmon")
 	go btmon(c)
 	time.Sleep(1500 * time.Millisecond)
 	log.Println("starting lescan")
-	go hcitoolLescan()
+	go btmgmtFind()
 	s, _ := <-c, <-c
 	ioutil.WriteFile("out", []byte(s), 0644)
 	name := ""
@@ -56,9 +59,15 @@ func hcitoolLescan() {
 	log.Println("finished lescan")
 }
 
+func btmgmtFind() {
+	runCommand(6000*time.Millisecond, "btmgmt", "find")
+	log.Println("finished btmgmt find")
+}
+
 func btmon(out chan string) {
 	s, t := runCommand(8000*time.Millisecond, "btmon")
 	log.Println("finished btmon")
+	log.Println(s, t)
 	out <- s
 	out <- t
 }
