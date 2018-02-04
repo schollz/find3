@@ -17,8 +17,9 @@ import (
 var Port = "8003"
 
 // Run will start the server listening on the specified port
-func Run() {
+func Run() (err error) {
 	// setup MQTT
+	logger.Log.Debug("setup mqtt")
 	mqtt.Setup()
 
 	// setup gin server
@@ -38,7 +39,8 @@ func Run() {
 	r.GET("/location", handlerLocation)      // get the latest location
 	r.POST("/calibrate", handlerCalibration) // calibrate to get the latest location
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
-	r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
+	err = r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
+	return
 }
 
 func ping(c *gin.Context) {

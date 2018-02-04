@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 
+	"fmt"
+
 	"github.com/de0gee/de0gee-data/src/api"
 	"github.com/de0gee/de0gee-data/src/database"
 	"github.com/de0gee/de0gee-data/src/mqtt"
@@ -23,5 +25,9 @@ func main() {
 
 	api.AIPort = *aiPort
 	server.Port = *port
-	server.Run()
+	err := server.Run()
+	if err != nil {
+		fmt.Print("error: ")
+		fmt.Println(err)
+	}
 }
