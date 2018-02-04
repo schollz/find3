@@ -9,6 +9,7 @@ import gzip
 import operator
 import time
 import logging
+import math
 
 # create logger with 'spam_application'
 logger = logging.getLogger('learn')
@@ -70,9 +71,15 @@ class AI(object):
                 predict[i] = pred
             predict_payload = {'name': name,
                                'locations': [], 'probabilities': []}
+            badValue = False
             for tup in sorted(predict.items(), key=operator.itemgetter(1), reverse=True):
                 predict_payload['locations'].append(str(tup[0]))
-                predict_payload['probabilities'].append(tup[1])
+                predict_payload['probabilities'].append(float(tup[1]))
+                if math.isnan(tup[1]):
+                    badValue = True 
+                    break
+            if badValue:
+                continue
             payload['predictions'].append(predict_payload)
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
         return payload
