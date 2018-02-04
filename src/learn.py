@@ -60,8 +60,11 @@ class AI(object):
 
         payload = {'location_names': self.naming['to'], 'predictions': []}
         for name in self.algorithms:
-            prediction = self.algorithms[
-                name].predict_proba(csv_data.reshape(1, -1))
+            try:
+                prediction = self.algorithms[
+                    name].predict_proba(csv_data.reshape(1, -1))
+            except:
+                continue
             predict = {}
             for i, pred in enumerate(prediction[0]):
                 predict[i] = pred
