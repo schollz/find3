@@ -191,6 +191,9 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 			if i < 4 {
 				continue
 			}
+			if *arr[i].(*interface{}) == nil {
+				continue
+			}
 			unslimmed := string((*arr[i].(*interface{})).([]uint8))
 			s0.Sensors[colName], err = ms.Loads(unslimmed)
 			if err != nil {
