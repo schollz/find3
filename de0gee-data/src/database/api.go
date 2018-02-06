@@ -236,8 +236,21 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 		args = append(args, ms.Dumps(s.Sensors[sensor]))
 	}
 
-	// insert the new data
-	sqlStatement := "insert or replace into sensors(" + strings.Join(columnList, ",") + ") values (" + strings.Join(argsQ, ",") + ")"
+	// only use the columns that are in the payload
+	newColumnList := make([]string, len(columnList))
+	j := 0
+	for i, c := range columnList {
+		if i >= 4 {
+			if _, ok := s.Sensors[c]; !ok {
+				continue
+			}
+		}
+		newColumnList[j] = c
+		j++
+	}
+	newColumnList = newColumnList[:j]
+
+	sqlStatement := "insert or replace into sensors(" + strings.Join(newColumnList, ",") + ") values (" + strings.Join(argsQ, ",") + ")"
 	stmt, err := tx.Prepare(sqlStatement)
 	d.logger.Log.Debug("columns", columnList)
 	d.logger.Log.Debug("args", args)
