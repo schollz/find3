@@ -17,7 +17,7 @@ var (
 
 const (
 	MaxIdleConnections int = 20
-	RequestTimeout     int = 5
+	RequestTimeout     int = 60
 )
 
 // init HTTPClient
@@ -47,7 +47,10 @@ func postData(payload models.SensorData, route string) (err error) {
 	if len(payload.Sensors) == 0 {
 		return errors.New("no sensor data")
 	}
-	url := "http://localhost:8003" + route
+	if string(server[len(server)-1]) == "/" {
+		server = server[:len(server)-1]
+	}
+	url := server + route
 	bPayload, err := json.Marshal(payload)
 	if err != nil {
 		return

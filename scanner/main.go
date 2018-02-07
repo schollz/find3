@@ -17,6 +17,7 @@ import (
 var (
 	wifiInterface string
 
+	server                   string
 	family, device, location string
 
 	doBluetooth bool
@@ -27,6 +28,7 @@ var (
 func main() {
 	defer log.Flush()
 	flag.StringVar(&wifiInterface, "i", "wlan0", "wifi interface for scanning")
+	flag.StringVar(&server, "server", "http://localhost:8003", "server to use")
 	flag.StringVar(&family, "family", "", "family name")
 	flag.StringVar(&device, "device", "", "device name")
 	flag.StringVar(&location, "location", "", "location (optional)")
@@ -60,12 +62,19 @@ func main() {
 }
 
 func reverseCapture() {
+	PromiscuousMode(true)
+	time.Sleep(3 * time.Second)
 	sensors, err := ReverseScan(3 * time.Second)
+	PromiscuousMode(false)
+	time.Sleep(3 * time.Second)
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	postData(sensors, "/reverse")
+	err = postData(sensors, "/reverse")
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func basicCapture() {

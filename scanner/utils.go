@@ -33,12 +33,12 @@ func RunCommand(tDuration time.Duration, commands string) (string, string) {
 		if err := cmd.Process.Kill(); err != nil {
 			log.Error("failed to kill: ", err)
 		}
-		log.Debug("process killed as timeout reached")
+		log.Debugf("%s killed as timeout reached", commands)
 	case err := <-done:
 		if err != nil {
 			log.Errorf("%s: %s", err.Error(), commands)
 		} else {
-			log.Debug("process done gracefully without error")
+			log.Debugf("%s done gracefully without error", commands)
 		}
 	}
 	return strings.TrimSpace(outb.String()), strings.TrimSpace(errb.String())

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path"
@@ -25,9 +26,9 @@ func ReverseScan(scanTime time.Duration) (sensors models.SensorData, err error) 
 
 	command := fmt.Sprintf("tshark -I -i %s -a duration:%d -w %s", wifiInterface, int(scanTime.Seconds()), tempFile)
 	log.Debug(command)
-	RunCommand(scanTime+1*time.Second, command)
+	RunCommand(scanTime+scanTime+scanTime+scanTime+scanTime, command)
 
-	out, _ := RunCommand(scanTime+1*time.Second, "/usr/bin/tshark -r "+tempFile+" -T fields -e frame.time_epoch -e wlan.sa -e wlan.bssid -e radiotap.dbm_antsignal")
+	out, _ := RunCommand(scanTime+scanTime+scanTime+scanTime, "/usr/bin/tshark -r "+tempFile+" -T fields -e frame.time_epoch -e wlan.sa -e wlan.bssid -e radiotap.dbm_antsignal")
 	lines := strings.Split(out, "\n")
 	packets := make([]Packet, len(lines))
 	i := 0
@@ -95,15 +96,28 @@ func ReverseScan(scanTime time.Duration) (sensors models.SensorData, err error) 
 	for _, packet := range packets {
 		sensors.Sensors["wifi"][packet.Mac] = packet.RSSI
 	}
+
+	bSensors, _ := json.MarshalIndent(sensors, "", " ")
+	log.Debug(string(bSensors))
 	return
 }
 
-func SetupPromiscuousWifi(wifiInterface string) {
-	sequence := []string{"ifconfig XX down", "iwconfig XX channel 6", "iwconfig XX mode monitor", "ifconfig XX up"}
+func PromiscuousMode(on bool) {
+	sequence := []string{"ifconfig XX down", "iwconfig XX mode YY", "ifconfig XX up"}
 	for _, command := range sequence {
-		s, t := RunCommand(10*time.Second, strings.Replace(command, "XX", wifiInterface, 1))
-		time.Sleep(1 * time.Second)
-		log.Debugf("out: %s", s)
-		log.Debugf("err: %s", t)
+		commandString := strings.Replace(command, "XX", wifiInterface, 1)
+		if on {
+			commandString = strings.Replace(commandString, "YY", "monitor", 1)
+		} else {
+			commandString = strings.Replace(commandString, "YY", "managed", 1)
+		}
+		s, t := RunCommand(30*time.Second, commandString)
+		time.Sleep(3 * time.Second)
+		if len(s) > 0 {
+			log.Debugf("out: %s", s)
+		}
+		if len(t) > 0 {
+			log.Debugf("err: %s", t)
+		}
 	}
 }
