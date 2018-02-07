@@ -14,7 +14,7 @@ import (
 
 func scanBluetooth() map[string]interface{} {
 	// log.Println("reseting bluetooth")
-	// log.Println(runCommand(1*time.Second, "service", "bluetooth", "restart"))
+	// log.Println(RunCommand(1*time.Second, "service", "bluetooth", "restart"))
 	// time.Sleep(2 * time.Second)
 	c := make(chan string)
 	log.Debug("starting btmon")
@@ -54,17 +54,17 @@ func scanBluetooth() map[string]interface{} {
 }
 
 func hcitoolLescan() {
-	runCommand(4000*time.Millisecond, "hcitool", "lescan")
+	RunCommand(4000*time.Millisecond, "hcitool lescan")
 	log.Debug("finished lescan")
 }
 
 func btmgmtFind() {
-	runCommand(6000*time.Millisecond, "btmgmt", "find")
+	RunCommand(6000*time.Millisecond, "btmgmt find")
 	log.Debug("finished btmgmt find")
 }
 
 func btmon(out chan string) {
-	s, t := runCommand(8000*time.Millisecond, "btmon")
+	s, t := RunCommand(8000*time.Millisecond, "btmon")
 	log.Debug("finished btmon")
 	out <- s
 	out <- t
