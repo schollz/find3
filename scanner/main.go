@@ -37,11 +37,12 @@ func main() {
 
 	if family == "" {
 		fmt.Println("family cannot be blank")
+		flag.Usage()
 		return
 	} else if device == "" {
 		fmt.Println("device cannot be blank")
-	} else if wifiInterface == "" {
-		fmt.Println("interface cannot be blank")
+		flag.Usage()
+		return
 	}
 
 	if doDebug {
@@ -75,7 +76,6 @@ func basicCapture() {
 	payload.Location = location
 	payload.Sensors = make(map[string]map[string]interface{})
 	wifiData := iw()
-	fmt.Println(wifiData)
 	// wifiData = iwlist()
 	// fmt.Println(wifiData)
 	if len(wifiData) > 0 {
@@ -92,7 +92,7 @@ func basicCapture() {
 		return
 	}
 	bPayload, err := json.MarshalIndent(payload, "", " ")
-	fmt.Println(string(bPayload), err)
+	log.Debug(string(bPayload))
 	err = postData(payload, "/data")
 	if err != nil {
 		log.Error(err)
