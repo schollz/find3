@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/de0gee/de0gee-data/src/api"
@@ -12,6 +13,23 @@ import (
 	"github.com/de0gee/de0gee-data/src/mqtt"
 	"github.com/gin-gonic/gin"
 )
+
+type ReverseRollingData struct {
+	datas     map[string][]models.SensorData
+	times     map[string]time.Time
+	locations map[string]string
+	sync.RWMutex
+}
+
+var rollingData ReverseRollingData
+
+func init() {
+	rollingData.Lock()
+	rollingData.datas = make(map[string][]models.SensorData)
+	rollingData.times = make(map[string]time.Time)
+	rollingData.locations = make(map[string]string)
+	rollingData.Unlock()
+}
 
 // Port defines the public port
 var Port = "8003"
@@ -34,11 +52,16 @@ func Run() (err error) {
 	r.GET("/ws", wshandler)                  // handler for the web sockets (see websockets.go)
 	r.POST("/mqtt", handlerMQTT)             // handler for setting MQTT
 	r.POST("/data", handlerData)             // typical data handler
+	r.POST("/reverse", handlerReverse)       // typical data handler
 	r.POST("/learn", handlerFIND)            // backwards-compatible with FIND for learning
 	r.POST("/track", handlerFIND)            // backwards-compatible with FIND for tracking
 	r.GET("/location", handlerLocation)      // get the latest location
 	r.POST("/calibrate", handlerCalibration) // calibrate to get the latest location
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
+
+	// start goroutines
+	go checkRolingData()
+
 	err = r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
 	return
 }
@@ -144,6 +167,78 @@ func handlerData(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
+	}
+}
+
+func handlerReverse(c *gin.Context) {
+	var err error
+	var d models.SensorData
+	err = c.BindJSON(&d)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+		return
+	}
+	err = d.Validate()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+		return
+	}
+	rollingData.Lock()
+	if _, ok := rollingData.times[d.Family]; !ok {
+		rollingData.times[d.Family] = time.Now()
+		rollingData.datas[d.Family] = []models.SensorData{}
+	}
+	rollingData.datas[d.Family] = append(rollingData.datas[d.Family], d)
+	rollingData.Unlock()
+	c.JSON(http.StatusOK, gin.H{"message": "valid fingerprint held", "success": true})
+}
+
+func checkRolingData() {
+	for {
+		time.Sleep(1 * time.Second)
+		rollingData.Lock()
+		keysToDelete := []string{}
+		sensorMap := make(map[string]models.SensorData)
+		for family := range rollingData.times {
+			if time.Since(rollingData.times[family]) > 6*time.Second {
+				logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.times[family]))
+				// merge data
+				for _, data := range rollingData.datas[family] {
+					for mac := range data.Sensors["wifi"] {
+						rssi := data.Sensors["wifi"][mac]
+						if _, ok := sensorMap[mac]; !ok {
+							location := ""
+							if loc, ok2 := rollingData.locations[family]; ok2 {
+								location = loc
+							}
+							sensorMap[mac] = models.SensorData{
+								Family:    family,
+								Device:    mac,
+								Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
+								Sensors:   make(map[string]map[string]interface{}),
+								Location:  location,
+							}
+							sensorMap[mac].Sensors["wifi"] = make(map[string]interface{})
+						}
+						sensorMap[mac].Sensors["wifi"][data.Device] = rssi
+					}
+				}
+				keysToDelete = append(keysToDelete, family)
+			}
+		}
+		for _, key := range keysToDelete {
+			delete(rollingData.times, key)
+			delete(rollingData.datas, key)
+		}
+		rollingData.Unlock()
+		for sensor := range sensorMap {
+			logger.Log.Debugf("saving reverse sensor data for %s", sensor)
+			err := api.SaveSensorData(sensorMap[sensor])
+			if err != nil {
+				logger.Log.Warnf("problem saving reverse fingerptint: %s", err.Error())
+			}
+
+		}
 	}
 }
 
