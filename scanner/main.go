@@ -46,8 +46,8 @@ func main() {
 	payload := models.SensorData{}
 	payload.Timestamp = time.Now().UnixNano() / int64(time.Millisecond)
 	payload.Device = "dell"
-	payload.Family = "test"
-	payload.Location = ""
+	payload.Family = "test3"
+	payload.Location = "kitchen table"
 	payload.Sensors = make(map[string]map[string]interface{})
 	wifiData := iw()
 	fmt.Println(wifiData)
@@ -56,10 +56,10 @@ func main() {
 	if len(wifiData) > 0 {
 		payload.Sensors["wifi"] = wifiData
 	}
-	// bluetoothData := scanBluetooth()
-	// if len(bluetoothData) > 0 {
-	// 	payload.Sensors["bluetooth"] = bluetoothData
-	// }
+	bluetoothData := scanBluetooth()
+	if len(bluetoothData) > 0 {
+		payload.Sensors["bluetooth"] = bluetoothData
+	}
 	if len(payload.Sensors) == 0 {
 		log.Fatal(errors.New("collected no data"))
 	}

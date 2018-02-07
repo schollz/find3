@@ -21,7 +21,7 @@ func scanBluetooth() map[string]interface{} {
 	log.Println("starting btmon")
 	go btmon(c)
 	time.Sleep(1500 * time.Millisecond)
-	log.Println("starting lescan")
+	log.Println("starting btmgmt")
 	go btmgmtFind()
 	s, _ := <-c, <-c
 	ioutil.WriteFile("out", []byte(s), 0644)
@@ -67,7 +67,6 @@ func btmgmtFind() {
 func btmon(out chan string) {
 	s, t := runCommand(8000*time.Millisecond, "btmon")
 	log.Println("finished btmon")
-	log.Println(s, t)
 	out <- s
 	out <- t
 }
