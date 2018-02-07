@@ -7,7 +7,7 @@ import (
 )
 
 func iwlist() map[string]interface{} {
-	s, _ := RunCommand(10*time.Second, "/sbin/iwlist wlan0 scan")
+	s, _ := RunCommand(10*time.Second, "/sbin/iwlist "+wifiInterface+" scan")
 	name := ""
 	signal := 0
 	datas := make(map[string]interface{})

@@ -44,6 +44,9 @@ type Response struct {
 
 func postData(payload models.SensorData, route string) (err error) {
 	log.Debug("posting data")
+	if len(payload.Sensors) == 0 {
+		return errors.New("no sensor data")
+	}
 	url := "http://localhost:8003" + route
 	bPayload, err := json.Marshal(payload)
 	if err != nil {

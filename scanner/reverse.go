@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"path"
 	"strconv"
@@ -17,7 +18,7 @@ type Packet struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func ReverseScan(wifiInterface string, family string, device string, scanTime time.Duration) (sensors models.SensorData, err error) {
+func ReverseScan(scanTime time.Duration) (sensors models.SensorData, err error) {
 	tempFileName := "tshark-" + RandomString(10)
 	tempFile := path.Join("/tmp", tempFileName)
 	log.Debugf("saving tshark data to %s", tempFile)
@@ -81,7 +82,10 @@ func ReverseScan(wifiInterface string, family string, device string, scanTime ti
 	}
 	packets = newPackets[:i]
 	log.Infof("collected %d packets", len(packets))
-
+	if len(packets) == 0 {
+		err = errors.New("no packets found")
+		return
+	}
 	sensors = models.SensorData{}
 	sensors.Family = family
 	sensors.Device = device

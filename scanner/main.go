@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"strconv"
 	"strings"
@@ -13,16 +14,52 @@ import (
 	"github.com/montanaflynn/stats"
 )
 
+var (
+	wifiInterface string
+
+	family, device, location string
+
+	doBluetooth bool
+	doReverse   bool
+	doDebug     bool
+)
+
 func main() {
 	defer log.Flush()
-	setLogLevel("debug")
-	log.Info("starting")
-	// basicCapture()
-	reverseCapture()
+	flag.StringVar(&wifiInterface, "i", "wlan0", "wifi interface for scanning")
+	flag.StringVar(&family, "family", "", "family name")
+	flag.StringVar(&device, "device", "", "device name")
+	flag.StringVar(&location, "location", "", "location (optional)")
+	flag.BoolVar(&doBluetooth, "bluetooth", false, "scan bluetooth")
+	flag.BoolVar(&doReverse, "reverse", false, "reverse fingerprinting")
+	flag.BoolVar(&doDebug, "debug", false, "enable debugging")
+	flag.Parse()
+
+	if family == "" {
+		fmt.Println("family cannot be blank")
+		return
+	} else if device == "" {
+		fmt.Println("device cannot be blank")
+	} else if wifiInterface == "" {
+		fmt.Println("interface cannot be blank")
+	}
+
+	if doDebug {
+		setLogLevel("debug")
+	} else {
+		setLogLevel("info")
+	}
+	if !doReverse {
+		log.Infof("scanning with %s", wifiInterface)
+		basicCapture()
+	} else {
+		log.Infof("reverse scanning with %s", wifiInterface)
+		reverseCapture()
+	}
 }
 
 func reverseCapture() {
-	sensors, err := ReverseScan("wlx98ded0151d38", "lf-testing2", "dell", 3*time.Second)
+	sensors, err := ReverseScan(3 * time.Second)
 	if err != nil {
 		log.Error(err)
 		return
@@ -33,9 +70,9 @@ func reverseCapture() {
 func basicCapture() {
 	payload := models.SensorData{}
 	payload.Timestamp = time.Now().UnixNano() / int64(time.Millisecond)
-	payload.Device = "dell"
-	payload.Family = "test3"
-	payload.Location = "kitchen table"
+	payload.Family = family
+	payload.Device = device
+	payload.Location = location
 	payload.Sensors = make(map[string]map[string]interface{})
 	wifiData := iw()
 	fmt.Println(wifiData)
@@ -44,12 +81,15 @@ func basicCapture() {
 	if len(wifiData) > 0 {
 		payload.Sensors["wifi"] = wifiData
 	}
-	bluetoothData := scanBluetooth()
-	if len(bluetoothData) > 0 {
-		payload.Sensors["bluetooth"] = bluetoothData
+	if doBluetooth {
+		bluetoothData := scanBluetooth()
+		if len(bluetoothData) > 0 {
+			payload.Sensors["bluetooth"] = bluetoothData
+		}
 	}
 	if len(payload.Sensors) == 0 {
 		log.Error(errors.New("collected no data"))
+		return
 	}
 	bPayload, err := json.MarshalIndent(payload, "", " ")
 	fmt.Println(string(bPayload), err)

@@ -36,7 +36,7 @@ func RunCommand(tDuration time.Duration, commands string) (string, string) {
 		log.Debug("process killed as timeout reached")
 	case err := <-done:
 		if err != nil {
-			log.Warn("process done with error = %v", err)
+			log.Errorf("%s: %s", err.Error(), commands)
 		} else {
 			log.Debug("process done gracefully without error")
 		}
