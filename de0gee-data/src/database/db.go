@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"path"
@@ -11,6 +10,7 @@ import (
 	"github.com/de0gee/de0gee-data/src/logging"
 	"github.com/de0gee/de0gee-data/src/models"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/mr-tron/base58/base58"
 	"github.com/pkg/errors"
 	"github.com/schollz/mapslimmer"
 	flock "github.com/theckman/go-flock"
@@ -21,7 +21,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 	d = new(Database)
 
 	// convert the name to base64 for file writing
-	d.name = path.Join(DataFolder, base64.URLEncoding.EncodeToString([]byte(name))+".sqlite3.db")
+	d.name = path.Join(DataFolder, base58.FastBase58Encoding([]byte(name))+".sqlite3.db")
 	d.logger, err = logging.New()
 	if err != nil {
 		return

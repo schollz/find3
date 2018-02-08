@@ -227,7 +227,7 @@ func checkRolingData() {
 		keysToDelete := []string{}
 		sensorMap := make(map[string]models.SensorData)
 		for family := range rollingData.Times {
-			if time.Since(rollingData.Times[family]) > 6*time.Second {
+			if time.Since(rollingData.Times[family]) > 30*time.Second {
 				logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Times[family]))
 				// merge data
 				for _, data := range rollingData.Datas[family] {
