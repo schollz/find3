@@ -121,7 +121,6 @@ class AI(object):
             y[i] = rows[i][0]
             x[i, :] = numpy.array(rows[i][1:])
 
-        split_for_learning = int(0.70 * len(y))
         names = [
             "Nearest Neighbors",
             "Linear SVM",
@@ -146,14 +145,16 @@ class AI(object):
             GaussianNB(),
             QuadraticDiscriminantAnalysis()]
         self.algorithms = {}
+        # split_for_learning = int(0.70 * len(y))
         for name, clf in zip(names, classifiers):
             self.algorithms[name] = clf
             try:
-                self.algorithms[name].fit(x[:split_for_learning],
-                                          y[:split_for_learning])
-                score = self.algorithms[name].score(x[split_for_learning:], y[
-                    split_for_learning:])
-                print(name, score)
+                self.algorithms[name].fit(x,y)
+                # self.algorithms[name].fit(x[:split_for_learning],
+                #                           y[:split_for_learning])
+                # score = self.algorithms[name].score(x[split_for_learning:], y[
+                #     split_for_learning:])
+                # print(name, score)
             except:
                 pass
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
