@@ -78,6 +78,40 @@ func Calibrate(family string) (err error) {
 		logger.Log.Debugf("failure: %s", target.Message)
 		err = errors.New("failed in AI server: " + target.Message)
 	}
+	if err != nil {
+		return
+	}
+
+	err = findBestAlgorithm(datas)
+	return
+}
+
+func findBestAlgorithm(datas []models.SensorData) (err error) {
+	var aidata models.LocationAnalysis
+	predictionScores := make(map[string]int)
+	for _, data := range datas {
+		aidata, err = AnalyzeSensorData(data)
+		if err != nil {
+			return
+		}
+		correctLocationNum := ""
+		for locationNum := range aidata.LocationNames {
+			if aidata.LocationNames[locationNum] == data.Location {
+				correctLocationNum = locationNum
+				break
+			}
+		}
+		logger.Log.Debugf("correct location = %s (%s)", data.Location, correctLocationNum)
+		for _, prediction := range aidata.Predictions {
+			if _, ok := predictionScores[prediction.Name]; !ok {
+				predictionScores[prediction.Name] = 0
+			}
+			if prediction.Locations[0] == correctLocationNum {
+				predictionScores[prediction.Name]++
+			}
+		}
+	}
+	logger.Log.Debugf("prediction scores: %+v", predictionScores)
 	return
 }
 

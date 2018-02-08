@@ -15,6 +15,7 @@ func init() {
 }
 
 func Debug(debugMode bool) {
+	DebugMode = debugMode
 	if debugMode {
 		logger.SetLevel("debug")
 	} else {

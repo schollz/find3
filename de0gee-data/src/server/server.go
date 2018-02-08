@@ -2,9 +2,9 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/de0gee/de0gee-data/src/api"
@@ -14,35 +14,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ReverseRollingData struct {
-	Datas            map[string][]models.SensorData
-	Times            map[string]time.Time
-	Learning         map[string]bool
-	LearningDevice   map[string]string
-	LearningLocation map[string]string
-	sync.RWMutex
-}
-
-var rollingData ReverseRollingData
-
-func init() {
-	rollingData.Lock()
-	rollingData.Datas = make(map[string][]models.SensorData)
-	rollingData.Times = make(map[string]time.Time)
-	rollingData.Learning = make(map[string]bool)
-	rollingData.LearningDevice = make(map[string]string)
-	rollingData.LearningLocation = make(map[string]string)
-	rollingData.Unlock()
-}
-
 // Port defines the public port
 var Port = "8003"
 
 // Run will start the server listening on the specified port
 func Run() (err error) {
 	// setup MQTT
+	err = mqtt.Setup()
+	if err != nil {
+		logger.Log.Warn(err)
+	}
 	logger.Log.Debug("setup mqtt")
-	mqtt.Setup()
+	logger.Log.Debug("current families: ", database.GetFamilies())
 
 	// setup gin server
 	gin.SetMode(gin.ReleaseMode)
@@ -64,6 +47,7 @@ func Run() (err error) {
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
 
 	// start goroutines
+	logger.Log.Debugf("starting background processes")
 	go checkRolingData()
 
 	err = r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
@@ -175,100 +159,135 @@ func handlerData(c *gin.Context) {
 }
 
 func handlerReverse(c *gin.Context) {
-	var err error
+	err := handleReverse(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	}
+}
+func handleReverse(c *gin.Context) (err error) {
+	// bind sensor data
 	var d models.SensorData
 	err = c.BindJSON(&d)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 		return
 	}
+
+	// validate sensor data
 	err = d.Validate()
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 		return
 	}
-	rollingData.Lock()
-	defer rollingData.Unlock()
+
+	// open database
+	db, err := database.Open(d.Family)
+	if err != nil {
+		return
+	}
+	defer db.Close()
+
+	var rollingData models.ReverseRollingData
+	err = db.Get("ReverseRollingData", &rollingData)
+	if err != nil {
+		rollingData = models.ReverseRollingData{
+			Family: d.Family,
+		}
+	}
 	var message string
 	success := true
 	if d.Timestamp == 1 {
 		if d.Location != "" {
 			message = fmt.Sprintf("set location to '%s' for %s for learning with device '%s'", d.Location, d.Family, d.Device)
-			rollingData.Learning[d.Family] = true
-			rollingData.LearningLocation[d.Family] = d.Location
-			rollingData.LearningDevice[d.Family] = d.Device
+			rollingData.IsLearning = true
+			rollingData.Device = d.Device
+			rollingData.Location = d.Location
 		} else {
 			message = fmt.Sprintf("switched to tracking for %s", d.Family)
-			delete(rollingData.Learning, d.Family)
-			delete(rollingData.LearningLocation, d.Family)
-			delete(rollingData.LearningDevice, d.Family)
+			rollingData.IsLearning = false
 		}
 	} else {
-		if _, ok := rollingData.Times[d.Family]; !ok {
-			rollingData.Times[d.Family] = time.Now()
-			rollingData.Datas[d.Family] = []models.SensorData{}
+		if !rollingData.HasData {
+			rollingData.Timestamp = time.Now()
+			rollingData.Datas = []models.SensorData{}
+			rollingData.HasData = true
 		}
 		if len(d.Sensors["wifi"]) == 0 {
-			success = false
-			message = "no fingerprints"
+			return errors.New("no fingerprints")
 		} else {
-			rollingData.Datas[d.Family] = append(rollingData.Datas[d.Family], d)
+			rollingData.Datas = append(rollingData.Datas, d)
 			message = fmt.Sprintf("inserted %d fingerprints for %s", len(d.Sensors["wifi"]), d.Family)
 		}
 	}
+	err = db.Set("ReverseRollingData", rollingData)
+	if err != nil {
+		return
+	}
 	logger.Log.Debugf("success: %v, %s", success, message)
 	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
+	return
+}
+
+func parseRollingData(family string) (err error) {
+	db, err := database.Open(family)
+	if err != nil {
+		return
+	}
+	defer db.Close()
+
+	var rollingData models.ReverseRollingData
+	err = db.Get("ReverseRollingData", &rollingData)
+	if err != nil {
+		return
+	}
+
+	sensorMap := make(map[string]models.SensorData)
+	if rollingData.HasData && time.Since(rollingData.Timestamp) > 30*time.Second {
+		logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Timestamp))
+		// merge data
+		for _, data := range rollingData.Datas {
+			for mac := range data.Sensors["wifi"] {
+				rssi := data.Sensors["wifi"][mac]
+				if _, ok := sensorMap[mac]; !ok {
+					location := ""
+					if rollingData.IsLearning {
+						if mac != rollingData.Device {
+							continue
+						}
+						location = rollingData.Location
+					}
+					sensorMap[mac] = models.SensorData{
+						Family:    family,
+						Device:    mac,
+						Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
+						Sensors:   make(map[string]map[string]interface{}),
+						Location:  location,
+					}
+					time.Sleep(10 * time.Millisecond)
+					sensorMap[mac].Sensors["wifi"] = make(map[string]interface{})
+				}
+				sensorMap[mac].Sensors["wifi"][data.Device] = rssi
+			}
+		}
+		rollingData.HasData = false
+	}
+	db.Set("ReverseRollingData", rollingData)
+	db.Close()
+	for sensor := range sensorMap {
+		logger.Log.Debugf("saving reverse sensor data for %s", sensor)
+		logger.Log.Debugf("%+v", sensorMap[sensor])
+		err := api.SaveSensorData(sensorMap[sensor])
+		if err != nil {
+			logger.Log.Warnf("problem saving: %s", err.Error())
+		}
+	}
+
+	return
 }
 
 func checkRolingData() {
 	for {
 		time.Sleep(1 * time.Second)
-		rollingData.Lock()
-		keysToDelete := []string{}
-		sensorMap := make(map[string]models.SensorData)
-		for family := range rollingData.Times {
-			if time.Since(rollingData.Times[family]) > 30*time.Second {
-				logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Times[family]))
-				// merge data
-				for _, data := range rollingData.Datas[family] {
-					for mac := range data.Sensors["wifi"] {
-						rssi := data.Sensors["wifi"][mac]
-						if _, ok := sensorMap[mac]; !ok {
-							location := ""
-							if _, islearning := rollingData.Learning[family]; islearning {
-								if mac != rollingData.LearningDevice[family] {
-									continue
-								}
-								location = rollingData.LearningLocation[family]
-							}
-							sensorMap[mac] = models.SensorData{
-								Family:    family,
-								Device:    mac,
-								Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
-								Sensors:   make(map[string]map[string]interface{}),
-								Location:  location,
-							}
-							time.Sleep(10 * time.Millisecond)
-							sensorMap[mac].Sensors["wifi"] = make(map[string]interface{})
-						}
-						sensorMap[mac].Sensors["wifi"][data.Device] = rssi
-					}
-				}
-				keysToDelete = append(keysToDelete, family)
-			}
-		}
-		for _, key := range keysToDelete {
-			delete(rollingData.Times, key)
-			delete(rollingData.Datas, key)
-		}
-		rollingData.Unlock()
-		for sensor := range sensorMap {
-			logger.Log.Debugf("saving reverse sensor data for %s", sensor)
-			logger.Log.Debugf("%+v", sensorMap[sensor])
-			err := api.SaveSensorData(sensorMap[sensor])
-			if err != nil {
-				logger.Log.Warnf("problem saving: %s", err.Error())
-			}
+		for _, family := range database.GetFamilies() {
+			parseRollingData(family)
 		}
 	}
 }

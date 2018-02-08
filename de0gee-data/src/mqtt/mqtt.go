@@ -67,11 +67,13 @@ func Setup() (err error) {
 
 func updateMosquittoConfig() (err error) {
 	// open the database that stores the basic parameters
-	db, err := database.Open("mosquitto")
+	logger.Log.Debug("opening mosquitto database")
+	db, err := database.Open("mosquitto", false, true)
 	if err != nil {
 		return
 	}
 	defer db.Close()
+	logger.Log.Debug("starting database")
 
 	// check if the defaults exist, otherwise create them
 	var errGet error
@@ -151,7 +153,7 @@ func updateMosquittoConfig() (err error) {
 // add pushes a new family into the database
 func add(family string) (password string, err error) {
 	// open the database that stores the basic parameters
-	db, err := database.Open("mosquitto")
+	db, err := database.Open("mosquitto", false, true)
 	if err != nil {
 		return
 	}

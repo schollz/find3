@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/de0gee/de0gee-data/src/logging"
@@ -18,10 +19,16 @@ import (
 
 // Open will open the database for transactions by first aquiring a filelock.
 func Open(name string, readOnly ...bool) (d *Database, err error) {
+	name = strings.TrimSpace(name)
 	d = new(Database)
 
 	// convert the name to base64 for file writing
-	d.name = path.Join(DataFolder, base58.FastBase58Encoding([]byte(name))+".sqlite3.db")
+	// override the name
+	if len(readOnly) > 1 && readOnly[1] {
+		d.name = path.Join(DataFolder, name)
+	} else {
+		d.name = path.Join(DataFolder, base58.FastBase58Encoding([]byte(name))+".sqlite3.db")
+	}
 	d.logger, err = logging.New()
 	if err != nil {
 		return
@@ -35,6 +42,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 	}
 
 	// obtain a lock on the database
+	d.logger.Log.Debugf("getting filelock on %s", d.name+".lock")
 	d.fileLock = flock.NewFlock(d.name + ".lock")
 	for {
 		locked, err := d.fileLock.TryLock()

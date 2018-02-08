@@ -2,10 +2,13 @@ package database
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"log"
 	"strings"
 
 	"github.com/de0gee/de0gee-data/src/models"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/mr-tron/base58/base58"
 	"github.com/pkg/errors"
 	"github.com/schollz/mapslimmer"
 )
@@ -304,6 +307,65 @@ func (d *Database) GetLatest(device interface{}) (s models.SensorData, err error
 		s = sensors[0]
 	} else {
 		err = errors.New("no rows found")
+	}
+	return
+}
+
+func (d *Database) GetKeys(keylike string) (keys []string, err error) {
+	query := "SELECT key FROM keystore WHERE key LIKE ?"
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(keylike)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	keys = []string{}
+	for rows.Next() {
+		var key string
+		err = rows.Scan(&key)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+		keys = append(keys, key)
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
+func GetFamilies() (families []string) {
+	files, err := ioutil.ReadDir(DataFolder)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	families = make([]string, len(files))
+	i := 0
+	for _, f := range files {
+		if !strings.Contains(f.Name(), ".sqlite3.db") {
+			continue
+		}
+		b, err := base58.Decode(strings.TrimSuffix(f.Name(), ".sqlite3.db"))
+		if err != nil {
+			logger.Log.Warn(err)
+		}
+		families[i] = string(b)
+		i++
+	}
+	if i > 0 {
+		families = families[:i]
+	} else {
+		families = []string{}
 	}
 	return
 }
