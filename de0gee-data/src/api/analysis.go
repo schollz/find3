@@ -99,6 +99,17 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	}
 
 	aidata = target.Data
+	var BestAlgorithm string
+	d.Get("BestAlgorithm", &BestAlgorithm)
+	logger.Log.Debugf("BestAlgorithm: '%s'", BestAlgorithm)
+	for _, prediction := range aidata.Predictions {
+		if prediction.Name == BestAlgorithm {
+			aidata.BestGuess.Location = aidata.LocationNames[prediction.Locations[0]]
+			aidata.BestGuess.Name = prediction.Name
+			aidata.BestGuess.Probability = prediction.Probabilities[0]
+		}
+	}
+
 	// add prediction to the database
 	err = d.AddPrediction(s.Timestamp, aidata)
 	if err != nil {

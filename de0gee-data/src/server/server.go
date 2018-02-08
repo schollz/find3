@@ -189,7 +189,8 @@ func handleReverse(c *gin.Context) (err error) {
 	err = db.Get("ReverseRollingData", &rollingData)
 	if err != nil {
 		rollingData = models.ReverseRollingData{
-			Family: d.Family,
+			Family:         d.Family,
+			DeviceLocation: make(map[string]string),
 		}
 	}
 	var message string
@@ -197,12 +198,10 @@ func handleReverse(c *gin.Context) (err error) {
 	if d.Timestamp == 1 {
 		if d.Location != "" {
 			message = fmt.Sprintf("set location to '%s' for %s for learning with device '%s'", d.Location, d.Family, d.Device)
-			rollingData.IsLearning = true
-			rollingData.Device = d.Device
-			rollingData.Location = d.Location
+			rollingData.DeviceLocation[d.Device] = d.Location
 		} else {
 			message = fmt.Sprintf("switched to tracking for %s", d.Family)
-			rollingData.IsLearning = false
+			delete(rollingData.DeviceLocation, d.Device)
 		}
 	} else {
 		if !rollingData.HasData {
@@ -240,7 +239,7 @@ func parseRollingData(family string) (err error) {
 	}
 
 	sensorMap := make(map[string]models.SensorData)
-	if rollingData.HasData && time.Since(rollingData.Timestamp) > 30*time.Second {
+	if rollingData.HasData && time.Since(rollingData.Timestamp) > 13*time.Second {
 		logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Timestamp))
 		// merge data
 		for _, data := range rollingData.Datas {
@@ -248,11 +247,13 @@ func parseRollingData(family string) (err error) {
 				rssi := data.Sensors["wifi"][mac]
 				if _, ok := sensorMap[mac]; !ok {
 					location := ""
-					if rollingData.IsLearning {
-						if mac != rollingData.Device {
+					// if there is a device+location in map, then it is currently doing learning
+					if len(rollingData.DeviceLocation) > 0 {
+						if loc, hasMac := rollingData.DeviceLocation[mac]; hasMac {
+							location = loc
+						} else {
 							continue
 						}
-						location = rollingData.Location
 					}
 					sensorMap[mac] = models.SensorData{
 						Family:    family,

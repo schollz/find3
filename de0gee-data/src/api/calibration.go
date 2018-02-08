@@ -108,6 +108,22 @@ func findBestAlgorithm(datas []models.SensorData) (err error) {
 		}
 	}
 	logger.Log.Debugf("prediction scores: %+v", predictionScores)
+	bestScoreMethod := ""
+	bestScore := 0
+	for prediction := range predictionScores {
+		if predictionScores[prediction] > bestScore {
+			bestScore = predictionScores[prediction]
+			bestScoreMethod = prediction
+		}
+	}
+
+	// gather the data
+	db, err := database.Open(datas[0].Family)
+	if err != nil {
+		return
+	}
+	defer db.Close()
+	err = db.Set("BestAlgorithm", bestScoreMethod)
 	return
 }
 
