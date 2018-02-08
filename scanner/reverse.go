@@ -112,7 +112,7 @@ func PromiscuousMode(on bool) {
 			commandString = strings.Replace(commandString, "YY", "managed", 1)
 		}
 		s, t := RunCommand(60*time.Second, commandString)
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Second)
 		if len(s) > 0 {
 			log.Debugf("out: %s", s)
 		}

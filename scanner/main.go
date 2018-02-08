@@ -20,6 +20,7 @@ var (
 	server                   string
 	family, device, location string
 
+	scanSeconds int
 	doBluetooth bool
 	doReverse   bool
 	doDebug     bool
@@ -35,6 +36,7 @@ func main() {
 	flag.BoolVar(&doBluetooth, "bluetooth", false, "scan bluetooth")
 	flag.BoolVar(&doReverse, "reverse", false, "reverse fingerprinting")
 	flag.BoolVar(&doDebug, "debug", false, "enable debugging")
+	flag.IntVar(&scanSeconds, "scantime", 3, "scan time")
 	flag.Parse()
 
 	if family == "" {
@@ -63,10 +65,10 @@ func main() {
 
 func reverseCapture() {
 	PromiscuousMode(true)
-	time.Sleep(3 * time.Second)
-	sensors, err := ReverseScan(3 * time.Second)
+	time.Sleep(1 * time.Second)
+	sensors, err := ReverseScan(time.Duration(scanSeconds) * time.Second)
 	PromiscuousMode(false)
-	time.Sleep(3 * time.Second)
+	time.Sleep(1 * time.Second)
 	if err != nil {
 		log.Error(err)
 		return
