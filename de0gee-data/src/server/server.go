@@ -193,7 +193,7 @@ func handlerReverse(c *gin.Context) {
 	success := true
 	if d.Timestamp == 1 {
 		if d.Location != "" {
-			message = fmt.Sprintf("set location to '%s' for %s for learning", d.Location, d.Family)
+			message = fmt.Sprintf("set location to '%s' for %s for learning with device '%s'", d.Location, d.Family, d.Device)
 			rollingData.Learning[d.Family] = true
 			rollingData.LearningLocation[d.Family] = d.Location
 			rollingData.LearningDevice[d.Family] = d.Device
