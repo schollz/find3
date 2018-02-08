@@ -15,9 +15,11 @@ import (
 )
 
 type ReverseRollingData struct {
-	datas     map[string][]models.SensorData
-	times     map[string]time.Time
-	locations map[string]string
+	Datas            map[string][]models.SensorData
+	Times            map[string]time.Time
+	Learning         map[string]bool
+	LearningDevice   map[string]string
+	LearningLocation map[string]string
 	sync.RWMutex
 }
 
@@ -25,9 +27,11 @@ var rollingData ReverseRollingData
 
 func init() {
 	rollingData.Lock()
-	rollingData.datas = make(map[string][]models.SensorData)
-	rollingData.times = make(map[string]time.Time)
-	rollingData.locations = make(map[string]string)
+	rollingData.Datas = make(map[string][]models.SensorData)
+	rollingData.Times = make(map[string]time.Time)
+	rollingData.Learning = make(map[string]bool)
+	rollingData.LearningDevice = make(map[string]string)
+	rollingData.LearningLocation = make(map[string]string)
 	rollingData.Unlock()
 }
 
@@ -184,13 +188,36 @@ func handlerReverse(c *gin.Context) {
 		return
 	}
 	rollingData.Lock()
-	if _, ok := rollingData.times[d.Family]; !ok {
-		rollingData.times[d.Family] = time.Now()
-		rollingData.datas[d.Family] = []models.SensorData{}
+	defer rollingData.Unlock()
+	var message string
+	success := true
+	if d.Timestamp == 1 {
+		if d.Location != "" {
+			message = fmt.Sprintf("set location to '%s' for %s for learning", d.Location, d.Family)
+			rollingData.Learning[d.Family] = true
+			rollingData.LearningLocation[d.Family] = d.Location
+			rollingData.LearningDevice[d.Family] = d.Device
+		} else {
+			message = fmt.Sprintf("switched to tracking for %s", d.Family)
+			delete(rollingData.Learning, d.Family)
+			delete(rollingData.LearningLocation, d.Family)
+			delete(rollingData.LearningDevice, d.Family)
+		}
+	} else {
+		if _, ok := rollingData.Times[d.Family]; !ok {
+			rollingData.Times[d.Family] = time.Now()
+			rollingData.Datas[d.Family] = []models.SensorData{}
+		}
+		if len(d.Sensors["wifi"]) == 0 {
+			success = false
+			message = "no fingerprints"
+		} else {
+			rollingData.Datas[d.Family] = append(rollingData.Datas[d.Family], d)
+			message = fmt.Sprintf("inserted %d fingerprints for %s", len(d.Sensors["wifi"]), d.Family)
+		}
 	}
-	rollingData.datas[d.Family] = append(rollingData.datas[d.Family], d)
-	rollingData.Unlock()
-	c.JSON(http.StatusOK, gin.H{"message": "valid fingerprint held", "success": true})
+	logger.Log.Debugf("success: %v, %s", success, message)
+	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
 }
 
 func checkRolingData() {
@@ -199,17 +226,20 @@ func checkRolingData() {
 		rollingData.Lock()
 		keysToDelete := []string{}
 		sensorMap := make(map[string]models.SensorData)
-		for family := range rollingData.times {
-			if time.Since(rollingData.times[family]) > 6*time.Second {
-				logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.times[family]))
+		for family := range rollingData.Times {
+			if time.Since(rollingData.Times[family]) > 6*time.Second {
+				logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Times[family]))
 				// merge data
-				for _, data := range rollingData.datas[family] {
+				for _, data := range rollingData.Datas[family] {
 					for mac := range data.Sensors["wifi"] {
 						rssi := data.Sensors["wifi"][mac]
 						if _, ok := sensorMap[mac]; !ok {
 							location := ""
-							if loc, ok2 := rollingData.locations[family]; ok2 {
-								location = loc
+							if _, islearning := rollingData.Learning[family]; islearning {
+								if mac != rollingData.LearningDevice[family] {
+									continue
+								}
+								location = rollingData.LearningLocation[family]
 							}
 							sensorMap[mac] = models.SensorData{
 								Family:    family,
@@ -218,6 +248,7 @@ func checkRolingData() {
 								Sensors:   make(map[string]map[string]interface{}),
 								Location:  location,
 							}
+							time.Sleep(10 * time.Millisecond)
 							sensorMap[mac].Sensors["wifi"] = make(map[string]interface{})
 						}
 						sensorMap[mac].Sensors["wifi"][data.Device] = rssi
@@ -227,17 +258,17 @@ func checkRolingData() {
 			}
 		}
 		for _, key := range keysToDelete {
-			delete(rollingData.times, key)
-			delete(rollingData.datas, key)
+			delete(rollingData.Times, key)
+			delete(rollingData.Datas, key)
 		}
 		rollingData.Unlock()
 		for sensor := range sensorMap {
 			logger.Log.Debugf("saving reverse sensor data for %s", sensor)
+			logger.Log.Debugf("%+v", sensorMap[sensor])
 			err := api.SaveSensorData(sensorMap[sensor])
 			if err != nil {
-				logger.Log.Warnf("problem saving reverse fingerptint: %s", err.Error())
+				logger.Log.Warnf("problem saving: %s", err.Error())
 			}
-
 		}
 	}
 }
