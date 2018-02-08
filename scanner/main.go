@@ -20,10 +20,12 @@ var (
 	server                   string
 	family, device, location string
 
-	scanSeconds int
-	doBluetooth bool
-	doReverse   bool
-	doDebug     bool
+	scanSeconds            int
+	doBluetooth            bool
+	doReverse              bool
+	doDebug                bool
+	doSetPromiscuous       bool
+	doNotModifyPromiscuity bool
 )
 
 func main() {
@@ -36,24 +38,34 @@ func main() {
 	flag.BoolVar(&doBluetooth, "bluetooth", false, "scan bluetooth")
 	flag.BoolVar(&doReverse, "reverse", false, "reverse fingerprinting")
 	flag.BoolVar(&doDebug, "debug", false, "enable debugging")
+	flag.BoolVar(&doSetPromiscuous, "monitor-mode", false, "set promiscuous mode")
+	flag.BoolVar(&doNotModifyPromiscuity, "no-modify", false, "disable changing wifi promiscuity mode")
 	flag.IntVar(&scanSeconds, "scantime", 3, "scan time")
 	flag.Parse()
-
-	if family == "" {
-		fmt.Println("family cannot be blank")
-		flag.Usage()
-		return
-	} else if device == "" {
-		fmt.Println("device cannot be blank")
-		flag.Usage()
-		return
-	}
 
 	if doDebug {
 		setLogLevel("debug")
 	} else {
 		setLogLevel("info")
 	}
+
+	if device == "" {
+		fmt.Println("device cannot be blank")
+		flag.Usage()
+		return
+	}
+
+	if doSetPromiscuous {
+		PromiscuousMode(true)
+		return
+	}
+
+	if family == "" {
+		fmt.Println("family cannot be blank")
+		flag.Usage()
+		return
+	}
+
 	if !doReverse {
 		log.Infof("scanning with %s", wifiInterface)
 		basicCapture()
@@ -64,11 +76,15 @@ func main() {
 }
 
 func reverseCapture() {
-	PromiscuousMode(true)
-	time.Sleep(1 * time.Second)
+	if !doNotModifyPromiscuity {
+		PromiscuousMode(true)
+		time.Sleep(1 * time.Second)
+	}
 	sensors, err := ReverseScan(time.Duration(scanSeconds) * time.Second)
-	PromiscuousMode(false)
-	time.Sleep(1 * time.Second)
+	if !doNotModifyPromiscuity {
+		PromiscuousMode(false)
+		time.Sleep(1 * time.Second)
+	}
 	if err != nil {
 		log.Error(err)
 		return
