@@ -357,7 +357,7 @@ func GetFamilies() (families []string) {
 		}
 		b, err := base58.Decode(strings.TrimSuffix(f.Name(), ".sqlite3.db"))
 		if err != nil {
-			logger.Log.Warn(err)
+			continue
 		}
 		families[i] = string(b)
 		i++

@@ -29,6 +29,7 @@ func main() {
 
 	// setup folders
 	database.DataFolder = dataFolder
+	api.DataFolder = dataFolder
 
 	// setup debugging
 	database.Debug(*debug)

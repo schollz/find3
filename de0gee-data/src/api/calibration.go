@@ -27,11 +27,7 @@ func Calibrate(family string) (err error) {
 	var p Payload
 	p.CSVFile = utils.RandomString(8) + ".csv"
 	p.Family = family
-	dir, err := os.Getwd()
-	if err != nil {
-		return
-	}
-	p.DataFolder = dir
+	p.DataFolder = DataFolder
 
 	// gather the data
 	db, err := database.Open(family)

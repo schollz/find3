@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/de0gee/de0gee-data/src/database"
@@ -15,6 +14,7 @@ import (
 
 // AIPort designates the port for the AI processing
 var AIPort = "8002"
+var DataFolder = "."
 
 var (
 	httpClient *http.Client
@@ -71,11 +71,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	}
 	var p2 ClassifyPayload
 	p2.Sensor = s
-	dir, err := os.Getwd()
-	if err != nil {
-		return
-	}
-	p2.DataFolder = dir
+	p2.DataFolder = DataFolder
 	url := "http://localhost:" + AIPort + "/classify"
 	bPayload, err := json.Marshal(p2)
 	if err != nil {
