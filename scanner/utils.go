@@ -49,7 +49,7 @@ func Average(nums []float64) float64 {
 	for _, num := range nums {
 		total += num
 	}
-	return total / float64(len(nums))
+	return float64(int(total/float64(len(nums))*10)) / 10
 }
 
 // src is seeds the random generator for generating random strings
