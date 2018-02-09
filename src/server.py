@@ -1,6 +1,6 @@
 import os
 import time
-from base64 import urlsafe_b64encode, urlsafe_b64decode
+import base58
 import logging
 
 
@@ -28,9 +28,8 @@ from learn import AI
 cache = {}
 
 
-def to_base64(family):
-    return urlsafe_b64encode(family.encode('utf-8')).decode('utf-8')
-
+def to_base58(family):
+    return base58.b58encode(family.encode('utf-8'))
 
 @app.route('/classify', methods=['POST'])
 def classify():
@@ -42,7 +41,7 @@ def classify():
     data_folder = '.'
     if 'data_folder' in payload:
         data_folder = payload['data_folder']
-    fname = os.path.join(data_folder, to_base64(
+    fname = os.path.join(data_folder, to_base58(
         payload['sensor_data']['f']) + ".de0gee.ai")
     ai = AI()
     logger.debug("loading {}".format(fname))
@@ -73,7 +72,7 @@ def learn():
     except FileNotFoundError:
         return jsonify({"success": False, "message": "could not find '{p[csv_file]}'".format(p=payload)})
 
-    ai.save(os.path.join(data_folder, to_base64(
+    ai.save(os.path.join(data_folder, to_base58(
         payload['family']) + ".de0gee.ai"))
     return jsonify({"success": True, "message": "calibrated data"})
 

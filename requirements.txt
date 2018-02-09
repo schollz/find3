@@ -6,3 +6,4 @@ sklearn
 numpy
 scipy
 flask
+base58
