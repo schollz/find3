@@ -203,6 +203,7 @@ func handleReverse(c *gin.Context) (err error) {
 			message = fmt.Sprintf("switched to tracking for %s", d.Family)
 			delete(rollingData.DeviceLocation, d.Device)
 		}
+		message += fmt.Sprintf(", now learning on %d devices", len(rollingData.DeviceLocation))
 	} else {
 		if !rollingData.HasData {
 			rollingData.Timestamp = time.Now()
@@ -239,7 +240,7 @@ func parseRollingData(family string) (err error) {
 	}
 
 	sensorMap := make(map[string]models.SensorData)
-	if rollingData.HasData && time.Since(rollingData.Timestamp) > 13*time.Second {
+	if rollingData.HasData && time.Since(rollingData.Timestamp) > 18*time.Second {
 		logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Timestamp))
 		// merge data
 		for _, data := range rollingData.Datas {

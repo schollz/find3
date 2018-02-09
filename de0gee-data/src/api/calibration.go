@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
 	"path"
@@ -85,7 +86,11 @@ func Calibrate(family string) (err error) {
 func findBestAlgorithm(datas []models.SensorData) (err error) {
 	var aidata models.LocationAnalysis
 	predictionScores := make(map[string]int)
-	for _, data := range datas {
+	for i, j := range rand.Perm(len(datas)) {
+		data := datas[j]
+		if i > 20 {
+			break
+		}
 		aidata, err = AnalyzeSensorData(data)
 		if err != nil {
 			return
