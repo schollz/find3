@@ -79,7 +79,7 @@ func Calibrate(family string) (err error) {
 		return
 	}
 
-	err = findBestAlgorithm(datas)
+	go findBestAlgorithm(datas)
 	return
 }
 

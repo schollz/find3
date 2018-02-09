@@ -42,7 +42,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 	}
 
 	// obtain a lock on the database
-	d.logger.Log.Debugf("getting filelock on %s", d.name+".lock")
+	// d.logger.Log.Debugf("getting filelock on %s", d.name+".lock")
 	d.fileLock = flock.NewFlock(d.name + ".lock")
 	for {
 		locked, err := d.fileLock.TryLock()
@@ -51,7 +51,6 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	d.logger.Log.Debug("got filelock")
 
 	// check if it is a new database
 	newDatabase := false
@@ -64,7 +63,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 	if err != nil {
 		return
 	}
-	d.logger.Log.Debug("opened sqlite3 database")
+	// d.logger.Log.Debug("opened sqlite3 database")
 
 	// create new database tables if needed
 	if newDatabase {
@@ -102,7 +101,7 @@ func (d *Database) Close() (err error) {
 		d.logger.Log.Error(err)
 	} else {
 		os.Remove(d.name + ".lock")
-		d.logger.Log.Debug("removed filelock")
+		// d.logger.Log.Debug("removed filelock")
 	}
 
 	// close database
@@ -111,7 +110,7 @@ func (d *Database) Close() (err error) {
 		err = err2
 		d.logger.Log.Error(err)
 	} else {
-		d.logger.Log.Debug("closed database")
+		// d.logger.Log.Debug("closed database")
 	}
 	return
 }

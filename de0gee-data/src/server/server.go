@@ -287,7 +287,7 @@ func parseRollingData(family string) (err error) {
 
 func checkRolingData() {
 	for {
-		time.Sleep(1 * time.Second)
+		time.Sleep(6 * time.Second)
 		for _, family := range database.GetFamilies() {
 			parseRollingData(family)
 		}
