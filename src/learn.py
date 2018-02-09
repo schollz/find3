@@ -40,13 +40,16 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn import cluster, mixture
 from sklearn.neighbors import kneighbors_graph
+from naive_bayes import ExtendedNaiveBayes
 
 
 class AI(object):
 
-    def __init__(self):
+    def __init__(self,family,path_to_data):
         self.logger = logging.getLogger('learn.AI')
         self.naming = {'from': {}, 'to': {}}
+        self.family = family
+        self.path_to_data = path_to_data
 
     def classify(self, sensor_data):
         t = time.time()
@@ -58,7 +61,6 @@ class AI(object):
                 if sensorName in header:
                     csv_data[header.index(sensorName)] = sensor_data[
                         's'][sensorType][sensor]
-
         payload = {'location_names': self.naming['to'], 'predictions': []}
         for name in self.algorithms:
             try:
@@ -74,13 +76,24 @@ class AI(object):
             badValue = False
             for tup in sorted(predict.items(), key=operator.itemgetter(1), reverse=True):
                 predict_payload['locations'].append(str(tup[0]))
-                predict_payload['probabilities'].append(float(tup[1]))
+                predict_payload['probabilities'].append(round(float(tup[1]),2))
                 if math.isnan(tup[1]):
                     badValue = True 
                     break
             if badValue:
                 continue
             payload['predictions'].append(predict_payload)
+
+        name = "Extended Naive Bayes"
+        clf = ExtendedNaiveBayes(self.family,path_to_data=self.path_to_data)
+        predictions = clf.predict_proba(header,csv_data)
+        predict_payload = {'name': name,'locations': [], 'probabilities': []}
+        for tup in predictions:
+            predict_payload['locations'].append(str(self.naming['from'][tup[0]]))
+            predict_payload['probabilities'].append(round(tup[1],2))
+        payload['predictions'].append(predict_payload)
+        self.logger.debug(predict_payload)
+        self.logger.debug(predictions)
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
         return payload
 
@@ -147,6 +160,7 @@ class AI(object):
         self.algorithms = {}
         # split_for_learning = int(0.70 * len(y))
         for name, clf in zip(names, classifiers):
+            t2 = time.time()
             self.algorithms[name] = clf
             try:
                 self.algorithms[name].fit(x,y)
@@ -157,6 +171,14 @@ class AI(object):
                 # print(name, score)
             except:
                 pass
+            self.logger.debug("learned {}, {:d} ms".format(name,int(1000 * (t2 - time.time()))))
+
+        t2 = time.time()
+        name = "Extended Naive Bayes"
+        clf = ExtendedNaiveBayes(self.family,path_to_data=self.path_to_data)
+        clf.fit(fname)
+        self.logger.debug("learned {}, {:d} ms".format(name,int(1000 * (t2 - time.time()))))
+
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
 
     def save(self, save_file):
@@ -165,6 +187,7 @@ class AI(object):
         pickle.dump(self.header, f)
         pickle.dump(self.naming, f)
         pickle.dump(self.algorithms, f)
+        pickle.dump(self.family, f)
         f.close()
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
 
@@ -174,6 +197,7 @@ class AI(object):
         self.header = pickle.load(f)
         self.naming = pickle.load(f)
         self.algorithms = pickle.load(f)
+        self.family = pickle.load(f)
         f.close()
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
 
