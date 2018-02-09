@@ -1,8 +1,8 @@
 from learn import *
 from server import *
 
-def test_to_base64():
-  assert to_base64("testdb") == "dGVzdGRi"
+def test_to_base58():
+  assert to_base58("testdb") == "zxo1qZZb"
 
 def basic_learning():
     ai = AI()
