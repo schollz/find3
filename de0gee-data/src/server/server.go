@@ -55,6 +55,7 @@ func Run() (err error) {
 }
 
 func ping(c *gin.Context) {
+	go api.FindBestAlgorithm("test5")
 	c.String(http.StatusOK, "pong")
 }
 

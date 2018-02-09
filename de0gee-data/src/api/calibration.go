@@ -79,18 +79,28 @@ func Calibrate(family string) (err error) {
 		return
 	}
 
-	go findBestAlgorithm(datas)
 	return
 }
 
-func findBestAlgorithm(datas []models.SensorData) (err error) {
+func FindBestAlgorithm(family string) (err error) {
+	// gather the data
+	db, err := database.Open(family)
+	if err != nil {
+		return
+	}
+	datas, err := db.GetAllForClassification()
+	if err != nil {
+		return
+	}
+	db.Close()
+
 	var aidata models.LocationAnalysis
 	predictionScores := make(map[string]int)
-	for i, j := range rand.Perm(len(datas)) {
+	for _, j := range rand.Perm(len(datas)) {
 		data := datas[j]
-		if i > 20 {
-			break
-		}
+		// if i > 20 {
+		// 	break
+		// }
 		aidata, err = AnalyzeSensorData(data)
 		if err != nil {
 			return
@@ -123,12 +133,16 @@ func findBestAlgorithm(datas []models.SensorData) (err error) {
 	}
 
 	// gather the data
-	db, err := database.Open(datas[0].Family)
+	db, err = database.Open(datas[0].Family)
 	if err != nil {
 		return
 	}
 	defer db.Close()
 	err = db.Set("BestAlgorithm", bestScoreMethod)
+	if err != nil {
+		return
+	}
+	err = db.Set("BestAlgorithmData", predictionScores)
 	return
 }
 
