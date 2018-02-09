@@ -7,3 +7,5 @@ numpy
 scipy
 flask
 base58
+tqdm
+expiringdict
