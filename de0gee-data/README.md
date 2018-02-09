@@ -1,3 +1,4 @@
+
 # de0gee-data
 
 [![travis](https://travis-ci.org/de0gee/de0gee-data.svg?branch=master)](https://travis-ci.org/de0gee/de0gee-data) 
@@ -304,6 +305,62 @@ Auth -->> User Browser: **Location Data** via secure websockets
 
 ![Flow](https://user-images.githubusercontent.com/6550035/34440974-2002dd90-ec76-11e7-89fb-481e4fadea28.png)
 
-# Todo
 
-- [ ] Run through every known fingerprint and see which of the machine learning algorithms fair the best, the most often
+## Debugging pipelines
+
+Terminal1:
+
+Note the server address: http://Y:8003
+```
+cd $GOPATH/src/github.com/de0gee/de0gee-data && make dev1 | grep -v 'db.go'
+```
+
+Terminal2:
+
+```
+cd $GOPATH/src/github.com/de0gee/de0gee-ai && make
+```
+
+Raspberry Pi, name X
+
+```
+while true; do; sudo ./scanner_arm -i wlx98ded0128a34 -debug -device X -family test5 -reverse -server http://Y:8003 -no-modify -scantime 8 ; done;
+```
+
+Do some learning with your phone. Get your phone's mac address, `ma:ca:dd:rr:es:s1`. Set the timestamp to `1` to make changes for learning.
+
+```
+http POST localhost:8003/reverse t:=1 f=test5 d=ma:ca:dd:rr:es:s1 l=LOCATION
+```
+
+You can add other phones in other locations to do learning:
+
+```
+http POST localhost:8003/reverse t:=1 f=test5 d=ma:ca:dd:rr:es:s2 l=LOCATION
+```
+
+When you are done with learning, turn off the learning by switching off the location *for each device*:
+
+
+```
+http POST localhost:8003/reverse t:=1 f=test5 d=ma:ca:dd:rr:es:s1
+http POST localhost:8003/reverse t:=1 f=test5 d=ma:ca:dd:rr:es:s2
+```
+
+Calibrate your device using
+
+```
+http POST localhost:8003/calibrate family=test5
+```
+
+And then see the location of any device using
+
+```
+http GET localhost:8003/location family=test5 device=ma:ca:dd:rr:es:s1
+```
+
+Get just the best guess using:
+
+```
+http GET localhost:8003/location family=test5 device=ma:ca:dd:rr:es:s1 | jq .analysis.best_guess
+```
