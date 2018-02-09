@@ -21,7 +21,7 @@ production2: clean
 	gunicorn --bind 0.0.0.0:8002 server:app
 test: clean
 	cd src && py.test --benchmark-skip --cov=learn test_learn.py
-	cd src && py.test --benchmark-skip --cov=learn test_ttldict.py
+	cd src && py.test --benchmark-skip --cov=ttldict test_ttldict.py
 
 benchmark: clean
 	cd src && py.test test_learn.py
