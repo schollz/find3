@@ -76,3 +76,6 @@ def learn():
     ai.save(os.path.join(data_folder, to_base64(
         payload['family']) + ".de0gee.ai"))
     return jsonify({"success": True, "message": "calibrated data"})
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
