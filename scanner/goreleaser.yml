@@ -3,8 +3,6 @@
 builds:
   - binary: de0gee-scanner
     goos:
-      - windows
-      - darwin
       - linux
     goarch:
       - amd64
