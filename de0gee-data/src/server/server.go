@@ -36,6 +36,7 @@ func Run() (err error) {
 		c.String(http.StatusOK, "OK")
 	})
 	r.GET("/ping", ping)
+	r.GET("/test", handleTest)
 	r.GET("/ws", wshandler)                  // handler for the web sockets (see websockets.go)
 	r.POST("/mqtt", handlerMQTT)             // handler for setting MQTT
 	r.POST("/data", handlerData)             // typical data handler
@@ -55,8 +56,12 @@ func Run() (err error) {
 }
 
 func ping(c *gin.Context) {
-	go api.FindBestAlgorithm("test5")
 	c.String(http.StatusOK, "pong")
+}
+
+func handleTest(c *gin.Context) {
+	go api.FindBestAlgorithm("test5")
+	c.String(http.StatusOK, "ok")
 }
 
 func handlerMQTT(c *gin.Context) {
@@ -204,7 +209,7 @@ func handleReverse(c *gin.Context) (err error) {
 			message = fmt.Sprintf("switched to tracking for %s", d.Family)
 			delete(rollingData.DeviceLocation, d.Device)
 		}
-		message += fmt.Sprintf(", now learning on %d devices", len(rollingData.DeviceLocation))
+		message += fmt.Sprintf(", now learning on %d devices: %+v", len(rollingData.DeviceLocation), rollingData.DeviceLocation)
 	} else {
 		if !rollingData.HasData {
 			rollingData.Timestamp = time.Now()
@@ -241,7 +246,7 @@ func parseRollingData(family string) (err error) {
 	}
 
 	sensorMap := make(map[string]models.SensorData)
-	if rollingData.HasData && time.Since(rollingData.Timestamp) > 18*time.Second {
+	if rollingData.HasData && time.Since(rollingData.Timestamp) > 30*time.Second {
 		logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Timestamp))
 		// merge data
 		for _, data := range rollingData.Datas {
@@ -250,12 +255,8 @@ func parseRollingData(family string) (err error) {
 				if _, ok := sensorMap[mac]; !ok {
 					location := ""
 					// if there is a device+location in map, then it is currently doing learning
-					if len(rollingData.DeviceLocation) > 0 {
-						if loc, hasMac := rollingData.DeviceLocation[mac]; hasMac {
-							location = loc
-						} else {
-							continue
-						}
+					if loc, hasMac := rollingData.DeviceLocation[mac]; hasMac {
+						location = loc
 					}
 					sensorMap[mac] = models.SensorData{
 						Family:    family,
