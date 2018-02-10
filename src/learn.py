@@ -52,7 +52,6 @@ class AI(object):
         self.path_to_data = path_to_data
 
     def classify(self, sensor_data):
-        t = time.time()
         header = self.header[1:]
         csv_data = numpy.zeros(len(header))
         for sensorType in sensor_data['s']:
@@ -61,6 +60,15 @@ class AI(object):
                 if sensorName in header:
                     csv_data[header.index(sensorName)] = sensor_data[
                         's'][sensorType][sensor]
+        return self.do_classification(header,csv_data)
+
+    def do_classification(self,header,csv_data):
+        """
+        header = ['wifi-a', 'wifi-b']
+        csv_data = [-67 0]
+        """
+
+        t = time.time()
         payload = {'location_names': self.naming['to'], 'predictions': []}
         for name in self.algorithms:
             try:
@@ -92,8 +100,6 @@ class AI(object):
             predict_payload['locations'].append(str(self.naming['from'][tup[0]]))
             predict_payload['probabilities'].append(round(tup[1],2))
         payload['predictions'].append(predict_payload)
-        self.logger.debug(predict_payload)
-        self.logger.debug(predictions)
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
         return payload
 
@@ -138,7 +144,7 @@ class AI(object):
             "Nearest Neighbors",
             "Linear SVM",
             "RBF SVM",
-            "Gaussian Process",
+            # "Gaussian Process",
             "Decision Tree",
             "Random Forest",
             "Neural Net",
@@ -149,7 +155,8 @@ class AI(object):
             KNeighborsClassifier(3),
             SVC(kernel="linear", C=0.025, probability=True),
             SVC(gamma=2, C=1, probability=True),
-            GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
+            # GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
+            # GaussianProcess takes too long!
             DecisionTreeClassifier(max_depth=5),
             RandomForestClassifier(
                 max_depth=5, n_estimators=10, max_features=1),
