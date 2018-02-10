@@ -17,7 +17,7 @@ import (
 )
 
 // Calibrate will send the sensor data for a specific family to the machine learning algorithms
-func Calibrate(family string) (err error) {
+func Calibrate(family string, crossValidation ...bool) (err error) {
 
 	// inquire the AI
 	type Payload struct {
@@ -40,6 +40,22 @@ func Calibrate(family string) (err error) {
 		return
 	}
 	db.Close()
+
+	// for cross validation only
+	var datasTest []models.SensorData
+	if len(crossValidation) > 0 && crossValidation[0] {
+		// randomize data order
+		for i := range datas {
+			j := rand.Intn(i + 1)
+			datas[i], datas[j] = datas[j], datas[i]
+		}
+
+		// split the data to use 70% to learn, 30% to test
+		splitI := int(0.7 * float64(len(datas)))
+		datasTest = datas[splitI:]
+		datas = datas[:splitI]
+		logger.Log.Debugf("splitting data for cross validation (%d -> %d)", len(datas), splitI)
+	}
 
 	logger.Log.Debugf("writing %s data to %s", family, path.Join(p.DataFolder, p.CSVFile))
 
@@ -79,23 +95,18 @@ func Calibrate(family string) (err error) {
 		return
 	}
 
+	if len(crossValidation) > 0 && crossValidation[0] {
+		go FindBestAlgorithm(datasTest)
+	}
 	return
 }
 
-func FindBestAlgorithm(family string) (err error) {
-	// gather the data
-	db, err := database.Open(family)
-	if err != nil {
-		return
-	}
-	datas, err := db.GetAllForClassification()
-	if err != nil {
-		return
-	}
-	db.Close()
-
+func FindBestAlgorithm(datas []models.SensorData) (err error) {
 	var aidata models.LocationAnalysis
 	predictionScores := make(map[string]int)
+	predictionAnalysis := make(map[string]map[string]map[string]int)
+	logger.Log.Debugf("finding best algorithm for %d data", len(datas))
+
 	for _, j := range rand.Perm(len(datas)) {
 		data := datas[j]
 		// if i > 20 {
@@ -105,20 +116,27 @@ func FindBestAlgorithm(family string) (err error) {
 		if err != nil {
 			return
 		}
-		correctLocationNum := ""
-		for locationNum := range aidata.LocationNames {
-			if aidata.LocationNames[locationNum] == data.Location {
-				correctLocationNum = locationNum
-				break
-			}
-		}
-		logger.Log.Debugf("correct location = %s (%s)", data.Location, correctLocationNum)
 		for _, prediction := range aidata.Predictions {
 			if _, ok := predictionScores[prediction.Name]; !ok {
 				predictionScores[prediction.Name] = 0
+				predictionAnalysis[prediction.Name] = make(map[string]map[string]int)
+				for trueLoc := range aidata.LocationNames {
+					predictionAnalysis[prediction.Name][aidata.LocationNames[trueLoc]] = make(map[string]int)
+					for guessLoc := range aidata.LocationNames {
+						predictionAnalysis[prediction.Name][aidata.LocationNames[trueLoc]][aidata.LocationNames[guessLoc]] = 0
+					}
+				}
 			}
-			if prediction.Locations[0] == correctLocationNum {
+			correctLocation := data.Location
+			guessedLocation := aidata.LocationNames[prediction.Locations[0]]
+			predictionAnalysis[prediction.Name][correctLocation][guessedLocation]++
+			logger.Log.Debugf("%s|%s|%s", prediction.Name, guessedLocation, correctLocation)
+			if guessedLocation == correctLocation {
 				predictionScores[prediction.Name]++
+			} else {
+				if prediction.Name == "Extended Naive Bayes" {
+
+				}
 			}
 		}
 	}
@@ -131,9 +149,42 @@ func FindBestAlgorithm(family string) (err error) {
 			bestScoreMethod = prediction
 		}
 	}
+	predictionScores["total"] = len(datas)
+
+	// normalize prediction analysis
+	// initialize location totals
+	locationTotals := make(map[string]int)
+	for _, data := range datas {
+		if _, ok := locationTotals[data.Location]; !ok {
+			locationTotals[data.Location] = 0
+		}
+		locationTotals[data.Location]++
+	}
+	algorithmEfficacy := make(map[string]map[string]float64)
+	for alg := range predictionAnalysis {
+		if _, ok := algorithmEfficacy[alg]; !ok {
+			algorithmEfficacy[alg] = make(map[string]float64)
+		}
+		for loc := range predictionAnalysis[alg] {
+			percentageRight := float64(predictionAnalysis[alg][loc][loc]) / float64(locationTotals[loc])
+			// true positive rate
+			algorithmEfficacy[alg][loc] = percentageRight
+			algorithmEfficacy[alg]["not"+loc] = float64(0)
+			total := 0
+			for notLoc := range predictionAnalysis[alg][loc] {
+				if notLoc == loc {
+					continue
+				}
+				total += locationTotals[notLoc]
+				algorithmEfficacy[alg]["not"+loc] += float64(predictionAnalysis[alg][notLoc][loc])
+			}
+			// false negative rate
+			algorithmEfficacy[alg]["not"+loc] = algorithmEfficacy[alg]["not"+loc] / float64(total)
+		}
+	}
 
 	// gather the data
-	db, err = database.Open(datas[0].Family)
+	db, err := database.Open(datas[0].Family)
 	if err != nil {
 		return
 	}
@@ -143,6 +194,17 @@ func FindBestAlgorithm(family string) (err error) {
 		return
 	}
 	err = db.Set("BestAlgorithmData", predictionScores)
+	if err != nil {
+		return
+	}
+	err = db.Set("PredictionAnalysis", predictionAnalysis)
+	if err != nil {
+		return
+	}
+	err = db.Set("AlgorithmEfficacy", algorithmEfficacy)
+	if err != nil {
+		return
+	}
 	return
 }
 
