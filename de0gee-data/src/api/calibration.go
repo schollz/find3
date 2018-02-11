@@ -168,18 +168,19 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		for loc := range predictionAnalysis[alg] {
 			percentageRight := float64(predictionAnalysis[alg][loc][loc]) / float64(locationTotals[loc])
 			// true positive rate
-			algorithmEfficacy[alg][loc] = percentageRight
-			algorithmEfficacy[alg]["not"+loc] = float64(0)
+			tpr := percentageRight
+			// false positive rate
+			fpr := float64(0)
 			total := 0
 			for notLoc := range predictionAnalysis[alg][loc] {
 				if notLoc == loc {
 					continue
 				}
 				total += locationTotals[notLoc]
-				algorithmEfficacy[alg]["not"+loc] += float64(predictionAnalysis[alg][notLoc][loc])
+				fpr += float64(predictionAnalysis[alg][notLoc][loc])
 			}
-			// false negative rate
-			algorithmEfficacy[alg]["not"+loc] = algorithmEfficacy[alg]["not"+loc] / float64(total)
+			fpr = fpr / float64(total)
+			algorithmEfficacy[alg][loc] = tpr - fpr
 		}
 	}
 
