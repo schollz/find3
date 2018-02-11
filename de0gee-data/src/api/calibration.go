@@ -160,28 +160,38 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		}
 		locationTotals[data.Location]++
 	}
-	algorithmEfficacy := make(map[string]map[string]float64)
+	algorithmEfficacy := make(map[string]map[string]BinaryStats)
 	for alg := range predictionAnalysis {
 		if _, ok := algorithmEfficacy[alg]; !ok {
-			algorithmEfficacy[alg] = make(map[string]float64)
+			algorithmEfficacy[alg] = make(map[string]BinaryStats)
 		}
-		for loc := range predictionAnalysis[alg] {
-			percentageRight := float64(predictionAnalysis[alg][loc][loc]) / float64(locationTotals[loc])
-			// true positive rate
-			tpr := percentageRight
-			// false positive rate
-			fpr := float64(0)
-			total := 0
-			for notLoc := range predictionAnalysis[alg][loc] {
-				if notLoc == loc {
+		// calculate true/false positives/negatives
+		tp := 0
+		fp := 0
+		tn := 0
+		fn := 0
+		for correctLocation := range predictionAnalysis[alg] {
+			tp = predictionAnalysis[alg][correctLocation][correctLocation]
+			for guessedLocation := range predictionAnalysis[alg][correctLocation] {
+				if guessedLocation != correctLocation {
+					fp += predictionAnalysis[alg][correctLocation][guessedLocation]
+				}
+			}
+			for wrongLocation := range predictionAnalysis[alg] {
+				if wrongLocation == correctLocation {
 					continue
 				}
-				total += locationTotals[notLoc]
-				fpr += float64(predictionAnalysis[alg][notLoc][loc])
+				for guessedLocation := range predictionAnalysis[alg][wrongLocation] {
+					if guessedLocation == correctLocation {
+						fn += predictionAnalysis[alg][wrongLocation][guessedLocation]
+					} else {
+						tn += predictionAnalysis[alg][wrongLocation][guessedLocation]
+					}
+				}
 			}
-			fpr = fpr / float64(total)
-			algorithmEfficacy[alg][loc] = tpr - fpr
+			algorithmEfficacy[alg][correctLocation] = NewBinaryStats(tp, fp, tn, fn)
 		}
+
 	}
 
 	// gather the data
