@@ -173,27 +173,21 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		tn := 0
 		fn := 0
 		for correctLocation := range predictionAnalysis[alg] {
-			tp = predictionAnalysis[alg][correctLocation][correctLocation]
-			for guessedLocation := range predictionAnalysis[alg][correctLocation] {
-				if guessedLocation != correctLocation {
-					fp += predictionAnalysis[alg][correctLocation][guessedLocation]
-				}
-			}
-			for wrongLocation := range predictionAnalysis[alg] {
-				if wrongLocation == correctLocation {
-					continue
-				}
-				for guessedLocation := range predictionAnalysis[alg][wrongLocation] {
-					if guessedLocation == correctLocation {
-						fn += predictionAnalysis[alg][wrongLocation][guessedLocation]
-					} else {
-						tn += predictionAnalysis[alg][wrongLocation][guessedLocation]
+			for l1 := range predictionAnalysis[alg] {
+				for l2 := range predictionAnalysis[alg] {
+					if correctLocation == l1 && correctLocation == l2 {
+						tp = predictionAnalysis[alg][l1][l2]
+					} else if correctLocation == l1 && correctLocation != l2 {
+						fp += predictionAnalysis[alg][l1][l2]
+					} else if correctLocation != l1 && correctLocation == l2 {
+						fn += predictionAnalysis[alg][l1][l2]
+					} else if correctLocation != l1 && correctLocation != l2 {
+						tn += predictionAnalysis[alg][l1][l2]
 					}
 				}
 			}
 			algorithmEfficacy[alg][correctLocation] = NewBinaryStats(tp, fp, tn, fn)
 		}
-
 	}
 
 	// gather the data
