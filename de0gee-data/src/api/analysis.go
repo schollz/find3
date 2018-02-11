@@ -101,6 +101,17 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	aidata = target.Data
 	var algorithmEfficacy map[string]map[string]BinaryStats
 	d.Get("AlgorithmEfficacy", &algorithmEfficacy)
+	aidata.BestGuess = determineBestGuess(aidata, algorithmEfficacy)
+	// add prediction to the database
+	err = d.AddPrediction(s.Timestamp, aidata)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[string]map[string]BinaryStats) (b models.LocationPrediction) {
 	logger.Log.Debugf("algorithmEfficacy: '%+v'", algorithmEfficacy)
 	bestEfficacy := float64(0)
 	for _, prediction := range aidata.Predictions {
@@ -109,17 +120,10 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 		logger.Log.Debugf("%s: %2.3f", prediction.Name, efficacy)
 		if efficacy > bestEfficacy {
 			bestEfficacy = efficacy
-			aidata.BestGuess.Location = guessedLocation
-			aidata.BestGuess.Name = prediction.Name
-			aidata.BestGuess.Probability = bestEfficacy
+			b.Location = guessedLocation
+			b.Name = prediction.Name
+			b.Probability = bestEfficacy
 		}
 	}
-
-	// add prediction to the database
-	err = d.AddPrediction(s.Timestamp, aidata)
-	if err != nil {
-		return
-	}
-
-	return
+	return b
 }

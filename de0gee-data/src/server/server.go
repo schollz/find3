@@ -60,7 +60,7 @@ func ping(c *gin.Context) {
 }
 
 func handleTest(c *gin.Context) {
-	go api.Calibrate("test5", true)
+	go api.Calibrate("pike", true)
 	c.String(http.StatusOK, "ok")
 }
 
