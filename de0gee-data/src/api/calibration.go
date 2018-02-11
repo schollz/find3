@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/de0gee/de0gee-data/src/database"
 	"github.com/de0gee/de0gee-data/src/models"
@@ -112,10 +113,12 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		// if i > 20 {
 		// 	break
 		// }
+		t := time.Now()
 		aidata, err = AnalyzeSensorData(data)
 		if err != nil {
 			return
 		}
+		logger.Log.Debugf("got analysis in %s", time.Since(t))
 		for _, prediction := range aidata.Predictions {
 			if _, ok := predictionScores[prediction.Name]; !ok {
 				predictionScores[prediction.Name] = 0
@@ -130,7 +133,6 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 			correctLocation := data.Location
 			guessedLocation := aidata.LocationNames[prediction.Locations[0]]
 			predictionAnalysis[prediction.Name][correctLocation][guessedLocation]++
-			logger.Log.Debugf("%s|%s|%s", prediction.Name, guessedLocation, correctLocation)
 			if guessedLocation == correctLocation {
 				predictionScores[prediction.Name]++
 			} else {
