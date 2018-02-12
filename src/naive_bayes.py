@@ -10,7 +10,7 @@ from tqdm import tqdm
 from scipy.stats import norm
 from expiringdict import ExpiringDict
 
-cache = ExpiringDict(max_len=10000,max_age_seconds=600)
+cache = ExpiringDict(max_len=100000,max_age_seconds=600)
 
 def get_num_lines(file_path):
     fp = open(file_path, "r+")
