@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import LocationWebsocket from './LocationWebsocket'
+import DeviceList from './DeviceList'
 import logo from './logo.svg';
 import './App.css';
 
@@ -14,6 +15,7 @@ class App extends Component {
         <p className="App-intro">
         </p>
         <LocationWebsocket />
+        <DeviceList />
       </div>
       
     );
