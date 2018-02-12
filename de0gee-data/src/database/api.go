@@ -343,6 +343,38 @@ func (d *Database) GetKeys(keylike string) (keys []string, err error) {
 	return
 }
 
+func (d *Database) GetDevices() (devices []string, err error) {
+	query := "SELECT device FROM (SELECT device,COUNT(device) AS counts FROM sensors GROUP BY device) WHERE counts > 2 ORDER BY counts DESC;"
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	devices = []string{}
+	for rows.Next() {
+		var key string
+		err = rows.Scan(&key)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+		devices = append(devices, key)
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
 func GetFamilies() (families []string) {
 	files, err := ioutil.ReadDir(DataFolder)
 	if err != nil {

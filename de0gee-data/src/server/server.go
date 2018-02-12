@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/de0gee/de0gee-data/src/api"
@@ -35,6 +36,8 @@ func Run() (err error) {
 	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
 	})
+	r.GET("/api/v1/devices/:family", handlerApiV1Devices)
+	r.GET("/api/v1/location/:family/:device", handlerApiV1Location)
 	r.GET("/ping", ping)
 	r.GET("/test", handleTest)
 	r.GET("/ws", wshandler)                  // handler for the web sockets (see websockets.go)
@@ -62,6 +65,55 @@ func ping(c *gin.Context) {
 func handleTest(c *gin.Context) {
 	go api.Calibrate("pike", true)
 	c.String(http.StatusOK, "ok")
+}
+
+func handleApiV1Devices(c *gin.Context) (err error) {
+	family := c.Param("family")
+	d, err := database.Open(family, true)
+	if err != nil {
+		return
+	}
+	s, err := d.GetDevices()
+	d.Close()
+	if err != nil {
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "got devices", "success": true, "devices": s})
+	return
+}
+
+func handlerApiV1Devices(c *gin.Context) {
+	err := handleApiV1Devices(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	}
+}
+func handleApiV1Location(c *gin.Context) (s models.SensorData, analysis models.LocationAnalysis, err error) {
+	family := strings.TrimSpace(c.Param("family"))
+	device := strings.TrimSpace(c.Param("device"))
+	d, err := database.Open(family, true)
+	if err != nil {
+		return
+	}
+	s, err = d.GetLatest(device)
+	d.Close()
+	if err != nil {
+		return
+	}
+	analysis, err = api.AnalyzeSensorData(s)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func handlerApiV1Location(c *gin.Context) {
+	s, analysis, err := handleApiV1Location(c)
+	message := "got location"
+	if err != nil {
+		message = err.Error()
+	}
+	c.JSON(http.StatusOK, gin.H{"message": message, "success": err == nil, "sensors": s, "analysis": analysis})
 }
 
 func handlerMQTT(c *gin.Context) {
