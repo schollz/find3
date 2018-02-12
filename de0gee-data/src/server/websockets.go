@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -33,8 +34,13 @@ func init() {
 }
 
 func wshandler(c *gin.Context) {
-	family := c.DefaultQuery("family", "")
+	family := strings.TrimSpace(c.DefaultQuery("family", ""))
+	device := strings.TrimSpace(c.DefaultQuery("device", ""))
 	if family == "" {
+		c.String(http.StatusBadRequest, "need family")
+		return
+	} else if device == "" {
+		c.String(http.StatusBadRequest, "need device")
 		return
 	}
 	// TODO: validate one-time-pass (otp)
@@ -52,8 +58,9 @@ func wshandler(c *gin.Context) {
 		return
 	}
 	ws.Lock()
-	ws.connections[family] = conn
+	ws.connections[family+"-"+device] = conn
 	ws.Unlock()
+	go sendOutLocation(family, device)
 	// Listen to the websockets
 	// for {
 	// 	t, msg, err := conn.ReadMessage()
@@ -71,11 +78,11 @@ func wshandler(c *gin.Context) {
 }
 
 //  SendMessageOverWebsockets will send a message over the websockets
-func SendMessageOverWebsockets(family string, msg []byte) (err error) {
+func SendMessageOverWebsockets(family string, device string, msg []byte) (err error) {
 	ws.Lock()
 	defer ws.Unlock()
-	if _, ok := ws.connections[family]; ok {
-		err = ws.connections[family].WriteMessage(1, msg)
+	if _, ok := ws.connections[family+"-"+device]; ok {
+		err = ws.connections[family+"-"+device].WriteMessage(1, msg)
 	}
 	return
 }

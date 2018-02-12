@@ -97,20 +97,25 @@ func handleLocation(c *gin.Context) (err error) {
 	if err != nil {
 		return
 	}
-	d, err := database.Open(p.Family, true)
-	if err != nil {
-		return
-	}
-	s, err := d.GetLatest(p.Device)
-	d.Close()
-	if err != nil {
-		return
-	}
-	analysis, err := sendOutData(s)
+	s, analysis, err := sendOutLocation(p.Family, p.Device)
 	if err != nil {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "got latest in " + time.Since(t).String(), "success": true, "analysis": analysis, "sensors": s})
+	return
+}
+
+func sendOutLocation(family, device string) (s models.SensorData, analysis models.LocationAnalysis, err error) {
+	d, err := database.Open(family, true)
+	if err != nil {
+		return
+	}
+	s, err = d.GetLatest(device)
+	d.Close()
+	if err != nil {
+		return
+	}
+	analysis, err = sendOutData(s)
 	return
 }
 
@@ -150,7 +155,7 @@ func handlerData(c *gin.Context) {
 	var d models.SensorData
 	err = c.BindJSON(&d)
 	if err == nil {
-		err2 := processFingerprint(d)
+		err2 := processSensorData(d)
 		if err2 == nil {
 			message = "inserted data"
 		} else {
@@ -246,7 +251,7 @@ func parseRollingData(family string) (err error) {
 	}
 
 	sensorMap := make(map[string]models.SensorData)
-	if rollingData.HasData && time.Since(rollingData.Timestamp) > 30*time.Second {
+	if rollingData.HasData && time.Since(rollingData.Timestamp) > 20*time.Second {
 		logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Timestamp))
 		// merge data
 		for _, data := range rollingData.Datas {
@@ -278,7 +283,7 @@ func parseRollingData(family string) (err error) {
 	for sensor := range sensorMap {
 		logger.Log.Debugf("saving reverse sensor data for %s", sensor)
 		logger.Log.Debugf("%+v", sensorMap[sensor])
-		err := api.SaveSensorData(sensorMap[sensor])
+		err := processSensorData(sensorMap[sensor])
 		if err != nil {
 			logger.Log.Warnf("problem saving: %s", err.Error())
 		}
@@ -306,7 +311,7 @@ func handlerFIND(c *gin.Context) {
 			j.Location = ""
 		}
 		d := j.Convert()
-		err2 := processFingerprint(d)
+		err2 := processSensorData(d)
 		if err2 == nil {
 			message = "inserted data"
 		} else {
@@ -320,7 +325,7 @@ func handlerFIND(c *gin.Context) {
 	}
 }
 
-func processFingerprint(p models.SensorData) (err error) {
+func processSensorData(p models.SensorData) (err error) {
 	err = api.SaveSensorData(p)
 	if err != nil {
 		return
@@ -348,7 +353,7 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 	if err != nil {
 		return
 	}
-	SendMessageOverWebsockets(p.Family, bTarget)
+	SendMessageOverWebsockets(p.Family, p.Device, bTarget)
 	mqtt.Publish(p.Family, p.Device, string(bTarget))
 	return
 }
