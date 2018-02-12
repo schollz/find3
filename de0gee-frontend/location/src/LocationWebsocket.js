@@ -6,8 +6,12 @@ class LocationWebsocket extends React.Component {
 
   constructor(props) {
     super(props);
+    const queryString = require('query-string');
+    const parsed = queryString.parse(window.location.search);
     this.state = {
-      device: "?",
+      family: parsed.family,
+      device: parsed.device,
+      websocket_url:'ws://192.168.0.23:8003/ws?family='+parsed.family+'&device='+parsed.device,
       location: "?",
       probability: "",
       time:0,
@@ -29,12 +33,14 @@ class LocationWebsocket extends React.Component {
     return (
       <div>
         <TimeAgo date={this.state.time} />
+        <p>Family: <strong>{this.state.family}</strong></p>
         <p>Device: <strong>{this.state.device}</strong></p>
         <p>Location: <strong>{this.state.location}</strong></p>
         <p>Probability: <strong>{this.state.probability}</strong></p>
+        <p><strong>{this.state.error_message}</strong></p>
 
          {/* ?family=X&device=Y should come from server */}
-        <Websocket url='ws://192.168.0.23:8003/ws?family=pike&device=40:4e:36:89:63:a5'
+        <Websocket url={this.state.websocket_url}
             onMessage={this.handleData.bind(this)}/>
       </div>
     );
