@@ -412,12 +412,13 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 
 func middleWareHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Log request
-		logger.Log.Infof("%v %v %v", c.Request.RemoteAddr, c.Request.Method, c.Request.URL)
+		t := time.Now()
 		// Add base headers
 		addCORS(c)
 		// Run next function
 		c.Next()
+		// Log request
+		logger.Log.Infof("%v %v %v %s", c.Request.RemoteAddr, c.Request.Method, c.Request.URL, time.Since(t))
 	}
 }
 

@@ -69,7 +69,6 @@ func (d *Database) Columns() (columns []string, err error) {
 		err = errors.Wrap(err, "Columns")
 		return
 	}
-	d.logger.Log.Debug("listed columns")
 	return
 }
 

@@ -114,12 +114,10 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 }
 
 func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[string]map[string]BinaryStats) (b models.LocationPrediction) {
-	logger.Log.Debugf("algorithmEfficacy: '%+v'", algorithmEfficacy)
 	bestEfficacy := float64(0)
 	for _, prediction := range aidata.Predictions {
 		guessedLocation := aidata.LocationNames[prediction.Locations[0]]
 		efficacy := prediction.Probabilities[0] * algorithmEfficacy[prediction.Name][guessedLocation].Informedness
-		logger.Log.Debugf("%s: %2.3f", prediction.Name, efficacy)
 		if efficacy > bestEfficacy {
 			bestEfficacy = efficacy
 			b.Location = guessedLocation
