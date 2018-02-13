@@ -51,8 +51,8 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 			datas[i], datas[j] = datas[j], datas[i]
 		}
 
-		// split the data to use 70% to learn, 30% to test
-		splitI := int(0.7 * float64(len(datas)))
+		// split the data to use 40% to learn, 60% to test
+		splitI := int(0.4 * float64(len(datas)))
 		datasTest = datas[splitI:]
 		datas = datas[:splitI]
 		logger.Log.Debugf("splitting data for cross validation (%d -> %d)", len(datas), splitI)
@@ -219,6 +219,10 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		logger.Log.Error(err)
 	}
 	err = db.Set("AlgorithmEfficacy", algorithmEfficacy)
+	if err != nil {
+		logger.Log.Error(err)
+	}
+	err = db.Set("LastCalibrationTime", time.Now())
 	if err != nil {
 		logger.Log.Error(err)
 	}

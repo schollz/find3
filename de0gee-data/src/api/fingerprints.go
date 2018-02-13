@@ -1,9 +1,26 @@
 package api
 
 import (
+	"sync"
+	"time"
+
 	"github.com/de0gee/de0gee-data/src/database"
 	"github.com/de0gee/de0gee-data/src/models"
 )
+
+type UpdateCounterMap struct {
+	// Data maps family -> counts of locations
+	Count map[string]int
+	sync.RWMutex
+}
+
+var globalUpdateCounter UpdateCounterMap
+
+func init() {
+	globalUpdateCounter.Lock()
+	defer globalUpdateCounter.Unlock()
+	globalUpdateCounter.Count = make(map[string]int)
+}
 
 // SaveSensorData will add sensor data to the database
 func SaveSensorData(p models.SensorData) (err error) {
@@ -15,7 +32,45 @@ func SaveSensorData(p models.SensorData) (err error) {
 	if err != nil {
 		return
 	}
-	defer db.Close()
 	err = db.AddSensor(p)
+	db.Close()
+	if err != nil {
+		return
+	}
+	if p.Location != "" {
+		go updateCounter(p.Family)
+	}
 	return
+}
+
+func updateCounter(family string) {
+	globalUpdateCounter.Lock()
+	if _, ok := globalUpdateCounter.Count[family]; !ok {
+		globalUpdateCounter.Count[family] = 0
+	}
+	globalUpdateCounter.Count[family]++
+	count := globalUpdateCounter.Count[family]
+	globalUpdateCounter.Unlock()
+
+	logger.Log.Debugf("'%s' learned %d new fingerprints", family, count)
+	if count < 20 {
+		return
+	}
+	db, err := database.Open(family)
+	if err != nil {
+		return
+	}
+	var lastCalibrationTime time.Time
+	err = db.Get("LastCalibrationTime", &lastCalibrationTime)
+	db.Close()
+	if err != nil {
+		return
+	}
+	if time.Since(lastCalibrationTime) > 5*time.Minute {
+		logger.Log.Infof("have %d new fingerprints for '%s', re-calibrating since last calibration was %s", count, family, time.Since(lastCalibrationTime))
+		globalUpdateCounter.Lock()
+		globalUpdateCounter.Count[family] = 0
+		globalUpdateCounter.Unlock()
+		go Calibrate(family, true)
+	}
 }

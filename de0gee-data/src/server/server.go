@@ -66,49 +66,46 @@ func handleTest(c *gin.Context) {
 	c.String(http.StatusOK, "ok")
 }
 
-func handleApiV1Devices(c *gin.Context) (err error) {
-	family := c.Param("family")
-	d, err := database.Open(family, true)
-	if err != nil {
-		return
-	}
-	s, err := d.GetDevices()
-	d.Close()
-	if err != nil {
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "got devices", "success": true, "devices": s})
-	return
-}
-
 func handlerApiV1Devices(c *gin.Context) {
-	err := handleApiV1Devices(c)
+	err := func(c *gin.Context) (err error) {
+		family := strings.TrimSpace(c.Param("family")[1:])
+		d, err := database.Open(family, true)
+		defer d.Close()
+		if err != nil {
+			return
+		}
+		s, err := d.GetDevices()
+		if err != nil {
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "got devices", "success": true, "devices": s})
+		return
+	}(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	}
 }
-func handleApiV1Location(c *gin.Context) (s models.SensorData, analysis models.LocationAnalysis, err error) {
-	family := strings.TrimSpace(c.Param("family"))
-	device := strings.TrimSpace(c.Param("device")[1:])
-
-	d, err := database.Open(family, true)
-	if err != nil {
-		return
-	}
-	s, err = d.GetLatest(device)
-	d.Close()
-	if err != nil {
-		return
-	}
-	analysis, err = api.AnalyzeSensorData(s)
-	if err != nil {
-		return
-	}
-	return
-}
 
 func handlerApiV1Location(c *gin.Context) {
-	s, analysis, err := handleApiV1Location(c)
+	s, analysis, err := func(c *gin.Context) (s models.SensorData, analysis models.LocationAnalysis, err error) {
+		family := strings.TrimSpace(c.Param("family"))
+		device := strings.TrimSpace(c.Param("device")[1:])
+
+		d, err := database.Open(family, true)
+		if err != nil {
+			return
+		}
+		s, err = d.GetLatest(device)
+		d.Close()
+		if err != nil {
+			return
+		}
+		analysis, err = api.AnalyzeSensorData(s)
+		if err != nil {
+			return
+		}
+		return
+	}(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
 	} else {
@@ -152,25 +149,6 @@ func handlerMQTT(c *gin.Context) {
 		message = errBind.Error()
 	}
 	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
-}
-
-func handleLocation(c *gin.Context) (err error) {
-	t := time.Now()
-	type Payload struct {
-		Family string `json:"family" binding:"required"`
-		Device string `json:"device" binding:"required"`
-	}
-	var p Payload
-	err = c.ShouldBindJSON(&p)
-	if err != nil {
-		return
-	}
-	s, analysis, err := sendOutLocation(p.Family, p.Device)
-	if err != nil {
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "got latest in " + time.Since(t).String(), "success": true, "analysis": analysis, "sensors": s})
-	return
 }
 
 func sendOutLocation(family, device string) (s models.SensorData, analysis models.LocationAnalysis, err error) {
