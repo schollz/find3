@@ -105,15 +105,40 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 func FindBestAlgorithm(datas []models.SensorData) (err error) {
 	predictionAnalysis := make(map[string]map[string]map[string]int)
 	logger.Log.Debugf("finding best algorithm for %d data", len(datas))
-	aidatas := make([]models.LocationAnalysis, len(datas))
-	for i := range datas {
-		t := time.Now()
-		aidatas[i], err = AnalyzeSensorData(datas[i])
-		if err != nil {
-			return
-		}
-		logger.Log.Debugf("got analysis for %d/%d in %s", i, len(datas), time.Since(t))
+
+	t := time.Now()
+	type Job struct {
+		data models.SensorData
+		i    int
 	}
+	type Result struct {
+		data models.LocationAnalysis
+		i    int
+	}
+	jobs := make(chan Job, len(datas))
+	results := make(chan Result, len(datas))
+	workers := 8
+	for w := 0; w < workers; w++ {
+		go func(id int, jobs <-chan Job, results chan<- Result) {
+			for job := range jobs {
+				aidata, err := AnalyzeSensorData(job.data)
+				if err != nil {
+					logger.Log.Warn(err)
+				}
+				results <- Result{data: aidata, i: job.i}
+			}
+		}(w, jobs, results)
+	}
+	for i, data := range datas {
+		jobs <- Job{data: data, i: i}
+	}
+	close(jobs)
+	aidatas := make([]models.LocationAnalysis, len(datas))
+	for i := 0; i < len(datas); i++ {
+		result := <-results
+		aidatas[result.i] = result.data
+	}
+	logger.Log.Infof("analyzed %d data in %s", len(datas), time.Since(t))
 
 	for i, aidata := range aidatas {
 		for _, prediction := range aidata.Predictions {
