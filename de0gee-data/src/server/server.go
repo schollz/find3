@@ -36,18 +36,17 @@ func Run() (err error) {
 	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
 	})
-	r.GET("/api/v1/devices/:family", handlerApiV1Devices)
-	r.GET("/api/v1/location/:family/:device", handlerApiV1Location)
+	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
+	r.GET("/api/v1/location/:family/*device", handlerApiV1Location)
+	r.GET("/api/v1/calibrate/*family", handlerApiV1Calibrate)
 	r.GET("/ping", ping)
 	r.GET("/test", handleTest)
-	r.GET("/ws", wshandler)                  // handler for the web sockets (see websockets.go)
-	r.POST("/mqtt", handlerMQTT)             // handler for setting MQTT
-	r.POST("/data", handlerData)             // typical data handler
-	r.POST("/reverse", handlerReverse)       // typical data handler
-	r.POST("/learn", handlerFIND)            // backwards-compatible with FIND for learning
-	r.POST("/track", handlerFIND)            // backwards-compatible with FIND for tracking
-	r.GET("/location", handlerLocation)      // get the latest location
-	r.POST("/calibrate", handlerCalibration) // calibrate to get the latest location
+	r.GET("/ws", wshandler)            // handler for the web sockets (see websockets.go)
+	r.POST("/mqtt", handlerMQTT)       // handler for setting MQTT
+	r.POST("/data", handlerData)       // typical data handler
+	r.POST("/reverse", handlerReverse) // typical data handler
+	r.POST("/learn", handlerFIND)      // backwards-compatible with FIND for learning
+	r.POST("/track", handlerFIND)      // backwards-compatible with FIND for tracking
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
 
 	// start goroutines
@@ -90,7 +89,8 @@ func handlerApiV1Devices(c *gin.Context) {
 }
 func handleApiV1Location(c *gin.Context) (s models.SensorData, analysis models.LocationAnalysis, err error) {
 	family := strings.TrimSpace(c.Param("family"))
-	device := strings.TrimSpace(c.Param("device"))
+	device := strings.TrimSpace(c.Param("device")[1:])
+
 	d, err := database.Open(family, true)
 	if err != nil {
 		return
@@ -109,11 +109,27 @@ func handleApiV1Location(c *gin.Context) (s models.SensorData, analysis models.L
 
 func handlerApiV1Location(c *gin.Context) {
 	s, analysis, err := handleApiV1Location(c)
-	message := "got location"
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
+	} else {
+
+		c.JSON(http.StatusOK, gin.H{"message": "got location", "success": err == nil, "sensors": s, "analysis": analysis})
+	}
+}
+
+func handlerApiV1Calibrate(c *gin.Context) {
+	family := strings.TrimSpace(c.Param("family")[1:])
+	var err error
+	if family == "" {
+		err = errors.New("invalid family")
+	} else {
+		err = api.Calibrate(family, true)
+	}
+	message := "calibrated data"
 	if err != nil {
 		message = err.Error()
 	}
-	c.JSON(http.StatusOK, gin.H{"message": message, "success": err == nil, "sensors": s, "analysis": analysis})
+	c.JSON(http.StatusOK, gin.H{"message": message, "success": err == nil})
 }
 
 func handlerMQTT(c *gin.Context) {
@@ -169,36 +185,6 @@ func sendOutLocation(family, device string) (s models.SensorData, analysis model
 	}
 	analysis, err = sendOutData(s)
 	return
-}
-
-func handleCalibration(c *gin.Context) (err error) {
-	type Payload struct {
-		Family string `json:"family" binding:"required"`
-	}
-	var p Payload
-	err = c.BindJSON(&p)
-	if err != nil {
-		return
-	}
-	err = api.Calibrate(p.Family)
-	return
-}
-
-func handlerCalibration(c *gin.Context) {
-	t := time.Now()
-	err := handleCalibration(c)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"message": "calibrated data in " + time.Since(t).String(), "success": true})
-	}
-}
-
-func handlerLocation(c *gin.Context) {
-	err := handleLocation(c)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
-	}
 }
 
 func handlerData(c *gin.Context) {

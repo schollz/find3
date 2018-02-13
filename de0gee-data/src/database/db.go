@@ -17,6 +17,15 @@ import (
 	flock "github.com/theckman/go-flock"
 )
 
+func Exists(name string) (err error) {
+	name = strings.TrimSpace(name)
+	name = path.Join(DataFolder, base58.FastBase58Encoding([]byte(name))+".sqlite3.db")
+	if _, err = os.Stat(name); err != nil {
+		err = errors.New("database '" + name + "' does not exist")
+	}
+	return
+}
+
 // Open will open the database for transactions by first aquiring a filelock.
 func Open(name string, readOnly ...bool) (d *Database, err error) {
 	name = strings.TrimSpace(name)

@@ -32,7 +32,7 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 	p.DataFolder = DataFolder
 
 	// gather the data
-	db, err := database.Open(family)
+	db, err := database.Open(family, true)
 	if err != nil {
 		return
 	}
@@ -117,7 +117,7 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 	}
 	jobs := make(chan Job, len(datas))
 	results := make(chan Result, len(datas))
-	workers := 8
+	workers := 9
 	for w := 0; w < workers; w++ {
 		go func(id int, jobs <-chan Job, results chan<- Result) {
 			for job := range jobs {
@@ -194,7 +194,6 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		}
 	}
 
-	logger.Log.Debugf("determining best guess for %d datas", len(aidatas))
 	correct := 0
 	for i := range aidatas {
 		bestGuess := determineBestGuess(aidatas[i], algorithmEfficacy)
@@ -204,7 +203,6 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 	}
 	logger.Log.Infof("correct: %d/%d", correct, len(aidatas))
 
-	logger.Log.Infof("algorithmEfficacy: %+v", algorithmEfficacy)
 	// gather the data
 	db, err := database.Open(datas[0].Family)
 	if err != nil {
