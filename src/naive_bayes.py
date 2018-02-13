@@ -105,6 +105,13 @@ class ExtendedNaiveBayes:
         cached = cache.get(name)
         if cached != None:
             return cached
+        P = 0.005
+        nameData = "{}{}{}".format(mac,loc,positive)
+        cached = cache.get(nameData)
+        if cached != None:
+            if val in cached:
+                P = cached[val]
+            return P
 
         # First find all the values for mac at loc
         db = sqlite3.connect(self.db_name)
@@ -133,12 +140,15 @@ class ExtendedNaiveBayes:
         total = 0
         for v in new_val_to_count:
             total += new_val_to_count[v]
+        for v in new_val_to_count:
+            new_val_to_count[v] = new_val_to_count[v] / total
 
         # 0.5% chance for anything
         P = 0.005
         if val in new_val_to_count:
-            P = new_val_to_count[val]/total
+            P = new_val_to_count[val]
         cache[name] = P 
+        cache[nameData] = new_val_to_count
         return P
 
     def predict_proba(self,header_unfiltered,csv_data_unfiltered):
