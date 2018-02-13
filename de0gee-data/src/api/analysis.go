@@ -102,11 +102,13 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	var algorithmEfficacy map[string]map[string]BinaryStats
 	d.Get("AlgorithmEfficacy", &algorithmEfficacy)
 	aidata.BestGuess = determineBestGuess(aidata, algorithmEfficacy)
+
 	// add prediction to the database
-	err = d.AddPrediction(s.Timestamp, aidata)
-	if err != nil {
-		return
-	}
+	// adding predictions uses up a lot of space
+	// err = d.AddPrediction(s.Timestamp, aidata)
+	// if err != nil {
+	// 	return
+	// }
 
 	return
 }
