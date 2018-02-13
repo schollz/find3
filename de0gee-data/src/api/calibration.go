@@ -105,7 +105,6 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 func FindBestAlgorithm(datas []models.SensorData) (err error) {
 	predictionAnalysis := make(map[string]map[string]map[string]int)
 	logger.Log.Debugf("finding best algorithm for %d data", len(datas))
-
 	aidatas := make([]models.LocationAnalysis, len(datas))
 	for i := range datas {
 		t := time.Now()
@@ -113,7 +112,7 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		if err != nil {
 			return
 		}
-		logger.Log.Debugf("got analysis in %s", time.Since(t))
+		logger.Log.Debugf("got analysis for %d/%d in %s", i, len(datas), time.Since(t))
 	}
 
 	for i, aidata := range aidatas {
@@ -170,6 +169,7 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		}
 	}
 
+	logger.Log.Debugf("determining best guess for %d datas", len(aidatas))
 	correct := 0
 	for i := range aidatas {
 		bestGuess := determineBestGuess(aidatas[i], algorithmEfficacy)
@@ -179,23 +179,25 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 	}
 	logger.Log.Infof("correct: %d/%d", correct, len(aidatas))
 
+	logger.Log.Infof("algorithmEfficacy: %+v", algorithmEfficacy)
 	// gather the data
 	db, err := database.Open(datas[0].Family)
 	if err != nil {
+		logger.Log.Error(err)
 		return
 	}
 	defer db.Close()
 	err = db.Set("PercentCorrect", float64(correct)/float64(len(datas)))
 	if err != nil {
-		return
+		logger.Log.Error(err)
 	}
 	err = db.Set("PredictionAnalysis", predictionAnalysis)
 	if err != nil {
-		return
+		logger.Log.Error(err)
 	}
 	err = db.Set("AlgorithmEfficacy", algorithmEfficacy)
 	if err != nil {
-		return
+		logger.Log.Error(err)
 	}
 	return
 }

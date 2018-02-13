@@ -21,14 +21,22 @@ func NewBinaryStats(tp, fp, tn, fn int) BinaryStats {
 	fpf := float64(fp)
 	tnf := float64(tn)
 	fnf := float64(fn)
+	sensitivity := float64(0)
+	if tpf+fnf != 0 {
+		sensitivity = tpf / (tpf + fnf)
+	}
+	specificity := float64(0)
+	if tnf+fpf != 0 {
+		specificity = tnf / (tnf + fpf)
+	}
 	return BinaryStats{
 		TruePositives:  tp,
 		FalsePositives: fp,
 		TrueNegatives:  tn,
 		FalseNegatives: fn,
 
-		Sensitivity:  tpf / (tpf + fnf),
-		Specificity:  tnf / (tnf + fpf),
-		Informedness: tpf/(tpf+fnf) + tnf/(tnf+fpf) - 1,
+		Sensitivity:  sensitivity,
+		Specificity:  specificity,
+		Informedness: specificity + sensitivity - 1,
 	}
 }
