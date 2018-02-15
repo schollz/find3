@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/schollz/find2/server/main/src/api"
 	"github.com/schollz/find2/server/main/src/database"
 	"github.com/schollz/find2/server/main/src/models"
 	"github.com/schollz/find2/server/main/src/mqtt"
-	"github.com/gin-gonic/gin"
 )
 
 // Port defines the public port
@@ -237,11 +237,15 @@ func handleReverse(c *gin.Context) (err error) {
 			rollingData.Datas = []models.SensorData{}
 			rollingData.HasData = true
 		}
-		if len(d.Sensors["wifi"]) == 0 {
+		if len(d.Sensors) == 0 {
 			return errors.New("no fingerprints")
 		} else {
 			rollingData.Datas = append(rollingData.Datas, d)
-			message = fmt.Sprintf("inserted %d fingerprints for %s", len(d.Sensors["wifi"]), d.Family)
+			numFingerprints := 0
+			for sensor := range d.Sensors {
+				numFingerprints += len(d.Sensors[sensor])
+			}
+			message = fmt.Sprintf("inserted %d fingerprints for %s", numFingerprints, d.Family)
 		}
 	}
 	err = db.Set("ReverseRollingData", rollingData)
@@ -271,25 +275,28 @@ func parseRollingData(family string) (err error) {
 		logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Timestamp))
 		// merge data
 		for _, data := range rollingData.Datas {
-			for mac := range data.Sensors["wifi"] {
-				rssi := data.Sensors["wifi"][mac]
-				if _, ok := sensorMap[mac]; !ok {
-					location := ""
-					// if there is a device+location in map, then it is currently doing learning
-					if loc, hasMac := rollingData.DeviceLocation[mac]; hasMac {
-						location = loc
+			for sensor := range data.Sensors {
+				for mac := range data.Sensors[sensor] {
+					rssi := data.Sensors[sensor][mac]
+					trackedDeviceName := sensor + "-" + mac
+					if _, ok := sensorMap[trackedDeviceName]; !ok {
+						location := ""
+						// if there is a device+location in map, then it is currently doing learning
+						if loc, hasMac := rollingData.DeviceLocation[mac]; hasMac {
+							location = loc
+						}
+						sensorMap[trackedDeviceName] = models.SensorData{
+							Family:    family,
+							Device:    trackedDeviceName,
+							Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
+							Sensors:   make(map[string]map[string]interface{}),
+							Location:  location,
+						}
+						time.Sleep(10 * time.Millisecond)
+						sensorMap[trackedDeviceName].Sensors[sensor] = make(map[string]interface{})
 					}
-					sensorMap[mac] = models.SensorData{
-						Family:    family,
-						Device:    mac,
-						Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
-						Sensors:   make(map[string]map[string]interface{}),
-						Location:  location,
-					}
-					time.Sleep(10 * time.Millisecond)
-					sensorMap[mac].Sensors["wifi"] = make(map[string]interface{})
+					sensorMap[trackedDeviceName].Sensors[sensor][data.Device] = rssi
 				}
-				sensorMap[mac].Sensors["wifi"][data.Device] = rssi
 			}
 		}
 		rollingData.HasData = false

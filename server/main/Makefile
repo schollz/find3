@@ -27,7 +27,7 @@ release:
 
 server1:
 	go build -v
-	./de0gee-data -debug
+	./main -debug
 
 
 dev1:
