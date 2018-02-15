@@ -1,5 +1,23 @@
 # scanner
 
+```
+# First time
+docker run --net="host" --privileged --name scanning -d -i -t scanner
+# Then
+docker start scanning
+docker stop scanning
+# To scan:
+docker exec scanning sh -c "scanner -bluetooth -debug -device dell -family test1"
+# Building
+docker build -t scanner .
+```
+
+Interactive mode:
+
+```
+docker run --net="host" --privileged --name scanning -i -t scanner /bin/bash
+```
+
 A laptop computer scanner for Bluetooth+WiFi for use with de0gee.
 
 ## Usage
