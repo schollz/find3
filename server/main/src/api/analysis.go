@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	cache "github.com/robfig/go-cache"
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/models"
-	cache "github.com/robfig/go-cache"
 )
 
 // AIPort designates the port for the AI processing
@@ -116,6 +116,9 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[string]map[string]BinaryStats) (b models.LocationPrediction) {
 	bestEfficacy := float64(0)
 	for _, prediction := range aidata.Predictions {
+		if len(prediction.Locations) == 0 {
+			continue
+		}
 		guessedLocation := aidata.LocationNames[prediction.Locations[0]]
 		efficacy := prediction.Probabilities[0] * algorithmEfficacy[prediction.Name][guessedLocation].Informedness
 		if efficacy > bestEfficacy {

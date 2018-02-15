@@ -51,15 +51,14 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 			datas[i], datas[j] = datas[j], datas[i]
 		}
 
-		// split the data to use 60% to learn, 40% to test
-		splitI := int(0.6 * float64(len(datas)))
+		// split the data to use 70% to learn, 30% to test
+		splitI := int(0.7 * float64(len(datas)))
 		datasTest = datas[splitI:]
 		datas = datas[:splitI]
 		logger.Log.Debugf("splitting data for cross validation (%d -> %d)", len(datas), splitI)
 	}
 
 	logger.Log.Debugf("writing %s data to %s", family, path.Join(p.DataFolder, p.CSVFile))
-
 	err = dumpSensorsToCSV(datas, path.Join(p.DataFolder, p.CSVFile))
 	if err != nil {
 		return

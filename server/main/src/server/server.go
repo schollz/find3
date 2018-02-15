@@ -282,7 +282,7 @@ func parseRollingData(family string) (err error) {
 					if _, ok := sensorMap[trackedDeviceName]; !ok {
 						location := ""
 						// if there is a device+location in map, then it is currently doing learning
-						if loc, hasMac := rollingData.DeviceLocation[mac]; hasMac {
+						if loc, hasMac := rollingData.DeviceLocation[trackedDeviceName]; hasMac {
 							location = loc
 						}
 						sensorMap[trackedDeviceName] = models.SensorData{
