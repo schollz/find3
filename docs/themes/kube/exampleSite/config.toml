@@ -1,0 +1,25 @@
+baseURL = "/"
+languageCode = "en-us"
+title = "Kube for Hugo"
+theme = "kube"
+description = "Kube is a professional  and a responsive Hugo theme for developers and designers that offers a documentation section mixed with a landing page and a blog"
+Paginate = 4
+[Params]
+  RSSLink = "/index.xml"
+  author = "newpixcom" # add your company name
+  github = "" # add your github profile name
+  twitter = "" # add your twitter profile
+  email = "myemail@myaddress.xxx"
+
+[[menu.main]]
+    name = "Docs"
+    weight = -100
+    url = "/docs/"
+[[menu.main]]
+    name = "Blog"
+    weight = -100
+    url = "/blog/"
+[[menu.main]]
+    name = "Faq"
+    weight = -100
+    url = "/faq/"

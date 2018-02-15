@@ -1,0 +1,213 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto+Mono");
+@import url('https://fonts.googleapis.com/css?family=Permanent+Marker');
+* {
+    font-family: 'Roboto Mono', monospace;
+}
+
+#kube-faq h2,h2,h1,#top-brand a {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 200%;
+    color: black;
+    text-decoration: none;
+}
+
+#top-brand {
+    margin-top: 0.5em;
+}
+
+#posts {
+    text-align: left;
+}
+
+div h2 {
+    padding-bottom: 0.5em;
+}
+
+h2.title {
+    padding-top: 0.5em;
+}
+
+#kube-faq {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+code {
+	padding: 1em;
+}
+pre {
+  background: #eee;
+  padding: 1em;
+  border-radius: 1em;
+}
+
+/* Background */
+
+.chroma {
+    color: #f8f8f2;
+}
+
+/* Error */
+
+.chroma .ss4 {
+    color: #960050;
+}
+
+/* LineHighlight */
+
+.chroma .hl {
+    background-color: #ffffcc;
+    display: block;
+    width: 100%;
+}
+
+/* LineNumbers */
+
+.chroma .ln {
+    margin-right: 0.4em;
+    padding: 0 0.4em 0 0.4em;
+}
+
+/* Keyword */
+
+.chroma .s3e8 {
+    color: #66d9ef;
+}
+
+/* KeywordNamespace */
+
+.chroma .s3eb {
+    color: #f92672;
+}
+
+/* Name */
+
+.chroma .s7d0 {}
+
+/* NameAttribute */
+
+.chroma .s7d1 {
+    color: #a6e22e;
+}
+
+/* NameClass */
+
+.chroma .s7d4 {
+    color: #a6e22e;
+}
+
+/* NameConstant */
+
+.chroma .s7d5 {
+    color: #66d9ef;
+}
+
+/* NameDecorator */
+
+.chroma .s7d6 {
+    color: #a6e22e;
+}
+
+/* NameException */
+
+.chroma .s7d8 {
+    color: #a6e22e;
+}
+
+/* NameFunction */
+
+.chroma .s7d9 {
+    color: #a6e22e;
+}
+
+/* NameOther */
+
+.chroma .s7df {
+    color: #a6e22e;
+}
+
+/* NameTag */
+
+.chroma .s7e2 {
+    color: #f92672;
+}
+
+/* Literal */
+
+.chroma .sbb8 {
+    color: #ae81ff;
+}
+
+/* LiteralDate */
+
+.chroma .sbb9 {
+    color: #e6db74;
+}
+
+/* LiteralString */
+
+.chroma .sc1c {
+    color: #e6db74;
+}
+
+/* LiteralStringEscape */
+
+.chroma .sc25 {
+    color: #ae81ff;
+}
+
+/* LiteralNumber */
+
+.chroma .sc80 {
+    color: #ae81ff;
+}
+
+/* Operator */
+
+.chroma .sfa0 {
+    color: #f92672;
+}
+
+/* Punctuation */
+
+.chroma .s1388 {}
+
+/* Comment */
+
+.chroma .s1770 {
+    color: #75715e;
+}
+
+/* GenericDeleted */
+
+.chroma .s1b59 {
+    color: #f92672;
+}
+
+/* GenericEmph */
+
+.chroma .s1b5a {
+    font-style: italic;
+}
+
+/* GenericInserted */
+
+.chroma .s1b5d {
+    color: #a6e22e;
+}
+
+/* GenericStrong */
+
+.chroma .s1b60 {
+    font-weight: bold;
+}
+
+/* GenericSubheading */
+
+.chroma .s1b61 {
+    color: #75715e;
+}
+
+/* Text */
+
+.chroma .s1f40 {}

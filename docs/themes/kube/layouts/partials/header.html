@@ -1,0 +1,30 @@
+<div class="show-sm">
+    <div id="nav-toggle-box">
+      <img src="/img/find2-dog.png" width=48px style="top: 0px">&nbsp;
+      <div id="nav-toggle-brand">
+        <a href="/">find2</a>
+      </div><a data-component="toggleme" data-target="#top" href="#" id="nav-toggle"><i class="kube-menu"></i></a>
+    </div>
+  </div>
+  <div class="hide-sm" id="top">
+    <img class="hide-sm" src="/img/find2-dog.png" width=75px style="top: 0px">&nbsp;
+    <div id="top-brand">
+      <a href="/" title="home">find2</a>
+    </div>
+    <nav id="top-nav-main">
+      <ul>
+       {{ $currentPage := . }}
+       {{ range .Site.Menus.main }}
+    <li><a href="{{ .URL }}" {{if  $currentPage.IsMenuCurrent "main" . }} class="active"{{end}}>{{ .Name }}</a></li>
+    {{end}}
+      <li><a href="https://help.find2.com">Help</a></li>
+      </ul>
+    </nav>
+<!--     <nav id="top-nav-extra">
+      <ul>
+        <li>
+          <a href="/account/">Account</a>
+        </li>
+      </ul>
+    </nav> -->
+  </div>

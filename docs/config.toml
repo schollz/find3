@@ -1,0 +1,26 @@
+baseURL = "/"
+languageCode = "en-us"
+title = "find2"
+theme = "kube"
+description = "de0g33 is X"
+Paginate = 4
+pygmentsCodeFences=true 
+[Params]
+  RSSLink = "/index.xml"
+  author = "find2" # add your company name
+  github = "find2" # add your github profile name
+  twitter = "find2" # add your twitter profile
+  email = "webmaster@find2.com"
+
+[[menu.main]]
+    name = "Docs"
+    weight = -100
+    url = "/docs/"
+[[menu.main]]
+    name = "Blog"
+    weight = -100
+    url = "/blog/"
+[[menu.main]]
+    name = "Faq"
+    weight = -100
+    url = "/faq/"
