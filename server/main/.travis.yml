@@ -4,7 +4,7 @@ go:
   - tip
 
 before_install:
-  - go get github.com/schollz/find2/server/main
+  - go get github.com/schollz/find3/server/main
 script:
-  - cd $GOPATH/src/github.com/schollz/find2/server/main
+  - cd $GOPATH/src/github.com/schollz/find3/server/main
   - make

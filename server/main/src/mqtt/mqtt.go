@@ -8,9 +8,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/schollz/find2/server/main/src/database"
-	"github.com/schollz/find2/server/main/src/logging"
-	"github.com/schollz/find2/server/main/src/utils"
+	"github.com/schollz/find3/server/main/src/database"
+	"github.com/schollz/find3/server/main/src/logging"
+	"github.com/schollz/find3/server/main/src/utils"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pkg/errors"
 )

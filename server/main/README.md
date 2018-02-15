@@ -1,10 +1,10 @@
 
 # de0gee-data
 
-[![travis](https://travis-ci.org/schollz/find2/server/main.svg?branch=master)](https://travis-ci.org/schollz/find2/server/main) 
-[![go report card](https://goreportcard.com/badge/github.com/schollz/find2/server/main)](https://goreportcard.com/report/github.com/schollz/find2/server/main) 
-[![coverage](https://img.shields.io/badge/coverage-94%25-brightgreen.svg)](https://gocover.io/github.com/schollz/find2/server/main)
-[![godocs](https://godoc.org/github.com/schollz/find2/server/main?status.svg)](https://godoc.org/github.com/schollz/find2/server/main) 
+[![travis](https://travis-ci.org/schollz/find3/server/main.svg?branch=master)](https://travis-ci.org/schollz/find3/server/main) 
+[![go report card](https://goreportcard.com/badge/github.com/schollz/find3/server/main)](https://goreportcard.com/report/github.com/schollz/find3/server/main) 
+[![coverage](https://img.shields.io/badge/coverage-94%25-brightgreen.svg)](https://gocover.io/github.com/schollz/find3/server/main)
+[![godocs](https://godoc.org/github.com/schollz/find3/server/main?status.svg)](https://godoc.org/github.com/schollz/find3/server/main) 
 
 <h3 class="section-head" id="intro"><a href="#intro">Introduction</a></h3>
 
@@ -176,7 +176,7 @@ cd $GOPATH/de0gee/de0gee-ai/testing
 http localhost:8002/classify < testdb_single_rec.json
 
 # Start datastore server
-cd $GOPATH/schollz/find2/server/main
+cd $GOPATH/schollz/find3/server/main
 go build && ./de0gee-data
 
 # Test getting the classification of the latest location
@@ -191,10 +191,10 @@ Supervisord file:
 [supervisord]
 
 [program:de0gee-data]
-directory=/home/zns/go/src/github.com/schollz/find2/server/main
+directory=/home/zns/go/src/github.com/schollz/find3/server/main
 command=de0gee-data
-stdout_logfile: /home/zns/go/src/github.com/schollz/find2/server/main.std.log
-stdout_logfile: /home/zns/go/src/github.com/schollz/find2/server/main.err.log
+stdout_logfile: /home/zns/go/src/github.com/schollz/find3/server/main.std.log
+stdout_logfile: /home/zns/go/src/github.com/schollz/find3/server/main.err.log
 
 [program:de0gee-ai]
 directory=/home/zns/go/src/github.com/de0gee/de0gee-ai/src
@@ -212,7 +212,7 @@ MOSQUITTO
 
 ```
 # bootstrap
-cd $GOPATH/src/github.com/schollz/find2/server/main/src/mqtt
+cd $GOPATH/src/github.com/schollz/find3/server/main/src/mqtt
 go test 
 pkill -9 mosquitto
 mosquitto -c mosquitto_config/mosquitto.conf -d
@@ -233,8 +233,8 @@ mosquitto_pub -u zack -P 1234 -t 'someother' -m 'hello'
 Starting up everything
 
 ```
-cd $GOPATH/src/github.com/schollz/find2/server/main/src/mqtt && /usr/sbin/mosquitto -c mosquitto_config/mosquitto.conf -d
-cd $GOPATH/src/github.com/schollz/find2/server/main && ./de0gee-data
+cd $GOPATH/src/github.com/schollz/find3/server/main/src/mqtt && /usr/sbin/mosquitto -c mosquitto_config/mosquitto.conf -d
+cd $GOPATH/src/github.com/schollz/find3/server/main && ./de0gee-data
 
 # for debugging
 cd $GOPATH/src/github.com/de0gee/de0gee-ai/src && export FLASK_APP=server.py && export FLASK_DEBUG=1 && flask run --debugger --port 8002
@@ -312,7 +312,7 @@ Terminal1:
 
 Note the server address: http://Y:8003
 ```
-cd $GOPATH/src/github.com/schollz/find2/server/main && make dev1 | grep -v 'db.go'
+cd $GOPATH/src/github.com/schollz/find3/server/main && make dev1 | grep -v 'db.go'
 ```
 
 Terminal2:

@@ -1,6 +1,6 @@
 package database
 
-import "github.com/schollz/find2/server/main/src/logging"
+import "github.com/schollz/find3/server/main/src/logging"
 
 var DebugMode bool
 var logger *logging.SeelogWrapper

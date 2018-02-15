@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/schollz/find2/server/main/src/database"
-	"github.com/schollz/find2/server/main/src/models"
+	"github.com/schollz/find3/server/main/src/database"
+	"github.com/schollz/find3/server/main/src/models"
 	"github.com/stretchr/testify/assert"
 )
 

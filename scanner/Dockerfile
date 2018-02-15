@@ -13,7 +13,7 @@ RUN go get -v github.com/mattn/go-sqlite3
 RUN go install -v github.com/mattn/go-sqlite3
 
 # INSTALL FIND2 
-RUN go get -v github.com/schollz/find2/...
+RUN go get -v github.com/schollz/find3/...
 
 # INSTALL BLUEZ FROM SOURCE
 # This is commented out because its not needed except for information's sake
@@ -36,6 +36,6 @@ RUN go get -v github.com/schollz/find2/...
 RUN bluetoothd --version
 
 # BUILD THE SCANNER
-WORKDIR /root/go/src/github.com/schollz/find2/scanner
+WORKDIR /root/go/src/github.com/schollz/find3/scanner
 RUN go build -v
 RUN go install -v

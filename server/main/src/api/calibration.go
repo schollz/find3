@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/schollz/find2/server/main/src/database"
-	"github.com/schollz/find2/server/main/src/models"
-	"github.com/schollz/find2/server/main/src/utils"
+	"github.com/schollz/find3/server/main/src/database"
+	"github.com/schollz/find3/server/main/src/models"
+	"github.com/schollz/find3/server/main/src/utils"
 )
 
 // Calibrate will send the sensor data for a specific family to the machine learning algorithms

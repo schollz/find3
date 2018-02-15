@@ -11,7 +11,7 @@ import (
 
 	log "github.com/cihub/seelog"
 	"github.com/montanaflynn/stats"
-	"github.com/schollz/find2/server/main/src/models"
+	"github.com/schollz/find3/server/main/src/models"
 )
 
 var (

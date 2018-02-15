@@ -18,7 +18,7 @@ The examples are Unix-oriented but it should be easy to adapt them to a Windows 
 
 
 <<<<<<< HEAD
-## What is find2?
+## What is find3?
 =======
 ## What is de0gee?
 We made a device, that senses your pets environment, movement and location. All of the data is displayed on you Android or Apple smartphone, or a desktop PC, tablet or any other Internet machine.
@@ -33,17 +33,17 @@ We have a simple plan, use less battery and gain more wireless distance. Battery
 
 
 <<<<<<< HEAD
-## Can I use find2 on my phone?
+## Can I use find3 on my phone?
 
 
 
-## Can I access find2 from a web browser?
+## Can I access find3 from a web browser?
 
 
-## How does find2 handle security?
+## How does find3 handle security?
 
 
-## Can I design an app for find2?
+## Can I design an app for find3?
 =======
 ## Can I use de0gee on my phone?
 Yes, Android and Apple will be supported, not too sure anyone uses a Microsoft phone?

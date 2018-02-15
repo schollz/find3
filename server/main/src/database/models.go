@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 
-	"github.com/schollz/find2/server/main/src/logging"
+	"github.com/schollz/find3/server/main/src/logging"
 	_ "github.com/mattn/go-sqlite3"
 	flock "github.com/theckman/go-flock"
 )

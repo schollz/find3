@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/schollz/find2/server/main/src/api"
-	"github.com/schollz/find2/server/main/src/database"
-	"github.com/schollz/find2/server/main/src/models"
-	"github.com/schollz/find2/server/main/src/mqtt"
+	"github.com/schollz/find3/server/main/src/api"
+	"github.com/schollz/find3/server/main/src/database"
+	"github.com/schollz/find3/server/main/src/models"
+	"github.com/schollz/find3/server/main/src/mqtt"
 )
 
 // Port defines the public port

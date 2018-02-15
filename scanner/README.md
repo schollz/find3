@@ -11,7 +11,7 @@ $ curl -sSL https://get.docker.com | sh
 Fetch the latest Dockerfile and build the image:
 
 ```
-$ wget https://raw.githubusercontent.com/schollz/find2/master/scanner/Dockerfile
+$ wget https://raw.githubusercontent.com/schollz/find3/master/scanner/Dockerfile
 $ docker build -t scanner .
 ```
 
