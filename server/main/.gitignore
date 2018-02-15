@@ -3,6 +3,9 @@
 *.dll
 *.so
 *.dylib
+main 
+data/*
+mosquitto_config/*
 
 # Test binary, build with `go test -c`
 *.test
