@@ -1,0 +1,10 @@
+language: go
+
+go:
+  - tip
+
+before_install:
+  - go get github.com/schollz/find2/server/main
+script:
+  - cd $GOPATH/src/github.com/schollz/find2/server/main
+  - make

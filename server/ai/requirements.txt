@@ -1,0 +1,11 @@
+ujson
+pytest
+pytest-benchmark
+pytest-cov
+sklearn
+numpy
+scipy
+flask
+base58
+tqdm
+expiringdict
