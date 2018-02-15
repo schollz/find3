@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -11,46 +11,25 @@ import (
 
 // sudo apt-get install bluez
 // use btmgmt find instead
+var negativeNumberRegex = regexp.MustCompile(`-\d+`)
+var macAddressRegex = regexp.MustCompile(`([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})`)
 
-func scanBluetooth() map[string]interface{} {
-	// log.Println("reseting bluetooth")
-	// log.Println(RunCommand(1*time.Second, "service", "bluetooth", "restart"))
-	// time.Sleep(2 * time.Second)
-	c := make(chan string)
-	log.Debug("starting btmon")
-	go btmon(c)
-	time.Sleep(1500 * time.Millisecond)
-	log.Debug("starting btmgmt")
-	go btmgmtFind()
-	s, _ := <-c, <-c
-	ioutil.WriteFile("out", []byte(s), 0644)
-	name := ""
-	rssi := 0
-	datas := make(map[string]interface{})
+func scanBluetooth(out chan map[string]map[string]interface{}) {
+	log.Info("scanning bluetooth")
+	s := btmgmtFind()
+	data := make(map[string]map[string]interface{})
+	data["bluetooth"] = make(map[string]interface{})
 	for _, line := range strings.Split(s, "\n") {
-		if strings.Contains(line, "Address:") {
-			foo := strings.Split(line, "Address:")[1]
-			foo = strings.Split(foo, "(")[0]
-			foo = strings.ToLower(foo)
-			foo = strings.TrimSpace(foo)
-			name = foo
-		} else if strings.Contains(line, "RSSI:") {
-			foo := strings.Split(line, "RSSI:")[1]
-			foo = strings.Split(foo, "dB")[0]
-			foo = strings.TrimSpace(foo)
-			var err error
-			rssi, err = strconv.Atoi(foo)
+		if negativeNumberRegex.MatchString(line) && macAddressRegex.MatchString(line) {
+			rssi, err := strconv.Atoi(negativeNumberRegex.FindString(line))
 			if err != nil {
-				panic(err)
+				log.Warn(err)
+				continue
 			}
-		}
-		if name != "" && rssi != 0 {
-			datas[name] = rssi
-			name = ""
-			rssi = 0
+			data["bluetooth"][strings.ToLower(macAddressRegex.FindString(line))] = rssi
 		}
 	}
-	return datas
+	out <- data
 }
 
 func hcitoolLescan() {
@@ -58,9 +37,17 @@ func hcitoolLescan() {
 	log.Debug("finished lescan")
 }
 
-func btmgmtFind() {
-	RunCommand(6000*time.Millisecond, "btmgmt find")
-	log.Debug("finished btmgmt find")
+func btmgmtFind() string {
+	for i := 0; i < 30; i++ {
+		stdOut, stdErr := RunCommand(20*time.Second, "btmgmt find")
+		if !strings.Contains(stdErr, "Unable to start") && len(stdOut) != 0 {
+			log.Debug("finished btmgmt find")
+			return stdOut
+		}
+		RunCommand(20*time.Second, "service bluetooth restart")
+		time.Sleep(2 * time.Second)
+	}
+	return ""
 }
 
 func btmon(out chan string) {

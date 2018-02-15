@@ -6,11 +6,12 @@ import (
 	"time"
 )
 
-func iw() map[string]interface{} {
+func iw(out chan map[string]map[string]interface{}) {
 	s, _ := RunCommand(10*time.Second, "/sbin/iw dev "+wifiInterface+" scan -u")
 	name := ""
 	signal := 0
-	datas := make(map[string]interface{})
+	datas := make(map[string]map[string]interface{})
+	datas["wifi"] = make(map[string]interface{})
 	for _, line := range strings.Split(s, "\n") {
 		if strings.Contains(line, "(on") {
 			name = strings.Split(strings.Split(line, "(")[0], "BSS")[1]
@@ -27,8 +28,8 @@ func iw() map[string]interface{} {
 			}
 		}
 		if name != "" && signal != 0 {
-			datas[name] = signal
+			datas["wifi"][name] = signal
 		}
 	}
-	return datas
+	out <- datas
 }

@@ -12,6 +12,7 @@ import (
 )
 
 func RunCommand(tDuration time.Duration, commands string) (string, string) {
+	log.Debug(commands)
 	command := strings.Fields(commands)
 	cmd := exec.Command(command[0])
 	if len(command) > 0 {

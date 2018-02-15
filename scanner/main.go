@@ -10,8 +10,8 @@ import (
 	"time"
 
 	log "github.com/cihub/seelog"
-	"github.com/schollz/find2/server/main/src/models"
 	"github.com/montanaflynn/stats"
+	"github.com/schollz/find2/server/main/src/models"
 )
 
 var (
@@ -102,18 +102,29 @@ func basicCapture() {
 	payload.Device = device
 	payload.Location = location
 	payload.Sensors = make(map[string]map[string]interface{})
-	wifiData := iw()
-	// wifiData = iwlist()
-	// fmt.Println(wifiData)
-	if len(wifiData) > 0 {
-		payload.Sensors["wifi"] = wifiData
-	}
+
+	// collect sensors asynchronously
+	c := make(chan map[string]map[string]interface{})
+	numSensors := 0
+
+	go iw(c)
+	numSensors++
+
 	if doBluetooth {
-		bluetoothData := scanBluetooth()
-		if len(bluetoothData) > 0 {
-			payload.Sensors["bluetooth"] = bluetoothData
+		go scanBluetooth(c)
+		numSensors++
+	}
+
+	for i := 0; i < numSensors; i++ {
+		data := <-c
+		for sensor := range data {
+			payload.Sensors[sensor] = make(map[string]interface{})
+			for device := range data[sensor] {
+				payload.Sensors[sensor][device] = data[sensor][device]
+			}
 		}
 	}
+
 	if len(payload.Sensors) == 0 {
 		log.Error(errors.New("collected no data"))
 		return
