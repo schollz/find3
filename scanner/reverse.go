@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"path"
@@ -20,6 +19,12 @@ type Packet struct {
 }
 
 func ReverseScan(scanTime time.Duration) (sensors models.SensorData, err error) {
+	sensors = models.SensorData{}
+	sensors.Family = family
+	sensors.Device = device
+	sensors.Timestamp = time.Now().UnixNano() / int64(time.Millisecond)
+	sensors.Sensors = make(map[string]map[string]interface{})
+
 	tempFileName := "tshark-" + RandomString(10)
 	tempFile := path.Join("/tmp", tempFileName)
 	log.Debugf("saving tshark data to %s", tempFile)
@@ -87,18 +92,11 @@ func ReverseScan(scanTime time.Duration) (sensors models.SensorData, err error) 
 		err = errors.New("no packets found")
 		return
 	}
-	sensors = models.SensorData{}
-	sensors.Family = family
-	sensors.Device = device
-	sensors.Timestamp = time.Now().UnixNano() / int64(time.Millisecond)
-	sensors.Sensors = make(map[string]map[string]interface{})
 	sensors.Sensors["wifi"] = make(map[string]interface{})
 	for _, packet := range packets {
 		sensors.Sensors["wifi"][packet.Mac] = packet.RSSI
 	}
 
-	bSensors, _ := json.MarshalIndent(sensors, "", " ")
-	log.Debug(string(bSensors))
 	return
 }
 

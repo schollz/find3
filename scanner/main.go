@@ -76,20 +76,39 @@ func main() {
 }
 
 func reverseCapture() {
+
+	c := make(chan map[string]map[string]interface{})
+	if doBluetooth {
+		go scanBluetooth(c)
+	}
+
 	if !doNotModifyPromiscuity {
 		PromiscuousMode(true)
 		time.Sleep(1 * time.Second)
 	}
-	sensors, err := ReverseScan(time.Duration(scanSeconds) * time.Second)
+	payload, err := ReverseScan(time.Duration(scanSeconds) * time.Second)
 	if !doNotModifyPromiscuity {
 		PromiscuousMode(false)
 		time.Sleep(1 * time.Second)
 	}
+	if doBluetooth {
+		data := <-c
+		log.Debugf("bluetooth data:%+v", data)
+		for sensor := range data {
+			payload.Sensors[sensor] = make(map[string]interface{})
+			for device := range data[sensor] {
+				payload.Sensors[sensor][device] = data[sensor][device]
+			}
+		}
+	}
+	bSensors, _ := json.MarshalIndent(payload, "", " ")
+	log.Debug(string(bSensors))
+
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	err = postData(sensors, "/reverse")
+	err = postData(payload, "/reverse")
 	if err != nil {
 		log.Error(err)
 	}
