@@ -24,3 +24,17 @@ This repository is a complete re-write of the previous version of FIND ([github.
 - Support for Bluetooth scanning in scanning utility (previously just WiFi)
 - Meta-learning with 10 different machine learning classifiers (previously just three)
 - Better vertical-scaling on machine learning (previously there was not good scaling)
+
+# Quickstart
+
+```
+$ docker build -t find3 .
+$ mkdir /tmp/find3
+$ docker run -p 11883:1883 -p 8003:8003 -v /tmp/find3:/data --name find3server -d -t find3
+```
+
+Then to start/stop
+
+```
+$ docker start/stop find3server
+```
