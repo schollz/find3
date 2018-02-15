@@ -23,8 +23,17 @@ $ docker run --net="host" --privileged --name scanning -d -i -t scanner
 
 Then, you can send scanning commands using 
 
+**Active scanning**:
+
 ```
-$ docker exec scanning sh -c "scanner -bluetooth -debug -device dell -family test1"
+$ docker exec scanning sh -c "scanner -i YOURINTERFACE -debug -device YOURDEVICE -family YOURFAMILY -server http://YOURSERVER -scantime 10 -bluetooth -forever"
+```
+
+**Passive scanning**:
+
+```
+$ docker exec scanning sh -c "scanner -i YOURINTERFACE -debug -monitor-mode"
+$ docker exec scanning sh -c "scanner -i YOURINTERFACE -debug -device YOURDEVICE -family YOURFAMILY -reverse -server http://YOURSERVER -scantime 10 -bluetooth -forever"
 ```
 
 See below for more usage.
