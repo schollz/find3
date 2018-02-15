@@ -26,6 +26,7 @@ var (
 	doDebug                bool
 	doSetPromiscuous       bool
 	doNotModifyPromiscuity bool
+	runForever             bool
 )
 
 func main() {
@@ -40,6 +41,7 @@ func main() {
 	flag.BoolVar(&doDebug, "debug", false, "enable debugging")
 	flag.BoolVar(&doSetPromiscuous, "monitor-mode", false, "set promiscuous mode")
 	flag.BoolVar(&doNotModifyPromiscuity, "no-modify", false, "disable changing wifi promiscuity mode")
+	flag.BoolVar(&runForever, "forever", false, "run forever")
 	flag.IntVar(&scanSeconds, "scantime", 3, "scan time")
 	flag.Parse()
 
@@ -66,12 +68,17 @@ func main() {
 		return
 	}
 
-	if !doReverse {
-		log.Infof("scanning with %s", wifiInterface)
-		basicCapture()
-	} else {
-		log.Infof("reverse scanning with %s", wifiInterface)
-		reverseCapture()
+	for {
+		if !doReverse {
+			log.Infof("scanning with %s", wifiInterface)
+			basicCapture()
+		} else {
+			log.Infof("reverse scanning with %s", wifiInterface)
+			reverseCapture()
+		}
+		if !runForever {
+			break
+		}
 	}
 }
 

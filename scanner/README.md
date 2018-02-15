@@ -12,7 +12,7 @@ Fetch the latest Dockerfile and build the image:
 
 ```
 $ wget https://raw.githubusercontent.com/schollz/find2/master/scanner/Dockerfile
-$ docker build -t scanning .
+$ docker build -t scanner .
 ```
 
 Run the image in the background :
