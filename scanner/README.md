@@ -1,24 +1,47 @@
 # scanner
 
+# Quickstart instructions
+
+Install Docker:
+
 ```
-# First time
-docker run --net="host" --privileged --name scanning -d -i -t scanner
-# Then
-docker start scanning
-docker stop scanning
-# To scan:
-docker exec scanning sh -c "scanner -bluetooth -debug -device dell -family test1"
-# Building
-docker build -t scanner .
+$ curl -sSL https://get.docker.com | sh
 ```
 
-Interactive mode:
+Fetch the latest Dockerfile and build the image:
+
+```
+$ wget https://raw.githubusercontent.com/schollz/find2/master/scanner/Dockerfile
+$ docker build -t scanning .
+```
+
+Run the image in the background :
+
+```
+$ docker run --net="host" --privileged --name scanning -d -i -t scanner
+```
+
+Then, you can send scanning commands using 
+
+```
+$ docker exec scanning sh -c "scanner -bluetooth -debug -device dell -family test1"
+```
+
+See below for more usage.
+
+Start/stop the image using 
+
+```
+$ docker start scanning
+$ docker stop scanning
+```
+
+Jump inside the image:
 
 ```
 docker run --net="host" --privileged --name scanning -i -t scanner /bin/bash
 ```
 
-A laptop computer scanner for Bluetooth+WiFi for use with de0gee.
 
 ## Usage
 
