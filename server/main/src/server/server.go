@@ -295,7 +295,7 @@ func parseRollingData(family string) (err error) {
 						time.Sleep(10 * time.Millisecond)
 						sensorMap[trackedDeviceName].Sensors[sensor] = make(map[string]interface{})
 					}
-					sensorMap[trackedDeviceName].Sensors[sensor][data.Device] = rssi
+					sensorMap[trackedDeviceName].Sensors[sensor][data.Device+"-"+sensor] = rssi
 				}
 			}
 		}
