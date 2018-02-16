@@ -19,11 +19,11 @@ Documentation: [www.internalpositioning.com](https://www.internalpositioning.com
 
 This repository is a complete re-write of the previous version of FIND ([github.com/schollz/find](https://github.com/schollz/find)). The API for sending fingerprints (`/track` and `/learn`) is backward compatible. There are several notable improvements on the previous version:
 
-- Generalized data sources like Bluetooth / WiFi / magnetic fields / etc. (previously just WiFi)
-- Passive scanning built-in (previously required a separate server)
+- Support for any data source, Bluetooth / WiFi / magnetic fields / etc. (previously just WiFi)
+- Passive scanning built-in (previously required a [separate server](https://github.com/schollz/find-lf))
 - Support for Bluetooth scanning in scanning utility (previously just WiFi)
 - Meta-learning with 10 different machine learning classifiers (previously just three)
-- Better vertical-scaling on machine learning (previously there was not good scaling)
+- Client uses Websockets+React which reduces bandwidth (and coding complexity)
 
 # Quickstart
 
