@@ -19,7 +19,7 @@ import (
 //
 // and also a `sensors` table for the sensor data:
 //
-// 	TIMESTAMP (INTEGER)	FAMILY(TEXT)	DEVICE(TEXT)	LOCATOIN(TEXT)
+// 	TIMESTAMP (INTEGER)	DEVICE(TEXT) LOCATION(TEXT)
 //
 // the sensor table will dynamically create more columns as new types
 // of sensor data are inserted. The LOCATION column is optional and
@@ -39,7 +39,7 @@ func (d *Database) MakeTables() (err error) {
 		d.logger.Log.Error(err)
 		return
 	}
-	sqlStmt = `create table sensors (timestamp integer not null primary key, family text, device text, location text, unique(timestamp));`
+	sqlStmt = `create table sensors (timestamp integer not null primary key, device text, location text, unique(timestamp));`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
@@ -228,12 +228,11 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 	}
 
 	// first add new columns in the sensor data
-	args := make([]interface{}, 4)
+	args := make([]interface{}, 3)
 	args[0] = s.Timestamp
-	args[1] = s.Family
-	args[2] = deviceNamesSS.ShrinkString(s.Device)
-	args[3] = s.Location
-	argsQ := []string{"?", "?", "?", "?"}
+	args[1] = deviceNamesSS.ShrinkString(s.Device)
+	args[2] = s.Location
+	argsQ := []string{"?", "?", "?"}
 	for sensor := range s.Sensors {
 		if _, ok := oldColumns[sensor]; !ok {
 			stmt, err := tx.Prepare("alter table sensors add column " + sensor + " text")
@@ -263,7 +262,7 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 	newColumnList := make([]string, len(columnList))
 	j := 0
 	for i, c := range columnList {
-		if i >= 4 {
+		if i >= 3 {
 			if _, ok := s.Sensors[c]; !ok {
 				continue
 			}
@@ -324,8 +323,18 @@ func (d *Database) GetAllForClassification() (s []models.SensorData, err error) 
 }
 
 // GetLatest will return a sensor data for classifying
-func (d *Database) GetLatest(device interface{}) (s models.SensorData, err error) {
+func (d *Database) GetLatest(device string) (s models.SensorData, err error) {
+	var deviceNameStringSizerString string
+	err = d.Get("deviceNameStringSizer", &deviceNameStringSizerString)
+	if err != nil {
+		return
+	}
+	deviceNamesSS, err := stringsizer.New(deviceNameStringSizerString)
+	if err != nil {
+		return
+	}
 	var sensors []models.SensorData
+	device = deviceNamesSS.ShrinkString(device)
 	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM sensors WHERE device = ? ORDER BY timestamp DESC LIMIT 1", device)
 	if err != nil {
 		return
@@ -371,7 +380,17 @@ func (d *Database) GetKeys(keylike string) (keys []string, err error) {
 }
 
 func (d *Database) GetDevices() (devices []string, err error) {
-	query := "SELECT device FROM (SELECT device,COUNT(device) AS counts FROM sensors GROUP BY device) WHERE counts > 2 ORDER BY counts DESC;"
+	var deviceNameStringSizerString string
+	err = d.Get("deviceNameStringSizer", &deviceNameStringSizerString)
+	if err != nil {
+		return
+	}
+	deviceNamesSS, err := stringsizer.New(deviceNameStringSizerString)
+	if err != nil {
+		return
+	}
+
+	query := "SELECT device FROM (SELECT device,COUNT(device) AS counts FROM sensors GROUP BY device) WHERE counts > 0 ORDER BY counts DESC;"
 	stmt, err := d.db.Prepare(query)
 	if err != nil {
 		err = errors.Wrap(err, query)
@@ -393,7 +412,12 @@ func (d *Database) GetDevices() (devices []string, err error) {
 			err = errors.Wrap(err, "scanning")
 			return
 		}
-		devices = append(devices, key)
+		deviceName, err2 := deviceNamesSS.ExpandString(key)
+		if err2 != nil {
+			err = errors.Wrap(err2, "problem getting device name")
+			return
+		}
+		devices = append(devices, deviceName)
 	}
 	err = rows.Err()
 	if err != nil {

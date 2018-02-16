@@ -3,8 +3,8 @@ package database
 import (
 	"database/sql"
 
-	"github.com/schollz/find3/server/main/src/logging"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/schollz/find3/server/main/src/logging"
 	flock "github.com/theckman/go-flock"
 )
 
@@ -15,6 +15,7 @@ var DataFolder = "."
 // pertaining to the name of the database.
 type Database struct {
 	name     string
+	family   string
 	db       *sql.DB
 	fileLock *flock.Flock
 	logger   *logging.SeelogWrapper

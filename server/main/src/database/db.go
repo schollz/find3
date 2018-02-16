@@ -27,16 +27,16 @@ func Exists(name string) (err error) {
 }
 
 // Open will open the database for transactions by first aquiring a filelock.
-func Open(name string, readOnly ...bool) (d *Database, err error) {
-	name = strings.TrimSpace(name)
+func Open(family string, readOnly ...bool) (d *Database, err error) {
 	d = new(Database)
+	d.family = strings.TrimSpace(family)
 
 	// convert the name to base64 for file writing
 	// override the name
 	if len(readOnly) > 1 && readOnly[1] {
-		d.name = path.Join(DataFolder, name)
+		d.name = path.Join(DataFolder, d.family)
 	} else {
-		d.name = path.Join(DataFolder, base58.FastBase58Encoding([]byte(name))+".sqlite3.db")
+		d.name = path.Join(DataFolder, base58.FastBase58Encoding([]byte(d.family))+".sqlite3.db")
 	}
 	d.logger, err = logging.New()
 	if err != nil {
@@ -46,7 +46,7 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 
 	// if read-only, make sure the database exists
 	if _, err = os.Stat(d.name); err != nil && len(readOnly) > 0 && readOnly[0] {
-		err = errors.New(fmt.Sprintf("group '%s' does not exist", name))
+		err = errors.New(fmt.Sprintf("group '%s' does not exist", d.family))
 		return
 	}
 
@@ -183,8 +183,7 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 		return
 	}
 
-	s = make([]models.SensorData, 100000)
-	sI := 0
+	s = []models.SensorData{}
 	// loop through rows
 	for rows.Next() {
 		var arr []interface{}
@@ -199,14 +198,14 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 		s0 := models.SensorData{
 			// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
 			Timestamp: int64((*arr[0].(*interface{})).(int64)),
-			Family:    string((*arr[1].(*interface{})).([]uint8)),
-			Device:    string((*arr[2].(*interface{})).([]uint8)),
-			Location:  string((*arr[3].(*interface{})).([]uint8)),
+			Family:    d.family,
+			Device:    string((*arr[1].(*interface{})).([]uint8)),
+			Location:  string((*arr[2].(*interface{})).([]uint8)),
 			Sensors:   make(map[string]map[string]interface{}),
 		}
 		// add in the sensor data
 		for i, colName := range columnList {
-			if i < 4 {
+			if i < 3 {
 				continue
 			}
 			if *arr[i].(*interface{}) == nil {
@@ -222,10 +221,8 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 		if err != nil {
 			return
 		}
-		s[sI] = s0
-		sI++
+		s = append(s, s0)
 	}
-	s = s[:sI]
 	err = rows.Err()
 	if err != nil {
 		err = errors.Wrap(err, "getRows")
