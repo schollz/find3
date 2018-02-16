@@ -53,18 +53,21 @@ func (d *Database) MakeTables() (err error) {
 		d.logger.Log.Error(err)
 		return
 	}
+	sqlStmt = `CREATE TABLE devices_ids (id TEXT PRIMARY KEY, name TEXT, unique(name));`
+	_, err = d.db.Exec(sqlStmt)
+	if err != nil {
+		err = errors.Wrap(err, "MakeTables")
+		d.logger.Log.Error(err)
+		return
+	}
+	sqlStmt = `CREATE TABLE sensor_ids (id TEXT PRIMARY KEY, name TEXT, unique(name));`
+	_, err = d.db.Exec(sqlStmt)
+	if err != nil {
+		err = errors.Wrap(err, "MakeTables")
+		d.logger.Log.Error(err)
+		return
+	}
 
-	// save empty string sizers
-	ss, _ := stringsizer.New()
-	err = d.Set("sensorDataStringSizer", ss.Save())
-	if err != nil {
-		return
-	}
-	err = d.Set("deviceNameStringSizer", ss.Save())
-	if err != nil {
-		return
-	}
-	d.logger.Log.Debug("initiate map key shrinker")
 	return
 }
 

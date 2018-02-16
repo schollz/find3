@@ -7,7 +7,7 @@ LDFLAGS=-ldflags "-s -w -X main.Version=${TAG}-${HASH}"
 
 
 basicbuild:
-	go build ${LDFLAGS}
+	rerun -p "**/*.{go,tmpl,css,js}" --ignore 'bindata.go' make server1
 
 update:
 	dep ensure -v
@@ -26,13 +26,8 @@ release:
 
 
 server1:
-	go build -v
+	go build -v ${LDFLAGS}
 	./main -debug
-
-
-dev1:
-	rerun -p "**/*.{go,tmpl,css,js}" --ignore 'bindata.go' make server1
-
 
 docs:
 	cd doc && make serve
