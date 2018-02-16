@@ -53,6 +53,18 @@ func (d *Database) MakeTables() (err error) {
 		d.logger.Log.Error(err)
 		return
 	}
+
+	// save empty string sizers
+	ss, _ := stringsizer.New()
+	err = d.Set("sensorDataStringSizer", ss.Save())
+	if err != nil {
+		return
+	}
+	err = d.Set("deviceNameStringSizer", ss.Save())
+	if err != nil {
+		return
+	}
+	d.logger.Log.Debug("initiate map key shrinker")
 	return
 }
 
@@ -189,13 +201,22 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 		oldColumns[column] = struct{}{}
 	}
 
-	// get slimmer
+	// get string sizers
 	var sensorDataStringSizerString string
 	err = d.Get("sensorDataStringSizer", &sensorDataStringSizerString)
 	if err != nil {
 		return
 	}
-	ss, err := stringsizer.New(sensorDataStringSizerString)
+	sensorDataSS, err := stringsizer.New(sensorDataStringSizerString)
+	if err != nil {
+		return
+	}
+	var deviceNameStringSizerString string
+	err = d.Get("deviceNameStringSizer", &deviceNameStringSizerString)
+	if err != nil {
+		return
+	}
+	deviceNamesSS, err := stringsizer.New(deviceNameStringSizerString)
 	if err != nil {
 		return
 	}
@@ -210,7 +231,7 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 	args := make([]interface{}, 4)
 	args[0] = s.Timestamp
 	args[1] = s.Family
-	args[2] = s.Device
+	args[2] = deviceNamesSS.ShrinkString(s.Device)
 	args[3] = s.Location
 	argsQ := []string{"?", "?", "?", "?"}
 	for sensor := range s.Sensors {
@@ -235,7 +256,7 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 			continue
 		}
 		argsQ = append(argsQ, "?")
-		args = append(args, ss.ShrinkMapToString(s.Sensors[sensor]))
+		args = append(args, sensorDataSS.ShrinkMapToString(s.Sensors[sensor]))
 	}
 
 	// only use the columns that are in the payload
@@ -272,7 +293,14 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 	}
 
 	// update the map key slimmer
-	d.Set("sensorDataStringSizer", ss.Save())
+	err = d.Set("sensorDataStringSizer", sensorDataSS.Save())
+	if err != nil {
+		return
+	}
+	err = d.Set("deviceNameStringSizer", deviceNamesSS.Save())
+	if err != nil {
+		return
+	}
 
 	d.logger.Log.Debug("inserted sensor data")
 	return

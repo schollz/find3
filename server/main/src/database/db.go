@@ -81,18 +81,6 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 			return
 		}
 		d.logger.Log.Debug("made tables")
-
-		// save empty string sizers
-		ss, _ := stringsizer.New()
-		err = d.Set("sensorDataStringSizer", ss.Save())
-		if err != nil {
-			return
-		}
-		err = d.Set("deviceNamesStringSizer", ss.Save())
-		if err != nil {
-			return
-		}
-		d.logger.Log.Debug("initiate map key shrinker")
 	}
 
 	return
@@ -180,7 +168,17 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 	if err != nil {
 		return
 	}
-	ss, err := stringsizer.New(sensorDataStringSizerString)
+	sensorDataSS, err := stringsizer.New(sensorDataStringSizerString)
+	if err != nil {
+		return
+	}
+	// get the string sizer for the sensor data
+	var deviceNameStringSizerString string
+	err = d.Get("deviceNameStringSizer", &deviceNameStringSizerString)
+	if err != nil {
+		return
+	}
+	deviceDataSS, err := stringsizer.New(deviceNameStringSizerString)
 	if err != nil {
 		return
 	}
@@ -215,10 +213,14 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 				continue
 			}
 			shortenedJSON := string((*arr[i].(*interface{})).([]uint8))
-			s0.Sensors[colName], err = ss.ExpandMapFromString(shortenedJSON)
+			s0.Sensors[colName], err = sensorDataSS.ExpandMapFromString(shortenedJSON)
 			if err != nil {
 				return
 			}
+		}
+		s0.Device, err = deviceDataSS.ExpandString(s0.Device)
+		if err != nil {
+			return
 		}
 		s[sI] = s0
 		sI++
