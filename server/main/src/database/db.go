@@ -321,7 +321,7 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 
 // GetSensorFromTime will return a sensor data for a given timestamp
 func (d *Database) GetSensorFromTime(timestamp interface{}) (s models.SensorData, err error) {
-	sensors, err := d.GetAllFromPreparedQuery("SELECT sensors.timestamp,devices.name,locations.name,sensors.wifi FROM sensors INNER JOIN devices ON sensors.deviceid=devices.id INNER JOIN locations ON sensors.locationid=locations.id WHERE timestamp = ?", timestamp)
+	sensors, err := d.GetAllFromPreparedQuery("SELECT * FROM sensors WHERE timestamp = ?", timestamp)
 	if err != nil {
 		err = errors.Wrap(err, "GetSensorFromTime")
 	} else {
@@ -332,13 +332,17 @@ func (d *Database) GetSensorFromTime(timestamp interface{}) (s models.SensorData
 
 // GetAllForClassification will return a sensor data for classifying
 func (d *Database) GetAllForClassification() (s []models.SensorData, err error) {
-	return d.GetAllFromQuery("SELECT sensors.timestamp,devices.name,sensors.location,sensors.wifi FROM sensors INNER JOIN devices ON sensors.device = devices.id WHERE location !=''")
+	return d.GetAllFromQuery("SELECT * FROM sensors WHERE sensors.locationid !=''")
 }
 
 // GetLatest will return a sensor data for classifying
 func (d *Database) GetLatest(device string) (s models.SensorData, err error) {
+	deviceID, err := d.GetID("devices", device)
+	if err != nil {
+		return
+	}
 	var sensors []models.SensorData
-	sensors, err = d.GetAllFromPreparedQuery("SELECT sensors.timestamp,devices.name,sensors.location,sensors.wifi FROM sensors INNER JOIN devices ON sensors.device = ? ORDER BY sensors.timestamp DESC LIMIT 1", device)
+	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM sensors WHERE deviceID=? ORDER BY timestamp DESC LIMIT 1", deviceID)
 	if err != nil {
 		return
 	}
@@ -414,6 +418,38 @@ func (d *Database) GetDevices() (devices []string, err error) {
 	return
 }
 
+func (d *Database) GetIDToName(table string) (idToName map[string]string, err error) {
+	idToName = make(map[string]string)
+	query := "SELECT id,name FROM " + table
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name, id string
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+		idToName[id] = name
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
 func GetFamilies() (families []string) {
 	files, err := ioutil.ReadDir(DataFolder)
 	if err != nil {
@@ -442,19 +478,15 @@ func GetFamilies() (families []string) {
 }
 
 // GetID will get the ID of an element in a table (devices/locations) and return an error if it doesn't exist
-func (d *Database) GetID(table string, name string) (deviceID string, err error) {
+func (d *Database) GetID(table string, name string) (id string, err error) {
 	// first check to see if it has already been added
 	stmt, err := d.db.Prepare("SELECT id FROM " + table + " WHERE name = ?")
+	defer stmt.Close()
 	if err != nil {
 		err = errors.Wrap(err, "problem preparing SQL")
 		return
 	}
-	var result string
-	err = stmt.QueryRow(name).Scan(&result)
-	stmt.Close()
-	if err == nil {
-		deviceID = result
-	}
+	err = stmt.QueryRow(name).Scan(&id)
 	return
 }
 
@@ -669,6 +701,16 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 		return
 	}
 
+	deviceIDToName, err := d.GetIDToName("devices")
+	if err != nil {
+		return
+	}
+
+	locationIDToName, err := d.GetIDToName("locations")
+	if err != nil {
+		return
+	}
+
 	s = []models.SensorData{}
 	// loop through rows
 	for rows.Next() {
@@ -685,8 +727,8 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 			// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
 			Timestamp: int64((*arr[0].(*interface{})).(int64)),
 			Family:    d.family,
-			Device:    string((*arr[1].(*interface{})).([]uint8)),
-			Location:  string((*arr[2].(*interface{})).([]uint8)),
+			Device:    deviceIDToName[string((*arr[1].(*interface{})).([]uint8))],
+			Location:  locationIDToName[string((*arr[2].(*interface{})).([]uint8))],
 			Sensors:   make(map[string]map[string]interface{}),
 		}
 		// add in the sensor data
