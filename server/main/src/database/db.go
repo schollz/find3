@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/schollz/find3/server/main/src/logging"
-	"github.com/schollz/find3/server/main/src/models"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mr-tron/base58/base58"
 	"github.com/pkg/errors"
-	"github.com/schollz/mapslimmer"
+	"github.com/schollz/find3/server/main/src/logging"
+	"github.com/schollz/find3/server/main/src/models"
+	"github.com/schollz/stringsizer"
 	flock "github.com/theckman/go-flock"
 )
 
@@ -82,12 +82,16 @@ func Open(name string, readOnly ...bool) (d *Database, err error) {
 		}
 		d.logger.Log.Debug("made tables")
 
-		ms, err2 := mapslimmer.Init()
-		if err2 != nil {
-			err = err2
+		// save empty string sizers
+		ss, _ := stringsizer.New()
+		err = d.Set("sensorDataStringSizer", ss.Save())
+		if err != nil {
 			return
 		}
-		err = d.Set("slimmer", ms.JSON())
+		err = d.Set("deviceNamesStringSizer", ss.Save())
+		if err != nil {
+			return
+		}
 		d.logger.Log.Debug("initiate map key shrinker")
 	}
 
@@ -170,13 +174,13 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 		return
 	}
 
-	// get the slimmer
-	var slimmer string
-	err = d.Get("slimmer", &slimmer)
+	// get the string sizer for the sensor data
+	var sensorDataStringSizerString string
+	err = d.Get("sensorDataStringSizer", &sensorDataStringSizerString)
 	if err != nil {
 		return
 	}
-	ms, err := mapslimmer.Init(slimmer)
+	ss, err := stringsizer.New(sensorDataStringSizerString)
 	if err != nil {
 		return
 	}
@@ -210,8 +214,8 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 			if *arr[i].(*interface{}) == nil {
 				continue
 			}
-			unslimmed := string((*arr[i].(*interface{})).([]uint8))
-			s0.Sensors[colName], err = ms.Loads(unslimmed)
+			shortenedJSON := string((*arr[i].(*interface{})).([]uint8))
+			s0.Sensors[colName], err = ss.ExpandMapFromString(shortenedJSON)
 			if err != nil {
 				return
 			}

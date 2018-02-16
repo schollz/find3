@@ -6,11 +6,11 @@ import (
 	"log"
 	"strings"
 
-	"github.com/schollz/find3/server/main/src/models"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mr-tron/base58/base58"
 	"github.com/pkg/errors"
-	"github.com/schollz/mapslimmer"
+	"github.com/schollz/find3/server/main/src/models"
+	"github.com/schollz/stringsizer"
 )
 
 // MakeTables creates two tables, a `keystore` table:
@@ -179,7 +179,7 @@ func (d *Database) GetPrediction(timestamp int64) (aidata models.LocationAnalysi
 // AddSensor will insert a sensor data into the database
 // TODO: AddSensor should be special case of AddSensors
 func (d *Database) AddSensor(s models.SensorData) (err error) {
-	// determine the current table colums
+	// determine the current table coluss
 	oldColumns := make(map[string]struct{})
 	columnList, err := d.Columns()
 	if err != nil {
@@ -190,12 +190,12 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 	}
 
 	// get slimmer
-	var slimmer string
-	err = d.Get("slimmer", &slimmer)
+	var sensorDataStringSizerString string
+	err = d.Get("sensorDataStringSizer", &sensorDataStringSizerString)
 	if err != nil {
 		return
 	}
-	ms, err := mapslimmer.Init(slimmer)
+	ss, err := stringsizer.New(sensorDataStringSizerString)
 	if err != nil {
 		return
 	}
@@ -235,7 +235,7 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 			continue
 		}
 		argsQ = append(argsQ, "?")
-		args = append(args, ms.Dumps(s.Sensors[sensor]))
+		args = append(args, ss.ShrinkMapToString(s.Sensors[sensor]))
 	}
 
 	// only use the columns that are in the payload
@@ -272,7 +272,7 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 	}
 
 	// update the map key slimmer
-	d.Set("slimmer", ms.JSON())
+	d.Set("sensorDataStringSizer", ss.Save())
 
 	d.logger.Log.Debug("inserted sensor data")
 	return
