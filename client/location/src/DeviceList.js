@@ -14,7 +14,7 @@ class DeviceList extends React.Component {
 
   componentDidMount() {
     const queryString = require('query-string');
-    fetch("http://192.168.0.23:8003/api/v1/devices/"+queryString.parse(window.location.search).family)
+    fetch("https://api.internalpositioning.com/api/v1/devices/"+queryString.parse(window.location.search).family)
       .then(res => res.json())
       .then(
         (result) => {

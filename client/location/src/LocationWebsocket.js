@@ -11,7 +11,7 @@ class LocationWebsocket extends React.Component {
     this.state = {
       family: parsed.family,
       device: parsed.device,
-      websocket_url:'ws://192.168.0.23:8003/ws?family='+parsed.family+'&device='+parsed.device,
+      websocket_url:window.location.origin.replace('http','ws')+'/ws?family='+parsed.family+'&device='+parsed.device,
       location: "?",
       probability: "",
       time:0,
