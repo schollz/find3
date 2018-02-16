@@ -16,7 +16,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/schollz/find3/server/main/src/logging"
 	"github.com/schollz/find3/server/main/src/models"
-	"github.com/schollz/find3/server/main/src/utils"
 	"github.com/schollz/stringsizer"
 	flock "github.com/theckman/go-flock"
 )
@@ -466,6 +465,7 @@ func (d *Database) AddName(table string, name string) (deviceID string, err erro
 	if err == nil {
 		return
 	}
+	// logger.Log.Debugf("creating new name for %s in %s", name, table)
 
 	// get the current count
 	stmt, err := d.db.Prepare("SELECT COUNT(id) FROM " + table)
@@ -484,7 +484,8 @@ func (d *Database) AddName(table string, name string) (deviceID string, err erro
 
 	// transform the device name into an ID with the current count
 	currentCount++
-	deviceID = utils.Transform(currentCount)
+	deviceID = stringsizer.Transform(currentCount)
+	// logger.Log.Debugf("transformed (%d) %s -> %s", currentCount, name, deviceID)
 
 	// add the device name and ID
 	tx, err := d.db.Begin()
@@ -492,7 +493,9 @@ func (d *Database) AddName(table string, name string) (deviceID string, err erro
 		err = errors.Wrap(err, "AddName")
 		return
 	}
-	stmt, err = tx.Prepare("insert into " + table + "(id,name) values (?, ?)")
+	query := "insert into " + table + "(id,name) values (?, ?)"
+	// logger.Log.Debugf("running query: '%s'", query)
+	stmt, err = tx.Prepare(query)
 	if err != nil {
 		err = errors.Wrap(err, "AddName")
 		return
@@ -610,7 +613,7 @@ func (d *Database) Close() (err error) {
 }
 
 func (d *Database) GetAllFromQuery(query string) (s []models.SensorData, err error) {
-	d.logger.Log.Debug(query)
+	// d.logger.Log.Debug(query)
 	rows, err := d.db.Query(query)
 	if err != nil {
 		err = errors.Wrap(err, "GetAllFromQuery")

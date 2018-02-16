@@ -1,6 +1,5 @@
 {
   "name": "location",
-"homepage" : "https://internalpositioning.com/location",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
