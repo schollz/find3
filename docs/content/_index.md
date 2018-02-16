@@ -1,6 +1,6 @@
 +++
-description = "find3 is X"
-title = "deogee"
+description = "Framework for Internal Navigation and Discovery (FIND)"
+title = "FIND"
 draft = false
 
 +++
