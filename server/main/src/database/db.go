@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"time"
@@ -148,6 +149,15 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 	}
 
 	// d.logger.Log.Debugf("set '%s' to '%s'", key, string(b))
+	return
+}
+
+// Set will set a value in the database, when using it like a keystore.
+func (d *Database) Dump() (err error) {
+	command := fmt.Sprintf("sqlite3 d.name .dump")
+	d.logger.Log.Debug(command)
+	out, err := exec.Command(command).Output()
+	fmt.Println(out)
 	return
 }
 

@@ -62,7 +62,12 @@ func ping(c *gin.Context) {
 }
 
 func handleTest(c *gin.Context) {
-	go api.Calibrate("pike", true)
+	d, _ := database.Open("testdb", true)
+	err := d.Dump()
+	if err != nil {
+		fmt.Println(err)
+	}
+	d.Close()
 	c.String(http.StatusOK, "ok")
 }
 
