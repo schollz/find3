@@ -1,20 +1,13 @@
 +++
-title = "Quickstart for active scanning"
-description = "Guide to quickstart setup of the FIND3 services"
+title = "Server setup"
+description = "Guide to quickstart setup of the FIND3 server"
 weight = 10
 draft = false
 toc = true
-bref = "You can position yourself in about 10 minutes using this guide"
+bref = "The FIND3 server can be readily deployed with docker"
 +++
 
-<h2>Introduction</h2>
-
-In this tutorial you will learn how to do internal positioning with either an Android phone or a laptop/device. In *FIND3* there are two types of scanning: *active* and *passive*. In *active* scanning, the device that is being tracked is actively scanning all nearby APs and Bluetooth discoverables for their distance (via the RSSI measurement). In *passive* scanning, their are several devices that are scanning for all nearby APs and Bluetooth, and those signals are inverted so that it appears that the measurement comes from the scanned device.
-
-For this tutorial I will only cover the *passive* scanning. For *active* scanning see the [Quickstart for passive scanning](/docs/quickstart-passive).
-
-<h3 class="marker" id="download">Choose your scanner</h3>
-
+<h3 class="marker" id="download">Download the server</h3>
 
 The first thing to do is to download FIND3. The easisest way to do this is to use Docker. Do not use **apt-get** to install Docker, just use
 

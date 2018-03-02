@@ -4,9 +4,8 @@
     font-family: 'Roboto Mono', monospace;
 }
 
-#kube-faq h2,h2,h1,#top-brand a {
+.marker, #kube-faq h2,h2,h3,h1,#top-brand a {
     font-family: 'Permanent Marker', cursive;
-    font-size: 200%;
     color: black;
     text-decoration: none;
 }
@@ -20,7 +19,8 @@
 }
 
 div h2 {
-    padding-bottom: 0.5em;
+    padding-top: 1em;
+    padding-bottom: 0em;
 }
 
 h2.title {

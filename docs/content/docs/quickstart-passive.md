@@ -13,7 +13,10 @@ In this tutorial you will learn how to do internal positioning with either an An
 
 For this tutorial I will only cover the *passive* scanning. For *active* scanning see the [Quickstart for passive scanning](/docs/quickstart-passive).
 
-<h3 class="marker" id="download">Choose your scanner</h3>
+There are two types of scanners. There is a command-line scanner and there is an Android app scanner. Both scanners can do Bluetooth and WiFi accumulation.
+
+<h3 class="marker" id="download">Command-line scanner</h3>
+
 
 
 The first thing to do is to download FIND3. The easisest way to do this is to use Docker. Do not use **apt-get** to install Docker, just use
