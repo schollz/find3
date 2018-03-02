@@ -39,6 +39,8 @@ func main() {
 
 	api.AIPort = *aiPort
 	server.Port = *port
+	server.ServerAddress = "192.168.0.23:8003"
+	server.UseSSL = false
 	err := server.Run()
 	if err != nil {
 		fmt.Print("error: ")

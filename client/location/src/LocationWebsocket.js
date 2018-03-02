@@ -6,12 +6,10 @@ class LocationWebsocket extends React.Component {
 
   constructor(props) {
     super(props);
-    const queryString = require('query-string');
-    const parsed = queryString.parse(window.location.search);
     this.state = {
-      family: parsed.family,
-      device: parsed.device,
-      websocket_url:window.location.origin.replace('http','ws').replace('3000','8003')+'/ws?family='+parsed.family+'&device='+parsed.device,
+      family: window.find3.family,
+      device: window.find3.device,
+      websocket_url:window.find3.websocket_url,
       location: "?",
       probability: "",
       time:0,

@@ -17,6 +17,8 @@ import (
 
 // Port defines the public port
 var Port = "8003"
+var ServerAddress = "localhost:8003"
+var UseSSL = false
 
 // Run will start the server listening on the specified port
 func Run() (err error) {
@@ -32,9 +34,21 @@ func Run() (err error) {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	// Standardize logs
+	r.LoadHTMLGlob("templates/*")
+	r.Static("/static", "./static")
 	r.Use(middleWareHandler(), gin.Recovery())
 	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
+	})
+	r.GET("/view/location/:family/:device", func(c *gin.Context) {
+		family := c.Param("family")
+		device := c.Param("device")
+		c.HTML(http.StatusOK, "view_location.tmpl", gin.H{
+			"Family":        family,
+			"Device":        device,
+			"SSL":           UseSSL,
+			"ServerAddress": ServerAddress,
+		})
 	})
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
 	r.GET("/api/v1/location/:family/*device", handlerApiV1Location)
@@ -75,10 +89,10 @@ func handlerApiV1Devices(c *gin.Context) {
 	err := func(c *gin.Context) (err error) {
 		family := strings.TrimSpace(c.Param("family")[1:])
 		d, err := database.Open(family, true)
-		defer d.Close()
 		if err != nil {
 			return
 		}
+		defer d.Close()
 		s, err := d.GetDevices()
 		if err != nil {
 			return

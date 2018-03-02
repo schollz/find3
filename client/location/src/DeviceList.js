@@ -1,5 +1,6 @@
 import React from 'react';
- 
+import './DeviceList.css';
+
 class DeviceList extends React.Component {
 
   constructor(props) {
@@ -14,7 +15,7 @@ class DeviceList extends React.Component {
 
   componentDidMount() {
     const queryString = require('query-string');
-    fetch(window.location.origin.replace('3000','8003') + "/api/v1/devices/"+queryString.parse(window.location.search).family)
+    fetch(window.find3.url + "/api/v1/devices/"+window.find3.family)
       .then(res => res.json())
       .then(
         (result) => {
@@ -55,9 +56,9 @@ class DeviceList extends React.Component {
       return (
         <div>
         <h2>Device list</h2>
-        <ul>
+        <ul className="devices">
           {items.map(function(name, index){
-            return <li key={ index }><a href={'/?family='+queryString.parse(window.location.search).family+'&device='+name}>{name}</a></li>;
+            return <li key={ index }><a href={'/view/location/'+window.find3.family+'/'+name}>{name}</a></li>;
                   })}
         </ul>
         </div>
