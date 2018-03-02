@@ -15,7 +15,7 @@ class DeviceList extends React.Component {
 
   componentDidMount() {
     const queryString = require('query-string');
-    fetch(window.find3.url + "/api/v1/devices/"+window.find3.family)
+    fetch("/api/v1/devices/"+window.find3.family)
       .then(res => res.json())
       .then(
         (result) => {
