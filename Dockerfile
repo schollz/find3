@@ -44,7 +44,7 @@ RUN chmod +x /app/startup.sh
 RUN echo '[supervisord]\n\
 nodaemon=true\n\
 [program:main]\n\
-directory=/data\n\
+directory=/usr/local/work/src/github.com/schollz/find3/server/main\n\
 command=main -debug -data /data/data\n\
 priority=1\n\
 stdout_logfile=/data/logs/main.stdout\n\
