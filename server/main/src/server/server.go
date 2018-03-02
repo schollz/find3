@@ -52,6 +52,7 @@ func Run() (err error) {
 	})
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
 	r.GET("/api/v1/location/:family/*device", handlerApiV1Location)
+	r.GET("/api/v1/locations/:family", handlerApiV1Locations)
 	r.GET("/api/v1/calibrate/*family", handlerApiV1Calibrate)
 	r.GET("/ping", ping)
 	r.GET("/test", handleTest)
@@ -102,6 +103,53 @@ func handlerApiV1Devices(c *gin.Context) {
 	}(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	}
+}
+
+func handlerApiV1Locations(c *gin.Context) {
+	type Location struct {
+		Device   string                  `json:"device"`
+		Sensors  models.SensorData       `json:"sensors"`
+		Analysis models.LocationAnalysis `json:"analysis"`
+	}
+
+	locations, err := func(c *gin.Context) (locations []Location, err error) {
+		family := strings.TrimSpace(c.Param("family"))
+
+		d, err := database.Open(family, true)
+		if err != nil {
+			return
+		}
+		devices, err := d.GetDevices()
+		d.Close()
+		if err != nil {
+			return
+		}
+		locations = make([]Location, len(devices))
+		for i, device := range devices {
+			d, err = database.Open(family, true)
+			if err != nil {
+				return
+			}
+			locations[i] = Location{Device: device}
+			locations[i].Sensors, err = d.GetLatest(device)
+			d.Close()
+			if err != nil {
+				return
+			}
+			locations[i].Analysis, err = api.AnalyzeSensorData(locations[i].Sensors)
+			if err != nil {
+				return
+			}
+		}
+
+		return
+	}(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
+	} else {
+
+		c.JSON(http.StatusOK, gin.H{"message": "got locations", "success": err == nil, "locations": locations})
 	}
 }
 
