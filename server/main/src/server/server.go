@@ -53,6 +53,7 @@ func Run() (err error) {
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
 	r.GET("/api/v1/location/:family/*device", handlerApiV1Location)
 	r.GET("/api/v1/locations/:family", handlerApiV1Locations)
+	r.GET("/api/v1/by_location/:family", handlerApiV1ByLocation)
 	r.GET("/api/v1/calibrate/*family", handlerApiV1Calibrate)
 	r.GET("/ping", ping)
 	r.GET("/test", handleTest)
@@ -141,6 +142,63 @@ func handlerApiV1Locations(c *gin.Context) {
 			if err != nil {
 				return
 			}
+		}
+
+		return
+	}(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
+	} else {
+
+		c.JSON(http.StatusOK, gin.H{"message": "got locations", "success": err == nil, "locations": locations})
+	}
+}
+
+func handlerApiV1ByLocation(c *gin.Context) {
+	type Location struct {
+		Device      string    `json:"device"`
+		Timestamp   time.Time `json:"timestamp"`
+		Probability float64   `json:"probability"`
+	}
+
+	locations, err := func(c *gin.Context) (locations map[string][]Location, err error) {
+		locations = make(map[string][]Location)
+		family := strings.TrimSpace(c.Param("family"))
+
+		d, err := database.Open(family, true)
+		if err != nil {
+			return
+		}
+		devices, err := d.GetDevices()
+		d.Close()
+		if err != nil {
+			return
+		}
+
+		for _, device := range devices {
+			d, err = database.Open(family, true)
+			if err != nil {
+				return
+			}
+			var s models.SensorData
+			var a models.LocationAnalysis
+			s, err = d.GetLatest(device)
+			d.Close()
+			if err != nil {
+				return
+			}
+			a, err = api.AnalyzeSensorData(s)
+			if err != nil {
+				return
+			}
+			if _, ok := locations[a.BestGuess.Location]; !ok {
+				locations[a.BestGuess.Location] = []Location{}
+			}
+			locations[a.BestGuess.Location] = append(locations[a.BestGuess.Location], Location{
+				Device:      device,
+				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
+				Probability: a.BestGuess.Probability,
+			})
 		}
 
 		return
@@ -300,7 +358,7 @@ func handleReverse(c *gin.Context) (err error) {
 		message += fmt.Sprintf(", now learning on %d devices: %+v", len(rollingData.DeviceLocation), rollingData.DeviceLocation)
 	} else {
 		if !rollingData.HasData {
-			rollingData.Timestamp = time.Now()
+			rollingData.Timestamp = time.Now().UTC()
 			rollingData.Datas = []models.SensorData{}
 			rollingData.HasData = true
 		}
@@ -355,7 +413,7 @@ func parseRollingData(family string) (err error) {
 						sensorMap[trackedDeviceName] = models.SensorData{
 							Family:    family,
 							Device:    trackedDeviceName,
-							Timestamp: time.Now().UnixNano() / int64(time.Millisecond),
+							Timestamp: time.Now().UTC().UnixNano() / int64(time.Millisecond),
 							Sensors:   make(map[string]map[string]interface{}),
 							Location:  location,
 						}
@@ -450,7 +508,7 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 
 func middleWareHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t := time.Now()
+		t := time.Now().UTC()
 		// Add base headers
 		addCORS(c)
 		// Run next function
