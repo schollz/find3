@@ -1,9 +1,10 @@
 [![](https://raw.githubusercontent.com/schollz/find/master/static/splash.gif)](https://www.internalpositioning.com/)
 
-
 [![Version 3.0](https://img.shields.io/badge/join-slack-blue.svg)](https://join.slack.com/t/find3/shared_invite/enQtMzI0MjkwMjc3MDYzLWJiZWEzZjU5NTljM2JlYmE1MDY0NThiYmY2NDYwNGYxNTNmNTJjZjFmNjMwNGMwY2UyNzczNzZhZTIxZWY3ODQ) 
 [![Version 3.0](https://img.shields.io/badge/version-3.0.0-brightgreen.svg)](https://www.internalpositioning.com/guide/development/) 
 [![Donate](https://img.shields.io/badge/donate-$1-brown.svg)](https://www.paypal.me/ZackScholl/1.00)
+ 
+# Note: This is currently under development. It works so feel free to try it. Use the  slack channel for help. If you want the finished version, just watch the repo!
  
 **The Framework for Internal Navigation and Discovery** (_FIND_) is like GPS, but for your every room in your house/business, with using only a simple smartphone or laptop.
 
