@@ -1,73 +1,47 @@
 +++
-title = "Quickstart for active scanning"
+title = "Quickstart for active scanning on a phone"
 description = "Guide to quickstart setup of the FIND3 services"
 weight = 10
 draft = false
 toc = true
-bref = "You can position yourself in about 10 minutes using this guide"
+bref = "You can position yourself in about 10 minutes using this guide."
 +++
 
 <h2>Introduction</h2>
 
-In this tutorial you will learn how to do internal positioning with either an Android phone or a laptop/device. In *FIND3* there are two types of scanning: *active* and *passive*. In *active* scanning, the device that is being tracked is actively scanning all nearby APs and Bluetooth discoverables for their distance (via the RSSI measurement). In *passive* scanning, their are several devices that are scanning for all nearby APs and Bluetooth, and those signals are inverted so that it appears that the measurement comes from the scanned device.
-
-For this tutorial I will only cover the *passive* scanning. For *active* scanning see the [Quickstart for passive scanning](/docs/quickstart-passive).
-
-<h3 class="marker" id="download">Choose your scanner</h3>
+In this tutorial you will learn how to do internal positioning an Android phone. Here you will track your Android device using a simple app that scans all nearby APs and Bluetooth discoverables for their distance (via the RSSI measurement). 
 
 
-The first thing to do is to download FIND3. The easisest way to do this is to use Docker. Do not use **apt-get** to install Docker, just use
+<h3 class="marker" id="download">Download the app</h3>
 
-```bash
-$ curl -sSL https://get.docker.com | sh
-```
+First download the latest version of the Android app from Google Play. [Click here to download](https://play.google.com/store/apps/details?id=com.internalpositioning.find3.find3app) the latest FIND3 app.
 
-This command will work (and has been tested) on Raspberry Pis. If you are not on a Raspberry Pi, then you can just pull the latest image using:
+<center><img src="/img/snap3.PNG"></center>
 
-```bash
-$ docker pull schollz/find3
-```
+<h3 class="marker" id="start">Start the app</h3>
 
-However, if you are using a Raspberry Pi, you'll need to build the **armf** version yourself. Then you should get the latest *Dockerfile*:
+Find the app on your phone and start it up. When you start you will encounter a prompt about accessing the device's location. Though FIND3 does *not* use GPS, Android devices require location permissions in order to access WiFi and Bluetooth settings. **Press "ALLOW" to continue.**
 
-```bash
-$ wget https://raw.githubusercontent.com/schollz/find3/master/Dockerfile
-$ docker build -t schollz/find3 .
-```
+<center><img src="/img/snap1.PNG"></center>
 
-That's it! Now FIND3 should be installed and read to go. To start it, make a directory to store the data, say **/home/$USER/FIND_DATA** and then start the Docker process in the background.
+<h3 class="marker" id="learn">Enter information</h3>
 
-```bash
-$ docker run -p 11883:1883 -p 8003:8003 \
-	-v /home/$USER/FIND_DATA:/data \
-	--name find3server -d -t schollz/find3
-```
+When you open the app for the first time you will encounter empty textfields that require data.
 
-Now the server will be running on port **8003** and have an MQTT instance running on port **11883**.
+<center><img src="/img/snap2.PNG"></center>
 
+To get started, enter in a **family** name. The **family** is used to distinguish your group of devices. It can be anything you want, but remember it because you will need it to see your results.
 
-<h3 class="marker"  id="testit">Run the test suite</h3>
+Then enter in a **device** name. The **device** name is used to distinguish this particular device. This can also be the name of the person carrying the device, if that helps you when you see the results.
 
-To test that things are working you can submit some test data to the server. Download a test script which will make requests to the server:
+The **server** is already specified as **find3.internalpositioning.com**, the public server. If you are hosting your own server, you can change this to the address of your self-hosted server. [See here if you want to setup your own server](/docs/server_setup/).
 
-```bash
-$ wget https://raw.githubusercontent.com/schollz/find3/master/server/main/testing/learn.sh
-$ chmod +x learn.sh
-$ ./learn.sh
-```
+<h3 class="marker" id="learn">Learn a location</h3>
 
-You have just submitted about 300 fingerprints for three different locations for the family **testdb** for the device **zack**. 
+The first thing you need to do after entering data is to **learn the locations for tracking.** This requires walking to each room and doing a scan for about 5 minutes. 
 
-This test data had **location** associated with it, so you can use it for learning. To do the learning just do 
+Go to a location, like your *kitchen*, *bathroom* or *living room* and enter the name of the location where it says **location (optional)**. Then hit **START SCAN** and wait about 5 minutes. Then press **STOP SCAN** and repeat this process in each room, for every room you want to learn.
 
-```bash
-$ http GET localhost:8003/api/v1/calibrate/testdb
-```
+<h3 class="marker" id="track">Track yourself</h3>
 
-Now you should be able to see your location data. You can get the data from the command line doing:
-
-```
-$ http GET localhost:8003/api/v1/location/testdb/zack
-```
-
-You can also see the data, in realtime, by going to **localhost:8003/view/location/testdb/zack**. If you run the test suite again you should see the values change (albeit very quickly).
+Once you are done learning, simply delete the location

@@ -11,7 +11,10 @@
 }
 
 #top-brand {
-    margin-top: 0.5em;
+    font-size: 200%;
+    text-align: -webkit-match-parent;
+    display:block;
+
 }
 
 #posts {
@@ -211,3 +214,8 @@ pre {
 /* Text */
 
 .chroma .s1f40 {}
+
+
+body {
+    background: #FFF1DE;
+}
