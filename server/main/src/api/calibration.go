@@ -53,8 +53,13 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 
 		// split the data to use 70% to learn, 30% to test
 		splitI := int(0.7 * float64(len(datas)))
-		datasTest = datas[splitI:]
-		datas = datas[:splitI]
+		if len(datas) > 100 {
+			datasTest = datas[splitI:]
+			datas = datas[:splitI]
+		} else {
+			datasTest = datas
+		}
+
 		logger.Log.Debugf("splitting data for cross validation (%d -> %d)", len(datas), splitI)
 	}
 
@@ -154,6 +159,9 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 			if len(prediction.Locations) == 0 {
 				logger.Log.Warn("prediction.Locations is empty!")
 				continue
+			}
+			if len(aidata.LocationNames) == 0 {
+				return errors.New("no location names")
 			}
 			guessedLocation := aidata.LocationNames[prediction.Locations[0]]
 			predictionAnalysis[prediction.Name][correctLocation][guessedLocation]++
