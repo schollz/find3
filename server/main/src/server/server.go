@@ -296,6 +296,7 @@ func handlerData(c *gin.Context) {
 	var d models.SensorData
 	err = c.BindJSON(&d)
 	if err == nil {
+		logger.Log.Debugf("/data %+v", d)
 		err2 := processSensorData(d)
 		if err2 == nil {
 			message = "inserted data"
@@ -484,10 +485,7 @@ func processSensorData(p models.SensorData) (err error) {
 }
 
 func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err error) {
-	analysis, err = api.AnalyzeSensorData(p)
-	if err != nil {
-		return
-	}
+	analysis, _ = api.AnalyzeSensorData(p)
 
 	type Payload struct {
 		Sensors  models.SensorData       `json:"sensors"`
@@ -501,6 +499,7 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 	if err != nil {
 		return
 	}
+	logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
 	SendMessageOverWebsockets(p.Family, p.Device, bTarget)
 	mqtt.Publish(p.Family, p.Device, string(bTarget))
 	return
