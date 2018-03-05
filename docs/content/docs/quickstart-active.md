@@ -16,7 +16,6 @@ In this tutorial you will learn how to do internal positioning an Android phone.
 
 First download the latest version of the Android app from Google Play. [Click here to download](https://play.google.com/store/apps/details?id=com.internalpositioning.find3.find3app) the latest FIND3 app.
 
-<center><img src="/img/snap3.PNG"></center>
 
 <h3 class="marker" id="start">Start the app</h3>
 
@@ -28,7 +27,7 @@ Find the app on your phone and start it up. When you start you will encounter a 
 
 When you open the app for the first time you will encounter empty textfields that require data.
 
-<center><img src="/img/snap2.PNG"></center>
+<center><img src="/img/snap3.PNG"></center>
 
 To get started, enter in a **family** name. The **family** is used to distinguish your group of devices. It can be anything you want, but remember it because you will need it to see your results.
 
@@ -36,12 +35,24 @@ Then enter in a **device** name. The **device** name is used to distinguish this
 
 The **server** is already specified as **find3.internalpositioning.com**, the public server. If you are hosting your own server, you can change this to the address of your self-hosted server. [See here if you want to setup your own server](/docs/server_setup/).
 
-<h3 class="marker" id="learn">Learn a location</h3>
+<h3 class="marker" id="learn">Learn some locations</h3>
 
 The first thing you need to do after entering data is to **learn the locations for tracking.** This requires walking to each room and doing a scan for about 5 minutes. 
 
-Go to a location, like your *kitchen*, *bathroom* or *living room* and enter the name of the location where it says **location (optional)**. Then hit **START SCAN** and wait about 5 minutes. Then press **STOP SCAN** and repeat this process in each room, for every room you want to learn.
+<center><img src="/img/snap4.PNG"></center>
+
+Go to a location, like your *kitchen*, *bathroom* or *living room* and enter the name of the location where it says **location (optional)**. Then hit **TRACKING** so it turns to **LEARNING**.  Then hit **START SCAN** and wait about 5 minutes. Then press **STOP SCAN** and repeat this process in each room, for every room you want to learn.
 
 <h3 class="marker" id="track">Track yourself</h3>
 
-Once you are done learning, simply delete the location
+Once you are done learning, simply hit the **LEARNING** button so it toggles back to **TRACKING** and then do **START SCAN**.
+
+Tracking will continue in the background and will show a notification that you can use to toggle the tracking off.
+
+<center><img src="/img/backgroundscanning.png" width=70%></center>
+
+The scans will take place approximately 10-30 seconds apart, forever, until you turn off the app. The battery usage is minimal since it is doing only a short WiFi scan and Bluetooth scan.
+
+<h3 class="marker" id="track">Issues?</h3>
+
+If you have issues, please file one on Github at https://github.com/schollz/find3.
