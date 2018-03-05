@@ -30,6 +30,10 @@ This repository is a complete re-write of the previous version of FIND ([github.
 - Rolling compression of mac addresses for much smaller on-disk databases (see [mapslimmer](https://github.com/schollz/mapslimmer))
 - Data storage in SQLITE-database (previously it was BoltDB)
 
+## Stay up to date
+
+Sign up for [the newsletter with the latest information](http://eepurl.com/bhfFI1).
+
 # Quickstart
 
 ```
