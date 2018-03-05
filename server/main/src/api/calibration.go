@@ -151,6 +151,10 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 				}
 			}
 			correctLocation := datas[i].Location
+			if len(prediction.Locations) == 0 {
+				logger.Log.Warn("prediction.Locations is empty!")
+				continue
+			}
 			guessedLocation := aidata.LocationNames[prediction.Locations[0]]
 			predictionAnalysis[prediction.Name][correctLocation][guessedLocation]++
 		}

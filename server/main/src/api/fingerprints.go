@@ -53,7 +53,7 @@ func updateCounter(family string) {
 	globalUpdateCounter.Unlock()
 
 	logger.Log.Debugf("'%s' has %d new fingerprints", family, count)
-	if count < 20 {
+	if count < 5 {
 		return
 	}
 	db, err := database.Open(family)
@@ -66,7 +66,7 @@ func updateCounter(family string) {
 	if err != nil {
 		return
 	}
-	if time.Since(lastCalibrationTime) < 5*time.Minute {
+	if time.Since(lastCalibrationTime) < 5*time.Minute && count < 20 {
 		return
 	}
 	logger.Log.Infof("have %d new fingerprints for '%s', re-calibrating since last calibration was %s", count, family, time.Since(lastCalibrationTime))
@@ -75,7 +75,7 @@ func updateCounter(family string) {
 	globalUpdateCounter.Unlock()
 
 	// debounce the calibration time
-	err = db.Set("LastCalibrationTime", time.Now())
+	err = db.Set("LastCalibrationTime", time.Now().UTC())
 	if err != nil {
 		logger.Log.Error(err)
 	}
