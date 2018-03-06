@@ -56,3 +56,7 @@ The scans will take place approximately 10-30 seconds apart, forever, until you 
 <h3 class="marker" id="track">Issues?</h3>
 
 If you have issues, please file one on Github at https://github.com/schollz/find3.
+
+<h3 class="marker" id="track">Source</h3>
+
+If you are interested, the app is completely open-source and available at  https://github.com/schollz/find3-android-scanner.
