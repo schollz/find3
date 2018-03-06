@@ -39,7 +39,7 @@ This repository is a complete re-write of the previous version of FIND ([github.
 
 - [Data storage server (this repo)](https://github.com/schollz/find3/tree/master/server/main)
 - [Machine learning server (this repo)](https://github.com/schollz/find3/tree/master/server/ai)
-- [Command-line tool for gathering fingerprints (schollz/find3-cli-scanner)[https://github.com/schollz/find3-cli-scanner]
+- [Command-line tool for gathering fingerprints (schollz/find3-cli-scanner)](https://github.com/schollz/find3-cli-scanner)
 - [Android app for gathering fingerprints (schollz/find3-android-scanner)](https://github.com/schollz/find3-android-scanner)
 
 
