@@ -1,4 +1,3 @@
-# www.find3.com
-Source code for the website
+    Source code for the website www.internalpositioning.com
 
-hugo serve -t kube
+    hugo serve -t kube
