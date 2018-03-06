@@ -19,7 +19,6 @@ func main() {
 	port := flag.String("port", "8003", "port for the data (this) server")
 	debug := flag.Bool("debug", false, "turn on debug mode")
 	mqttFlag := flag.Bool("mqtt", false, "turn on mqtt")
-	sslFlag := flag.Bool("ssl", false, "using SSL")
 	var dataFolder string
 	flag.StringVar(&dataFolder, "data", "", "location to store data")
 	flag.Parse()
@@ -48,7 +47,6 @@ func main() {
 		server.ExternalServerAddress = *externalAddress
 	}
 
-	server.UseSSL = *sslFlag
 	server.UseMQTT = *mqttFlag
 	err := server.Run()
 	if err != nil {
