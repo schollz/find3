@@ -17,17 +17,21 @@ import (
 
 // Port defines the public port
 var Port = "8003"
-var ServerAddress = "localhost:8003"
+var ExternalServerAddress = "localhost:8003"
 var UseSSL = false
+var UseMQTT = false
 
 // Run will start the server listening on the specified port
 func Run() (err error) {
-	// setup MQTT
-	err = mqtt.Setup()
-	if err != nil {
-		logger.Log.Warn(err)
+	if UseMQTT {
+		// setup MQTT
+		err = mqtt.Setup()
+		if err != nil {
+			logger.Log.Warn(err)
+		}
+		logger.Log.Debug("setup mqtt")
 	}
-	logger.Log.Debug("setup mqtt")
+
 	logger.Log.Debug("current families: ", database.GetFamilies())
 
 	// setup gin server
@@ -47,7 +51,7 @@ func Run() (err error) {
 			"Family":        family,
 			"Device":        device,
 			"SSL":           UseSSL,
-			"ServerAddress": ServerAddress,
+			"ServerAddress": ExternalServerAddress,
 		})
 	})
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
@@ -57,8 +61,10 @@ func Run() (err error) {
 	r.GET("/api/v1/calibrate/*family", handlerApiV1Calibrate)
 	r.GET("/ping", ping)
 	r.GET("/test", handleTest)
-	r.GET("/ws", wshandler)            // handler for the web sockets (see websockets.go)
-	r.POST("/mqtt", handlerMQTT)       // handler for setting MQTT
+	r.GET("/ws", wshandler) // handler for the web sockets (see websockets.go)
+	if UseMQTT {
+		r.POST("/mqtt", handlerMQTT) // handler for setting MQTT
+	}
 	r.POST("/data", handlerData)       // typical data handler
 	r.POST("/reverse", handlerReverse) // typical data handler
 	r.POST("/learn", handlerFIND)      // backwards-compatible with FIND for learning
@@ -69,6 +75,7 @@ func Run() (err error) {
 	logger.Log.Debugf("starting background processes")
 	go checkRolingData()
 
+	logger.Log.Debugf("using external address '%s'", ExternalServerAddress)
 	err = r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
 	return
 }
@@ -501,7 +508,9 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 	}
 	logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
 	SendMessageOverWebsockets(p.Family, p.Device, bTarget)
-	mqtt.Publish(p.Family, p.Device, string(bTarget))
+	if UseMQTT {
+		mqtt.Publish(p.Family, p.Device, string(bTarget))
+	}
 	return
 }
 

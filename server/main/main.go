@@ -7,16 +7,19 @@ import (
 
 	"fmt"
 
+	"github.com/de0gee/de0gee-data/src/mqtt"
 	"github.com/schollz/find3/server/main/src/api"
 	"github.com/schollz/find3/server/main/src/database"
-	"github.com/schollz/find3/server/main/src/mqtt"
 	"github.com/schollz/find3/server/main/src/server"
 )
 
 func main() {
+	externalAddress := flag.String("external", "127.0.0.1:8003", "external address")
 	aiPort := flag.String("ai", "8002", "port for the AI server")
 	port := flag.String("port", "8003", "port for the data (this) server")
 	debug := flag.Bool("debug", false, "turn on debug mode")
+	mqttFlag := flag.Bool("mqtt", false, "turn on mqtt")
+	sslFlag := flag.Bool("ssl", false, "using SSL")
 	var dataFolder string
 	flag.StringVar(&dataFolder, "data", "", "location to store data")
 	flag.Parse()
@@ -39,8 +42,14 @@ func main() {
 
 	api.AIPort = *aiPort
 	server.Port = *port
-	server.ServerAddress = "192.168.0.23:8003"
-	server.UseSSL = false
+	if os.Getenv("EXTERNAL_ADDRESS") != "" {
+		server.ExternalServerAddress = os.Getenv("EXTERNAL_ADDRESS")
+	} else {
+		server.ExternalServerAddress = *externalAddress
+	}
+
+	server.UseSSL = *sslFlag
+	server.UseMQTT = *mqttFlag
 	err := server.Run()
 	if err != nil {
 		fmt.Print("error: ")
