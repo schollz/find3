@@ -17,7 +17,7 @@ import (
 
 // Port defines the public port
 var Port = "8003"
-var ExternalServerAddress = "localhost:8003"
+var ExternalServerAddress = "http://localhost:8003"
 var UseSSL = false
 var UseMQTT = false
 
@@ -48,10 +48,10 @@ func Run() (err error) {
 		family := c.Param("family")
 		device := c.Param("device")
 		c.HTML(http.StatusOK, "view_location.tmpl", gin.H{
-			"Family":        family,
-			"Device":        device,
-			"SSL":           UseSSL,
-			"ServerAddress": ExternalServerAddress,
+			"Family": family,
+			"Device": device,
+			"SSL":    UseSSL,
+			"ExternalServerAddress": ExternalServerAddress,
 		})
 	})
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)

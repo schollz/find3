@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	externalAddress := flag.String("external", "127.0.0.1:8003", "external address")
+	externalAddress := flag.String("external", "http://127.0.0.1:8003", "external address")
 	aiPort := flag.String("ai", "8002", "port for the AI server")
 	port := flag.String("port", "8003", "port for the data (this) server")
 	debug := flag.Bool("debug", false, "turn on debug mode")

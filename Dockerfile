@@ -4,6 +4,7 @@
 
 FROM ubuntu:18.04
 
+RUN echo "starting..."
 RUN apt-get update 
 RUN apt-get -y upgrade
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y git wget curl vim g++ sqlite3 mosquitto-clients mosquitto python3 python3-dev python3-pip python3-scipy python3-flask python3-sklearn python3-numpy golang supervisor
