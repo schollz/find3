@@ -25,7 +25,7 @@ This repository is a complete re-write of the previous version of FIND ([github.
 - Support for Bluetooth scanning in scanning utility (previously just WiFi)
 - Meta-learning with 10 different machine learning classifiers (previously just three)
 - Client uses Websockets+React which reduces bandwidth (and coding complexity)
-- Rolling compression of mac addresses for much smaller on-disk databases (see [mapslimmer](https://github.com/schollz/mapslimmer))
+- Rolling compression of mac addresses for much smaller on-disk databases (see [stringsizer](https://github.com/schollz/stringsizer))
 - Data storage in SQLITE-database (previously it was BoltDB)
 
 # Status
