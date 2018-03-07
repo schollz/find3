@@ -169,6 +169,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		Device      string    `json:"device"`
 		Timestamp   time.Time `json:"timestamp"`
 		Probability float64   `json:"probability"`
+		Randomized  bool      `json:"random_mac"`
 	}
 
 	locations, err := func(c *gin.Context) (locations map[string][]Location, err error) {
@@ -203,10 +204,9 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		}
 		logger.Log.Debugf("got %d sensors", len(sensors))
 		for _, s := range sensors {
-			if allowRandomization == false {
-				if utils.IsMacRandomized(s.Device) {
-					continue
-				}
+			isRandomized := utils.IsMacRandomized(s.Device)
+			if allowRandomization == false && isRandomized {
+				continue
 			}
 			var a models.LocationAnalysis
 			if _, ok := preAnalyzed[s.Timestamp]; ok {
@@ -225,6 +225,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 				Device:      s.Device,
 				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
 				Probability: a.Guesses[0].Probability,
+				Randomized:  isRandomized,
 			})
 		}
 		return
