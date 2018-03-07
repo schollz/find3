@@ -377,7 +377,6 @@ func (d *Database) GetSensorFromGreaterTime(timeBlockInMilliseconds int64) (sens
 // GetAnalysisFromGreaterTime will return the analysis for a given timeframe
 // func (d *Database) GetAnalysisFromGreaterTime(timestamp interface{}) {
 // 	select sensors.timestamp, devices.name, location_predictions.prediction from sensors inner join location_predictions on location_predictions.timestamp=sensors.timestamp inner join devices on sensors.deviceid=devices.id WHERE sensors.timestamp > 0 GROUP BY devices.name ORDER BY sensors.timestamp DESC;
-
 // }
 
 // GetAllForClassification will return a sensor data for classifying

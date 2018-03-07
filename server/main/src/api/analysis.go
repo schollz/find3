@@ -105,10 +105,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 
 	// add prediction to the database
 	// adding predictions uses up a lot of space
-	// err = d.AddPrediction(s.Timestamp, aidata)
-	// if err != nil {
-	// 	return
-	// }
+	err = d.AddPrediction(s.Timestamp, aidata)
 
 	return
 }

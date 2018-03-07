@@ -186,6 +186,15 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			return
 		}
 		sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
+
+		preAnalyzed := make(map[int64]models.LocationAnalysis)
+		for _, sensor := range sensors {
+			a, errGet := d.GetPrediction(sensor.Timestamp)
+			if errGet != nil {
+				continue
+			}
+			preAnalyzed[sensor.Timestamp] = a
+		}
 		d.Close()
 		if err != nil {
 			return
@@ -193,9 +202,14 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		logger.Log.Debugf("got %d sensors", len(sensors))
 		for _, s := range sensors {
 			var a models.LocationAnalysis
-			a, err = api.AnalyzeSensorData(s)
-			if err != nil {
-				return
+			if _, ok := preAnalyzed[s.Timestamp]; ok {
+				logger.Log.Debugf("using pre-analyzed for %d", s.Timestamp)
+				a = preAnalyzed[s.Timestamp]
+			} else {
+				a, err = api.AnalyzeSensorData(s)
+				if err != nil {
+					return
+				}
 			}
 			if _, ok := locations[a.BestGuess.Location]; !ok {
 				locations[a.BestGuess.Location] = []Location{}
@@ -531,12 +545,6 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 	bTarget, err := json.Marshal(payload)
 	if err != nil {
 		return
-	}
-
-	// add to location predictions
-	err = api.SavePrediction(p, analysis)
-	if err != nil {
-		logger.Log.Warn(err)
 	}
 
 	// logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
