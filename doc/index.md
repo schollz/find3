@@ -4,14 +4,13 @@
 
 Have you ever wanted to...
 
-- track your movements indoors to do home automation?
-- do local positioning with very low energy?
-- track your phone or laptop without GPS?
+- do home automation without motion sensors?
+- track your phone or laptop *indoors* without GPS?
+- monitor the whereaobouts and trajectories of groups of people indoors?
 
-FIND3 is an attempt to answer positively to these questions.
+FIND3 is an attempt implement a solution to these questions.
 
-FIND3 is in its early days, but the plan is to develop a **Framework for Internal 
-Navigation and Discovery**.
+FIND3 is in its early days, but the plan is to develop a **Framework for Internal Navigation and Discovery**.
 
 If you'd like to help us make that vision a reality, we'd love to have you try
 out FIND3.

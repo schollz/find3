@@ -10,8 +10,6 @@ In this tutorial you will learn how to do internal positioning on a computer usi
 
 First you will need the FIND3 command-line scanner. You can install this the easy way, using Docker, or the hard way by compiling from source.
 
-### Easiest way
-
 ### Easy way
 
 
@@ -46,7 +44,7 @@ To use the scanner, your syntax will be
 $ docker exec scanner sh -c "X"
 ```
 
-where `X` is the command for the command-line tool, as specified below.
+where "`X`" is the command for the command-line tool, as specified below.
 
 You can start/stop the image using
 
@@ -64,7 +62,7 @@ $ docker run --net="host" --privileged --name scanning -i -t scanner /bin/bash
 
 ### Hard way
 
-I don't recommed this because I can't gaurantee that all the processes that the scanner calls will work in every OS. I can tell you that these instructions will work on Ubuntu16/18 though.
+I don't recommed this because I can't gaurantee that all the processes that the scanner calls will work in every OS. I can tell you that these instructions will work on Ubuntu16/Raspbian though.
 
 Install the dependencies.
 
@@ -119,7 +117,7 @@ Choose a **family name** which is a unique namespace that you can use to store d
 
 To do learning with the tool, you can set the learning flag `-location`. Say, for instance you have your computer in the "living room", you can run the following command.
 
-To start scanning use the following command (this is the `X` if you are using Docker).
+To start scanning use the following command (this is the "`X`" if you are using Docker).
 
 ```
 $ find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
