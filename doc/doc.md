@@ -18,6 +18,10 @@ is part of #336. --->
 
 - The [Tracking your phone](/doc/tracking_your_phone.md) document describes how to get started tracking your phone (most people should start here).
 
+- The [Tracking your computer](/doc/tracking_your_computer.md) explains how to install and run the software for using your computer for internal positioning.
+
+- The [Tracking other phones](/doc/tracking_other_phones.md) document instructs how to get started to track any phones in a vicinity.
+
 
 ## Tools
 

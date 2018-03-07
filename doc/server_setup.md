@@ -1,6 +1,16 @@
 # Setting up the server
 
-## The easy way
+## Introduction
+
+In command-line examples on this page, commands to be typed to the shell begin with a dollar sign “$”. Lines that do not begin with “$” show command output.
+
+The examples are Unix-oriented but it should be easy to adapt them to a Windows environment.
+
+## Install and run 
+
+There are two ways to run - the easy way, using Docker, or the hard way, installing the source on the computer.
+
+### The easy way
 
 The easiest way to make your own FIND3 instance is to use Docker. Do not use `apt-get` to install Docker, just use
 
@@ -31,6 +41,53 @@ $ docker run -p 11883:1883 -p 8005:8003 \
 ```
 
 Now the server will be running on port `8005` and have an MQTT instance running on port `11883`. Make sure to change the `EXTERNAL_ADDRESS` to reflect what you wil have as your public endpoint, it used to set the front-end materials.
+
+### The hard way
+
+The hard way is to run FIND3 from the source. 
+
+There are a couple of pre-requisities before installing from source. First install Python 3.5+ and Go 1.6+. Then install a C compiler for SQLite.
+
+```
+$ sudo apt-get install g++
+```
+
+You'll also need `mosquitto` if using `MQTT`.
+
+```
+$ sudo apt-get install mosquitto-clients mosquitto
+```
+
+Then get the latest source and Go dependencies.
+
+```
+$ go get -u -v github.com/schollz/find3/...
+```
+
+Then install the Python dependencies.
+
+```
+$ cd $GOPATH/src/github.com/schollz/find3/server/ai
+$ sudo python3 -m pip install -r requirements.txt
+```
+
+Now there are two pieces of the server to start. In one terminal you can run the AI server.
+
+```
+$ cd $GOPATH/src/github.com/schollz/find3/server/ai
+$ make
+```
+
+In the other terminal you can run the main data storage server.
+
+```
+$ cd $GOPATH/src/github.com/schollz/find3/server/main
+$ go build -v
+$ ./main -port 8005 -external http://127.0.0.1:8005
+```
+
+In this case the external address is `http://127.0.0.1:8005` but you should change it to what you need.
+
 
 
 ## Run the test suite
