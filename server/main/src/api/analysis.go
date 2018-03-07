@@ -125,5 +125,35 @@ func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[st
 			b.Probability = bestEfficacy
 		}
 	}
+
+	// determine consensus
+	locationScores := make(map[string]float64)
+	for _, prediction := range aidata.Predictions {
+		if len(prediction.Locations) == 0 {
+			continue
+		}
+		guessedLocation := aidata.LocationNames[prediction.Locations[0]]
+		efficacy := prediction.Probabilities[0] * algorithmEfficacy[prediction.Name][guessedLocation].Informedness
+		if _, ok := locationScores[guessedLocation]; !ok {
+			locationScores[guessedLocation] = float64(0)
+		}
+		if efficacy > 0 {
+			locationScores[guessedLocation] += efficacy
+		}
+	}
+	logger.Log.Infof("consensus: %+v", locationScores)
+
+	b.Probability = 0
+	b.Name = "consensus"
+	total := float64(0)
+	for key := range locationScores {
+		total += locationScores[key]
+	}
+	for key := range locationScores {
+		if locationScores[key]/total > b.Probability {
+			b.Probability = locationScores[key] / total
+			b.Location = key
+		}
+	}
 	return b
 }

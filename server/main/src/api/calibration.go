@@ -53,7 +53,8 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 
 		// split the data to use 70% to learn, 30% to test
 		splitI := int(0.7 * float64(len(datas)))
-		if len(datas) > 100 {
+		if len(datas) > 3000000 {
+			// need to make sure not to split locations
 			datasTest = datas[splitI:]
 			datas = datas[:splitI]
 		} else {

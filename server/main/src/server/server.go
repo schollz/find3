@@ -68,7 +68,7 @@ func Run() (err error) {
 	}
 	r.POST("/data", handlerData)       // typical data handler
 	r.POST("/gps", handlerGPS)         // typical GPS handler
-	r.POST("/reverse", handlerReverse) // typical data handler
+	r.POST("/passive", handlerReverse) // typical data handler
 	r.POST("/learn", handlerFIND)      // backwards-compatible with FIND for learning
 	r.POST("/track", handlerFIND)      // backwards-compatible with FIND for tracking
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)

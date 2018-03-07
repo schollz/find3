@@ -110,9 +110,9 @@ class ExtendedNaiveBayes2:
         db = sqlite3.connect(self.db_name)
         c = db.cursor()
         if positive:
-            c.execute('''SELECT 10000*(SELECT SUM(count) FROM data WHERE loc = ? AND mac = ?)/(SELECT SUM(count) FROM data WHERE loc mac = ?)''',(loc,mac))
+            c.execute('''SELECT 10000*(SELECT SUM(count) FROM data WHERE loc = ? AND mac = ?)/(SELECT SUM(count) FROM data WHERE mac = ?)''',(loc,mac))
         else:
-            c.execute('''SELECT 10000*(SELECT SUM(count) FROM data WHERE loc != ? AND mac = ?)/(SELECT SUM(count) FROM data WHERE loc mac = ?)''',(loc,mac))
+            c.execute('''SELECT 10000*(SELECT SUM(count) FROM data WHERE loc != ? AND mac = ?)/(SELECT SUM(count) FROM data WHERE mac = ?)''',(loc,mac))
         Pvalue_times_10000 = c.fetchone()[0]
         db.close()
         P = float(Pvalue_times_10000) / float(10000)
