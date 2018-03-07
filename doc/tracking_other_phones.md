@@ -40,23 +40,24 @@ $ sudo python3 -m pip install httpie
 
 For each scanner computer you will need to use the scanning software. Follow the instructions in the [Tracking your computer](/doc/tracking_your_computer.md) document to install the FIND3 command-line scanner.
 
-As before, determine your **family name** (here `zack-family`), your **device name** (here `zack-device1`) and your WiFi interface (here `wlan0`). Make sure that the WiFi interface that you specify supports promiscuous mode.
+As before, determine your **family name** (here `FAMILY`), your **device name** (here `DEVICE`) and your WiFi interface (here `wlan0`). Make sure that the WiFi interface that you specify supports promiscuous mode.
+
 
 ## Start scanning passively
 
-Choose a **device name**, like the name of your computer. We will use `zacks-device` for the rest of this document. 
+Choose a **device name**, like the name of your computer. We will use `DEVICE` for the rest of this document. The device name should be unique to each scanning computer.
 
-Choose a **family name** which is a unique namespace that you can use to store data for all your devices. We will use `test-family` for the rest of this document.
+Choose a **family name** which is a unique namespace that you can use to store data for all your devices. Each scanning computer should have the *same* family name. We will use `FAMILY` for the rest of this document.
 
 You need to run the scanner commands using `sudo` to have priveleges to modify the WiFi card. However, if you are using Docker you don't need the `sudo` command.
 
 ```
-$ sudo ./find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
+$ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
     -server https://cloud.internalpositioning.com \
     -scantime 10 -forever -passive
 ```
 
-This command-line flag `-passive` tells the scanner to capture the packets with `tshark`. This command will start a scanner that submits to the main server (**https://cloud.internalpositioning.com**). If you set the `-forever` flag it will also continue running forever.
+This command-line flag `-passive` tells the scanner to capture the packets with `tshark`. This command will start a scanner that submits to the main server (https://cloud.internalpositioning.com). If you set the `-forever` flag it will also continue running forever.
 
 In this command  the WiFi chip set/unset the promiscuous mode after every scan so that it can connect to the internet to upload the packets. This process takes about 10 seconds, so it is useful to set it permanently if you don't need to connect to the internet with the scanning interface (i.e. you have two WiFi interfaces).
 
@@ -69,37 +70,9 @@ $ sudo ./find3-cli-scanner -i wlan0 -monitor-mode
 Then, add the `-no-modify` flag to tell the tool not to alter the promsicuousness of the interface
 
 ```
-$ sudo ./find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
+$ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
     -server https://cloud.internalpositioning.com \
     -scantime 10 -forever -passive -no-modify
-```
-
-## Learning
-
-Unlike the active scanning, to do learning on the passive scanning mode you must tell the server which device to learn on. *You should not stop the scanning tool that is running on the scanning computers*. 
-
-First get a list of the devices that have been scanned.
-
-```
-$ http GET localhost:8003/api/v1/devices/test-family
-```
-
-Make sure to change `test-family` to the name of the family you are using. The device will be named something like `wifi-60:57:18:3d:b8:14`, where the prefix indicates the sensor (`wifi`/`bluetooth`) and the suffix is the MAC address. You can usually look up on a phone or your router information to get MAC addresses of devices. Once you have the device name you can tell the server where that device is, say the "living room".
-
-```
-$ http POST https://cloud.internalpositioning.com/passive \
-     t:=1 f=test-family  d=wifi-60:57:18:3d:b8:14 l="living room"
-```
-
-The family (`test-family`) and device (`wifi-60:57:18:3d:b8:14`) are specified. The flag `t:=1` is to indicate to the server that you are changing the passive scanning parameters.
-
-Leave the device in the location for about 10 minutes to collect a good amount of fingerprints.
-
-It is *very important* to stop learning before you move the device away from that location. To stop learning, use the same command as above but without the `location` parameter:
-
-```
-$ http POST https://cloud.internalpositioning.com/passive \
-    t:=1 f=test-family  d=wifi-60:57:18:3d:b8:14
 ```
 
 ## Get data

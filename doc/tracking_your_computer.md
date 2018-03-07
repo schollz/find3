@@ -10,6 +10,8 @@ In this tutorial you will learn how to do internal positioning on a computer usi
 
 First you will need the FIND3 command-line scanner. You can install this the easy way, using Docker, or the hard way by compiling from source.
 
+### Easiest way
+
 ### Easy way
 
 
@@ -82,7 +84,9 @@ $ sudo apt-get install bluetooth
 $ sudo apt-get install tshark
 ```
 
-Now [Install Go](https://golang.org/dl/) and pull the latest:
+Now, you can  [download the command-line scanner](https://github.com/schollz/find3-cli-scanner/releases/latest).
+
+Or you can build from source. First [install Go](https://golang.org/dl/) and pull the latest:
 
 ```
 $ go get -u -v github.com/schollz/find3-cli-scanner
@@ -95,7 +99,11 @@ $ go install github.com/schollz/find3-cli-scanner
 ```
 
 
-## Start scanning
+
+## Learning
+
+To begin using FIND, you will need to learn the surroundings by putting your device in a location and gathering the signals around it.
+
 
 First determine the name of your WiFi interface.
 
@@ -105,33 +113,42 @@ $ iwconfig
 
 For the rest of this document we will assume its `wlan0`, a common name of the interface. 
 
-Choose a **device name**, like the name of your computer. We will use `zacks-device` for the rest of this document. 
+Choose a **device name**, like the name of your computer. We will use `DEVICE` for the rest of this document. 
 
-Choose a **family name** which is a unique namespace that you can use to store data for all your devices. We will use `test-family` for the rest of this document.
+Choose a **family name** which is a unique namespace that you can use to store data for all your devices. We will use `FAMILY` for the rest of this document.
+
+To do learning with the tool, you can set the learning flag `-location`. Say, for instance you have your computer in the "living room", you can run the following command.
 
 To start scanning use the following command (this is the `X` if you are using Docker).
 
 ```
-$ find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
-    -server https://cloud.internalpositioning.com \
-    -scantime 10 -bluetooth -forever
-```
-
-This command will start a scanner that submits to the main server (**https://cloud.internalpositioning.com**). It uses a scan time of 10 seconds, and it scan bluetooth (`-bluetooth`). If you set the `-forever` flag it will also continue running forever.
-
-Without any flags the scanner will submit fingerprints for tacking.
-
-## Learning
-
-To do learning with the tool, you can set the learning flag `-location`. Say, for instance you have your computer in the "living room", you can run the following command.
-
-```
-$ find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
+$ find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
     -server https://cloud.internalpositioning.com \
     -scantime 10 -bluetooth -forever -location "living room"
 ```
 
+This command will start a scanner that submits to the main server (https://cloud.internalpositioning.com). It uses a scan time of 10 seconds, and it scan bluetooth (`-bluetooth`). If you set the "`-forever`" flag it will also continue running forever.
+
 For your tracking scans to work, you must go to each room and run the learning command for about 10 minutes. 
+
+Once you have finished learning each room, do a calibration to update the machine learning algorithms.
+
+```
+$ http GET https://cloud.internalpositioning.com/api/v1/calibrate/FAMILY
+```
+
+
+## Start tracking
+
+After learning is accomplished, you can track your device.
+
+```
+$ find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
+    -server https://cloud.internalpositioning.com \
+    -scantime 10 -bluetooth -forever
+```
+
+The command for tracking is the same as for learning, but without the `-location` flag.
 
 ## Get data
 
