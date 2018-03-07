@@ -348,6 +348,12 @@ func (d *Database) GetSensorFromTime(timestamp interface{}) (s models.SensorData
 	return
 }
 
+// GetSensorFromGreaterTime will return a sensor data for a given timeframe
+func (d *Database) GetSensorFromGreaterTime(timestamp interface{}) (sensors []models.SensorData, err error) {
+	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM (SELECT * FROM sensors WHERE timestamp > ? GROUP BY deviceid ORDER BY timestamp DESC)", timestamp)
+	return
+}
+
 // GetAllForClassification will return a sensor data for classifying
 func (d *Database) GetAllForClassification() (s []models.SensorData, err error) {
 	return d.GetAllFromQuery("SELECT * FROM sensors WHERE sensors.locationid !=''")

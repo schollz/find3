@@ -43,6 +43,17 @@ func SaveSensorData(p models.SensorData) (err error) {
 	return
 }
 
+// SavePrediction will add sensor data to the database
+func SavePrediction(s models.SensorData, p models.LocationAnalysis) (err error) {
+	db, err := database.Open(s.Family)
+	if err != nil {
+		return
+	}
+	err = db.AddPrediction(s.Timestamp, p)
+	db.Close()
+	return
+}
+
 // HasGPS returns true if any of the specified mac addresses has
 // a GPS coordinate in the database
 func HasGPS(fingerprint models.SensorData) (yes bool, err error) {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -172,29 +173,28 @@ func handlerApiV1ByLocation(c *gin.Context) {
 	locations, err := func(c *gin.Context) (locations map[string][]Location, err error) {
 		locations = make(map[string][]Location)
 		family := strings.TrimSpace(c.Param("family"))
+		minutesAgo := strings.TrimSpace(c.DefaultQuery("history", "120"))
 
+		minutesAgoInt, err := strconv.Atoi(minutesAgo)
+		if err != nil {
+			return
+		}
+		millisecondsAgo := (time.Duration(minutesAgoInt) * time.Minute).Nanoseconds() / int64(time.Millisecond)
+		curTime := time.Now().UTC().UnixNano() / int64(time.Millisecond)
+
+		logger.Log.Debugf("current time: %d, %d minutes ago: %d", curTime, minutesAgoInt, millisecondsAgo)
 		d, err := database.Open(family, true)
 		if err != nil {
 			return
 		}
-		devices, err := d.GetDevices()
+		sensors, err := d.GetSensorFromGreaterTime(curTime - millisecondsAgo)
 		d.Close()
 		if err != nil {
 			return
 		}
-
-		for _, device := range devices {
-			d, err = database.Open(family, true)
-			if err != nil {
-				return
-			}
-			var s models.SensorData
+		logger.Log.Debugf("got %d sensors", len(sensors))
+		for _, s := range sensors {
 			var a models.LocationAnalysis
-			s, err = d.GetLatest(device)
-			d.Close()
-			if err != nil {
-				return
-			}
 			a, err = api.AnalyzeSensorData(s)
 			if err != nil {
 				return
@@ -203,7 +203,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 				locations[a.BestGuess.Location] = []Location{}
 			}
 			locations[a.BestGuess.Location] = append(locations[a.BestGuess.Location], Location{
-				Device:      device,
+				Device:      s.Device,
 				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
 				Probability: a.BestGuess.Probability,
 			})
@@ -535,9 +535,18 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 	if err != nil {
 		return
 	}
+
+	// add to location predictions
+	err = api.SavePrediction(p, analysis)
+	if err != nil {
+		logger.Log.Warn(err)
+	}
+
 	// logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
 	SendMessageOverWebsockets(p.Family, p.Device, bTarget)
+
 	if UseMQTT {
+		// logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
 		mqtt.Publish(p.Family, p.Device, string(bTarget))
 	}
 	return
