@@ -180,14 +180,12 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			return
 		}
 		millisecondsAgo := int64(minutesAgoInt * 60 * 1000)
-		curTime := time.Now().UTC().UnixNano() / int64(time.Millisecond)
 
-		logger.Log.Debugf("current time: %d, %d minutes ago: %d", curTime, minutesAgoInt, millisecondsAgo)
 		d, err := database.Open(family, true)
 		if err != nil {
 			return
 		}
-		sensors, err := d.GetSensorFromGreaterTime(curTime - millisecondsAgo)
+		sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
 		d.Close()
 		if err != nil {
 			return

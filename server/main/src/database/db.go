@@ -348,9 +348,29 @@ func (d *Database) GetSensorFromTime(timestamp interface{}) (s models.SensorData
 	return
 }
 
+// Get will retrieve the value associated with a key.
+func (d *Database) GetLastSensorTimestamp() (timestamp int64, err error) {
+	stmt, err := d.db.Prepare("SELECT timestamp FROM sensors ORDER BY timestamp DESC LIMIT 1")
+	if err != nil {
+		err = errors.Wrap(err, "problem preparing SQL")
+		return
+	}
+	defer stmt.Close()
+	err = stmt.QueryRow().Scan(&timestamp)
+	if err != nil {
+		err = errors.Wrap(err, "problem getting key")
+	}
+	return
+}
+
 // GetSensorFromGreaterTime will return a sensor data for a given timeframe
-func (d *Database) GetSensorFromGreaterTime(timestamp interface{}) (sensors []models.SensorData, err error) {
-	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM (SELECT * FROM sensors WHERE timestamp > ? GROUP BY deviceid ORDER BY timestamp DESC)", timestamp)
+func (d *Database) GetSensorFromGreaterTime(timeBlockInMilliseconds int64) (sensors []models.SensorData, err error) {
+	latestTime, err := d.GetLastSensorTimestamp()
+	if err != nil {
+		return
+	}
+	minimumTimestamp := latestTime - timeBlockInMilliseconds
+	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM (SELECT * FROM sensors WHERE timestamp > ? GROUP BY deviceid ORDER BY timestamp DESC)", minimumTimestamp)
 	return
 }
 
