@@ -102,6 +102,7 @@ It is *very important* to stop learning before you move the device away from tha
 ```
 $ http POST https://cloud.internalpositioning.com/passive \
     t:=1 f=FAMILY  d=wifi-60:57:18:3d:b8:14
+```
 
 ## Get data
 
