@@ -1,0 +1,61 @@
+<!--
+Copyright 2017 The ProjectX Authors. All rights reserved.
+Use of this source code is governed by a BSD-style
+license that can be found in the LICENSE file.
+-->
+{{define "title"}}Download ProjectX{{end}}
+{{define "styles"}}
+th {
+	text-align: left;
+}
+td {
+	padding-right: 1em;
+	vertical-align: top;
+}
+td.commits {
+	font-size: smaller;
+}
+{{end}}
+{{define "content"}}
+	<h1>Download ProjectX</h1>
+	<p>
+		This page provides binary downloads of the <code>projectx</code>
+		command-line tool and the <code>projectxfs</code> and
+		<code>cacheserver</code> daemons.
+		Read the <a href="/doc/signup.md">Signing up a new user</a>
+		document for a guide to getting started with these tools.
+	</p>
+	<p>
+		Choose a build for your operating system and processor architecture:
+	</p>
+	{{with .Content}}
+		<table>
+			<tr>
+				<th>File name</th>
+				<th>OS/Arch</th>
+				<th>Size</th>
+				<th>Build time</th>
+				<th>Commits</th>
+			</tr>
+	{{range .}}
+			<tr>
+				<td><a href="{{.FileName}}">{{.FileName}}</a></td>
+				<td>{{.OSArch}}</td>
+				<td>{{.Size}}</td>
+				<td>{{.Time.Format "02 Jan 06 at 15:04 MST"}}</td>
+				<td class="commits">
+				{{range .Commits}}
+					<a href="https://github.com/githubuser/{{.Repo}}/commit/{{.Hash}}">{{.Repo}}/{{.ShortHash}}</a><br>
+				{{end}}
+				</td>
+			</tr>
+	{{end}}
+		</table>
+	{{else}}
+		<p>No builds are available. Please try again later.</p>
+	{{end}}
+	<p>
+		You can find the full list of past builds in the
+		<a href="/release@projectx.io">release@projectx.io</a> ProjectX tree.
+	</p>
+{{end}}

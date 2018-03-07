@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!--
+Copyright 2017 The ProjectX Authors. All rights reserved.
+Use of this source code is governed by a BSD-style
+license that can be found in the LICENSE file.
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-99311263-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<title>{{block "title" .}}ProjectX{{end}}</title>
+<style>
+*,
+:before,
+:after {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  font: 14px arial, sans-serif;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0;
+}
+footer {
+  color: #666;
+  font-size: .9em;
+  padding: 1em 1em 2em;
+  text-align: center;
+}
+main {
+  flex: 1;
+  padding: 0 1em;
+}
+.container {
+  margin: 0 auto;
+  max-width: 50em;
+}
+.homeLink:link,
+.homeLink:visited {
+  color: #000;
+  text-decoration: none;
+}
+pre {
+  background: #eee;
+  padding: 1em;
+  border-radius: 1em;
+}
+blockquote {
+  background: #ddd;
+  padding: 0.1em 1em;
+  border-radius: 1em;
+}
+{{block "styles" .}}{{end}}
+</style>
+<main>
+  <div class="container">
+    {{block "before-content" .}}{{end}}
+    {{block "content" .}}Hello, ProjectX!{{end}}
+  </div>
+</main>
+<footer>
+  <div>
+    The content of this page is licensed under the
+    Creative Commons Attribution 3.0 License,
+    and code is licensed under a
+    <a href="https://spdx.org/licenses/BSD-3-Clause.html">BSD license</a>.
+  </div>
+  <div>
+    <a href="/doc/tos.md">Terms of Service</a> |
+    <a href="/doc/privacy_policy.md">Privacy Policy</a>
+  </div>
+</footer>
