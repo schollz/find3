@@ -47,6 +47,10 @@ Tracking will continue in the background and will show a notification that you c
 
 The scans will take place approximately 10-30 seconds apart, forever, until you turn off the app. The battery usage is minimal since it is doing only a short WiFi scan and Bluetooth scan.
 
+## Get data
+
+Once you have learned several locations and are tracking with the computers, you can get data from FIND3 by consulting the [API](/doc/api.md) document.
+
 ## Issues?
 
 If you have issues, please file one on Github at https://github.com/schollz/find3.

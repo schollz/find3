@@ -1,8 +1,5 @@
 # Documentation
 
-<!--- These tags hold related issue numbers. This page's development
-is part of #336. --->
-
 ## Introduction
 
 - The [FIND3 Overview](/doc/overview.md) document provides a high-level
@@ -21,6 +18,8 @@ is part of #336. --->
 - The [Tracking your computer](/doc/tracking_your_computer.md) explains how to install and run the software for using your computer for internal positioning.
 
 - The [Tracking other phones](/doc/tracking_other_phones.md) document instructs how to get started to track any phones in a vicinity.
+
+- The [API](/doc/api.md) document has a detailed guide on how to access the FIND3 data after tracking/learning.
 
 
 ## Tools

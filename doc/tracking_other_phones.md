@@ -30,6 +30,12 @@ You will need a monitor-mode enabled wifi USB adapter. There are a number of pos
 
 Namely you want to find a USB adapter with one of the following chipsets: Atheros AR9271, Ralink RT3070, Ralink RT3572, or Ralink RT5572.
 
+The commands I'll describe use `httpie` which can be installed with Python.
+
+```
+$ sudo python3 -m pip install httpie
+```
+
 ## Setup a scanner computer
 
 For each scanner computer you will need to use the scanning software. Follow the instructions in the [Tracking your computer](/doc/tracking_your_computer.md) document to install the FIND3 command-line scanner.
@@ -38,7 +44,10 @@ As before, determine your **family name** (here `zack-family`), your **device na
 
 ## Start scanning passively
 
-To start passively scanning, just do
+Choose a **device name**, like the name of your computer. We will use `zacks-device` for the rest of this document. 
+
+Choose a **family name** which is a unique namespace that you can use to store data for all your devices. We will use `test-family` for the rest of this document.
+
 
 ```
 $ find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
@@ -64,6 +73,37 @@ $ find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
     -scantime 10 -forever -passive -no-modify
 ```
 
+## Learning
+
+Unlike the active scanning, to do learning on the passive scanning mode you must tell the server which device to learn on. *You should not stop the scanning tool that is running on the scanning computers*. 
+
+First get a list of the devices that have been scanned.
+
+```
+$ http GET localhost:8003/api/v1/devices/test-family
+```
+
+Make sure to change `test-family` to the name of the family you are using. The device will be named something like `wifi-60:57:18:3d:b8:14`, where the prefix indicates the sensor (`wifi`/`bluetooth`) and the suffix is the MAC address. You can usually look up on a phone or your router information to get MAC addresses of devices. Once you have the device name you can tell the server where that device is, say the "living room".
+
+```
+$ http POST https://cloud.internalpositioning.com/passive \
+     t:=1 f=test-family  d=wifi-60:57:18:3d:b8:14 l="living room"
+```
+
+The family (`test-family`) and device (`wifi-60:57:18:3d:b8:14`) are specified. The flag `t:=1` is to indicate to the server that you are changing the passive scanning parameters.
+
+Leave the device in the location for about 10 minutes to collect a good amount of fingerprints.
+
+It is *very important* to stop learning before you move the device away from that location. To stop learning, use the same command as above but without the `location` parameter:
+
+```
+$ http POST https://cloud.internalpositioning.com/passive \
+    t:=1 f=test-family  d=wifi-60:57:18:3d:b8:14
+```
+
+## Get data
+
+Once you have learned several locations and are tracking with the computers, you can get data from FIND3 by consulting the [API](/doc/api.md) document.
 
 
 ## Issues?

@@ -133,6 +133,11 @@ $ find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
 
 For your tracking scans to work, you must go to each room and run the learning command for about 10 minutes. 
 
+## Get data
+
+Once you have learned several locations and are tracking with the computers, you can get data from FIND3 by consulting the [API](/doc/api.md) document.
+
+
 ## Issues?
 
 If you have issues, please file one on Github at https://github.com/schollz/find3-android-scanner/issues.
