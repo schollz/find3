@@ -48,9 +48,10 @@ Choose a **device name**, like the name of your computer. We will use `zacks-dev
 
 Choose a **family name** which is a unique namespace that you can use to store data for all your devices. We will use `test-family` for the rest of this document.
 
+You need to run the scanner commands using `sudo` to have priveleges to modify the WiFi card. However, if you are using Docker you don't need the `sudo` command.
 
 ```
-$ find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
+$ sudo ./find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
     -server https://cloud.internalpositioning.com \
     -scantime 10 -forever -passive
 ```
@@ -62,13 +63,13 @@ In this command  the WiFi chip set/unset the promiscuous mode after every scan s
 If you have two WiFi interfaces, you can set one to be promiscuous permanently.
 
 ```
-$ find3-cli-scanner -i wlan0 -set-promiscuous
+$ sudo ./find3-cli-scanner -i wlan0 -monitor-mode
 ```
 
-Then, add the `-no-modify` flag to tell the tool not to alter the promsicuousness of the interface.
+Then, add the `-no-modify` flag to tell the tool not to alter the promsicuousness of the interface
 
 ```
-$ find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
+$ sudo ./find3-cli-scanner -i wlan0 -device zacks-device -family test-family \
     -server https://cloud.internalpositioning.com \
     -scantime 10 -forever -passive -no-modify
 ```
