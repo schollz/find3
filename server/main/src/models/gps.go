@@ -9,3 +9,8 @@ type GPS struct {
 	Altitude  float64 `json:"alt"`
 	Mac       string  `json:"mac"`
 }
+
+type FingerprintWithGPS struct {
+	GPS         GPS        `json:"gps"`
+	Fingerprint SensorData `json:"fingerprint"`
+}

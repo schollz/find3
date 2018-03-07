@@ -825,5 +825,8 @@ func (d *Database) GetGPS(mac string) (gps models.GPS, err error) {
 	if err != nil {
 		err = errors.Wrap(err, "rows")
 	}
+	if gps.Mac == "" {
+		err = errors.New(mac + " does not exist in gps table")
+	}
 	return
 }

@@ -308,7 +308,10 @@ func handlerData(c *gin.Context) {
 		err2 := processSensorData(d)
 		if err2 == nil {
 			message = "inserted data"
-			hasGPS, _ := api.HasGPS(d)
+			hasGPS, errGPS := api.HasGPS(d)
+			if errGPS != nil {
+				logger.Log.Warn(errGPS)
+			}
 			logger.Log.Debug(hasGPS)
 			if !hasGPS {
 				message += " [need GPS]"
@@ -326,27 +329,18 @@ func handlerData(c *gin.Context) {
 
 func handlerGPS(c *gin.Context) {
 	message, err := func(c *gin.Context) (message string, err error) {
-		family := c.DefaultQuery("family", "")
-		if family == "" {
-			err = errors.New("must specify family in query, ?family=X")
-			return
-		}
-		var gps models.GPS
-		err = c.BindJSON(&gps)
+		var data models.FingerprintWithGPS
+		err = c.BindJSON(&data)
 		if err != nil {
 			return
 		}
-		db, err := database.Open(family)
-		if err != nil {
-			return
-		}
-		defer db.Close()
-		err = db.SetGPS(gps)
-		message = "inserted data"
+		err = api.AddGPSData(data)
+		message = "added data"
 		return
 	}(c)
 
 	if err != nil {
+		logger.Log.Warn(err)
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
@@ -541,7 +535,7 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 	if err != nil {
 		return
 	}
-	logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
+	// logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
 	SendMessageOverWebsockets(p.Family, p.Device, bTarget)
 	if UseMQTT {
 		mqtt.Publish(p.Family, p.Device, string(bTarget))
