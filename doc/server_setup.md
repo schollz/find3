@@ -1,4 +1,4 @@
-# Server setup
+# Setting up the server
 
 ## The easy way
 

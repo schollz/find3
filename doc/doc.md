@@ -17,16 +17,17 @@ is part of #336. --->
 ## User guide
 
 - The [Tracking your phone](/doc/tracking_your_phone.md) document describes how to get started tracking your phone (most people should start here).
-- The [Server setup](/doc/server_setup.md) document describes the process for setting up your own FIND3 server.
+
 
 ## Tools
 
-- The [`find3`](XX) command is a
-  command-line tool for creating XX.
+- The [`find3 android app`](XX) is a app for using FIND3 with your phone.
+- The [`find3scanner`](XX) is a CLI tool for scanning fingerprints from your computer.
+
 
 
 ## System setup and administration
 
-- The [Setting up `find3server`](/doc/server_setup.md) document explains how
+- The [Setting up the server](/doc/server_setup.md) document explains how
   to set up your own FIND3 installation on a Linux server.
 
