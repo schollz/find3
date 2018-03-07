@@ -14,6 +14,7 @@ import (
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/find3/server/main/src/mqtt"
+	"github.com/schollz/find3/server/main/src/utils"
 )
 
 // Port defines the public port
@@ -174,6 +175,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		locations = make(map[string][]Location)
 		family := strings.TrimSpace(c.Param("family"))
 		minutesAgo := strings.TrimSpace(c.DefaultQuery("history", "120"))
+		allowRandomization := c.DefaultQuery("random", "1") == "1"
 
 		minutesAgoInt, err := strconv.Atoi(minutesAgo)
 		if err != nil {
@@ -201,6 +203,11 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		}
 		logger.Log.Debugf("got %d sensors", len(sensors))
 		for _, s := range sensors {
+			if allowRandomization == false {
+				if utils.IsMacRandomized(s.Device) {
+					continue
+				}
+			}
 			var a models.LocationAnalysis
 			if _, ok := preAnalyzed[s.Timestamp]; ok {
 				logger.Log.Debugf("using pre-analyzed for %d", s.Timestamp)

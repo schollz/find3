@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"math/rand"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -32,4 +35,22 @@ func RandomString(n int) string {
 	}
 
 	return string(b)
+}
+
+// IsMacRandomized takes a mac address like "wifi-60:57:18:3d:b8:14"
+// or "60:57:18:3d:b8:14" and pulls the first hex digit "60" and computes
+// whether or not it is randomized.
+// Randomized = Second-least-significant bit of first hex is 0
+// (https://en.wikipedia.org/wiki/MAC_address#Universal_vs._local)
+func IsMacRandomized(mac string) bool {
+	mac = strings.TrimPrefix(mac, "wifi-")
+	hexes := strings.Split(mac, ":")
+	if len(hexes) != 6 {
+		hexes = strings.Split(mac, "-")
+		if len(hexes) != 6 {
+			return false
+		}
+	}
+	v, _ := strconv.ParseUint(hexes[0], 16, 8)
+	return fmt.Sprintf("%08b", v)[6] == byte(48)
 }
