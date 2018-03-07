@@ -26,8 +26,8 @@
         window.find3 = {
                   family: "{{.Family}}",
                   device: "{{.Device}}",
-                  url: "http{{if .SSL}}s{{end}}://{{.ServerAddress}}",
-                  websocket_url: "ws{{if .SSL}}s{{end}}://{{ .ServerAddress}}/ws?family={{.Family}}&device={{.Device}}",
+                  external_url: "{{.ExternalServerAddress}}",
+                  websocket_url: "{{.ExternalServerAddress}}/ws?family={{.Family}}&device={{.Device}}".replace("http","ws"),
         }
     </script>
     <noscript>
