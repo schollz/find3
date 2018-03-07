@@ -1,27 +1,34 @@
-# FIND3
+# Framework for Internal Navigation and Discovery (FIND3)
 
 <img src="/images/find_logo.png" width="180px" alt="Home"/>
 
-When did you last XX
+Have you ever wanted to...
 
-- XX
+- track your movements indoors to do home automation?
+- do local positioning with very low energy?
+- track your phone or laptop without GPS?
 
-FIND3 is an attempt to address problems like these, and many more.
+FIND3 is an attempt to answer positively to these questions.
 
-FIND3 is in its early days, but the plan is XX
+FIND3 is in its early days, but the plan is to develop a **Framework for Internal 
+Navigation and Discovery**.
 
 If you'd like to help us make that vision a reality, we'd love to have you try
 out FIND3.
 
 FIND3 is an [open-source project](https://github.com/schollz/find3) that
-comprises two main design elements:
+comprises several main components:
 
-1. XX
-2. XX
 
-Using these elements as building blocks, FIND3 provides XX
+1. Data storage server [(github.com/schollz/find3/server/main)](https://github.com/schollz/find3/tree/master/server/main)
+2. Machine learning server [(github.com/schollz/find3/server/ai)](https://github.com/schollz/find3/tree/master/server/ai)
+3. Command-line tool for gathering fingerprints [(schollz/find3-cli-scanner)](https://github.com/schollz/find3-cli-scanner)
+4. Android app for gathering fingerprints [(schollz/find3-android-scanner)](https://github.com/schollz/find3-android-scanner)
 
-To get started, XX
+
+Using these elements as building blocks, FIND3 provides the ability to track devices indoors, without motion sensors.
+
+To get started, read the documentation and take a look at the repo. The easiest way to start is to read [Tracking your phone](/doc/tracking_your_phone.md).
 
 ## Documentation
 
@@ -40,11 +47,11 @@ mailing lists, user forums, and so on.
 - [The FIND3 project on GitHub](https://github.com/schollz/find3)
 - [Issue tracker](https://github.com/schollz/find3/issues)
 - Official discussion forums / mailing lists:
-  - [FIND3](https://groups.google.com/forum/#!forum/find3),
+  - [Slack channel](https://join.slack.com/t/find3/shared_invite/enQtMzI0MjkwMjc3MDYzLWJiZWEzZjU5NTljM2JlYmE1MDY0NThiYmY2NDYwNGYxNTNmNTJjZjFmNjMwNGMwY2UyNzczNzZhZTIxZWY3ODQ),
     for discussion FIND3 users and developers.
-  - [FIND3 Announcements](https://groups.google.com/forum/#!forum/find3-announce),
+  - [FIND mailing list](http://eepurl.com/bhfFI1),
     a low-traffic list for important announcements about the project;
     all FIND3 users should subscribe.
 - [Contribution guidelines](https://github.com/schollz/find3/blob/master/CONTRIBUTING.md)
-- [@FIND3Project](https://twitter.com/FIND3Project) on Twitter
+
 
