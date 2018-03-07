@@ -19,18 +19,28 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>Current location</title>
   </head>
   <body>
-    <script>
+<!--     <script>
         window.find3 = {
+                  family: "schollz",
+                  device: "android",
+                  external_url: "http://localhost:8003",
+                  websocket_url: "http://localhost:8003/ws?family=schollz&device=android".replace("http","ws"),
+        }
+    </script>
+ -->
+     <script>
+    	        window.find3 = {
                   family: "{{.Family}}",
                   device: "{{.Device}}",
                   external_url: "{{.ExternalServerAddress}}",
                   websocket_url: "{{.ExternalServerAddress}}/ws?family={{.Family}}&device={{.Device}}".replace("http","ws"),
         }
-    </script>
-    <noscript>
+</script>
+    
+ <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="root"></div>

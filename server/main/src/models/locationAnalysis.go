@@ -7,11 +7,10 @@ type LocationAnalysis struct {
 		Name          string    `json:"name"`
 		Probabilities []float64 `json:"probabilities"`
 	} `json:"predictions"`
-	BestGuess LocationPrediction `json:"best_guess",omitempty`
+	Guesses []LocationPrediction `json:"guesses",omitempty`
 }
 
 type LocationPrediction struct {
 	Location    string  `json:"location",omitempty`
-	Name        string  `json:"name",omitempty`
 	Probability float64 `json:"probability",omitempty`
 }

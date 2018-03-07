@@ -218,13 +218,13 @@ func handlerApiV1ByLocation(c *gin.Context) {
 					return
 				}
 			}
-			if _, ok := locations[a.BestGuess.Location]; !ok {
-				locations[a.BestGuess.Location] = []Location{}
+			if _, ok := locations[a.Guesses[0].Location]; !ok {
+				locations[a.Guesses[0].Location] = []Location{}
 			}
-			locations[a.BestGuess.Location] = append(locations[a.BestGuess.Location], Location{
+			locations[a.Guesses[0].Location] = append(locations[a.Guesses[0].Location], Location{
 				Device:      s.Device,
 				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
-				Probability: a.BestGuess.Probability,
+				Probability: a.Guesses[0].Probability,
 			})
 		}
 		return

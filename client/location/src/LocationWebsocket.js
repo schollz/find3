@@ -10,8 +10,7 @@ class LocationWebsocket extends React.Component {
       family: window.find3.family,
       device: window.find3.device,
       websocket_url:window.find3.websocket_url,
-      location: "?",
-      probability: "",
+      guesses: [{"location":"","probability":0.0}],
       time:0,
     };
   }
@@ -19,23 +18,34 @@ class LocationWebsocket extends React.Component {
   handleData(data) {
     let result = JSON.parse(data);
     console.log(result);
+    // for (var i=0;i<result.analysis.guesses.length;i++) {
+    //   result.analysis.guesses[i] = Math.round(100*result.analysis.guesses[i]).toString() + "%"
+    // }
     this.setState({
       device: result.sensors.d,
       time: result.sensors.t,
-      location: result.analysis.best_guess.location,
-      probability: Math.round(100*result.analysis.best_guess.probability).toString() + "%",
+      guesses: result.analysis.guesses,
     });
   }
 
   render() {
+    // const listItems = this.state.guesses.map((link) =>
+    //     <li key={link.location}>{link.probability}</li> 
+    // );
+    var titleCase = require('title-case');
     return (
       <div>
         <TimeAgo date={this.state.time} />
-        <p>Family: <strong>{this.state.family}</strong></p>
-        <p>Device: <strong>{this.state.device}</strong></p>
-        <p>Location: <strong>{this.state.location}</strong></p>
-        <p>Probability: <strong>{this.state.probability}</strong></p>
-        <p><strong>{this.state.error_message}</strong></p>
+        <p>Family:</p>
+        <p><strong>{this.state.family}</strong></p>
+        <p>Device:</p>
+        <p><strong>{this.state.device}</strong></p>
+        <p>Location esimates:</p>
+        {this.state.guesses.map(station => (
+      <div><strong>{titleCase(station.location)}</strong>: {Math.round(100*station.probability)}%</div>
+    ))}
+         
+         <p><strong>{this.state.error_message}</strong></p>
 
          {/* ?family=X&device=Y should come from server */}
         <Websocket url={this.state.websocket_url}

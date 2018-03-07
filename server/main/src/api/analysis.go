@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"sort"
 	"time"
 
 	cache "github.com/robfig/go-cache"
@@ -101,7 +102,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	aidata = target.Data
 	var algorithmEfficacy map[string]map[string]BinaryStats
 	d.Get("AlgorithmEfficacy", &algorithmEfficacy)
-	aidata.BestGuess = determineBestGuess(aidata, algorithmEfficacy)
+	aidata.Guesses = determineBestGuess(aidata, algorithmEfficacy)
 
 	// add prediction to the database
 	// adding predictions uses up a lot of space
@@ -110,22 +111,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	return
 }
 
-func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[string]map[string]BinaryStats) (b models.LocationPrediction) {
-	bestEfficacy := float64(0)
-	for _, prediction := range aidata.Predictions {
-		if len(prediction.Locations) == 0 {
-			continue
-		}
-		guessedLocation := aidata.LocationNames[prediction.Locations[0]]
-		efficacy := prediction.Probabilities[0] * algorithmEfficacy[prediction.Name][guessedLocation].Informedness
-		if efficacy > bestEfficacy {
-			bestEfficacy = efficacy
-			b.Location = guessedLocation
-			b.Name = prediction.Name
-			b.Probability = bestEfficacy
-		}
-	}
-
+func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[string]map[string]BinaryStats) (b []models.LocationPrediction) {
 	// determine consensus
 	locationScores := make(map[string]float64)
 	for _, prediction := range aidata.Predictions {
@@ -143,17 +129,34 @@ func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[st
 	}
 	logger.Log.Infof("consensus: %+v", locationScores)
 
-	b.Probability = 0
-	b.Name = "consensus"
 	total := float64(0)
-	for key := range locationScores {
-		total += locationScores[key]
+	for location := range locationScores {
+		total += locationScores[location]
 	}
-	for key := range locationScores {
-		if locationScores[key]/total > b.Probability {
-			b.Probability = locationScores[key] / total
-			b.Location = key
-		}
+
+	pl := make(PairList, len(locationScores))
+	i := 0
+	for k, v := range locationScores {
+		pl[i] = Pair{k, v / total}
+		i++
+	}
+	sort.Sort(sort.Reverse(pl))
+
+	b = make([]models.LocationPrediction, len(locationScores))
+	for i := range pl {
+		b[i].Location = pl[i].Key
+		b[i].Probability = pl[i].Value
 	}
 	return b
 }
+
+type Pair struct {
+	Key   string
+	Value float64
+}
+
+type PairList []Pair
+
+func (p PairList) Len() int           { return len(p) }
+func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
+func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
