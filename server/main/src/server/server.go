@@ -179,7 +179,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		if err != nil {
 			return
 		}
-		millisecondsAgo := (time.Duration(minutesAgoInt) * time.Minute).Nanoseconds() / int64(time.Millisecond)
+		millisecondsAgo := int64(minutesAgoInt * 60 * 1000)
 		curTime := time.Now().UTC().UnixNano() / int64(time.Millisecond)
 
 		logger.Log.Debugf("current time: %d, %d minutes ago: %d", curTime, minutesAgoInt, millisecondsAgo)
@@ -208,7 +208,6 @@ func handlerApiV1ByLocation(c *gin.Context) {
 				Probability: a.BestGuess.Probability,
 			})
 		}
-
 		return
 	}(c)
 	if err != nil {
