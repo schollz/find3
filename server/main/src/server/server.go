@@ -60,6 +60,7 @@ func Run() (err error) {
 	r.GET("/ws", wshandler)            // handler for the web sockets (see websockets.go)
 	r.POST("/mqtt", handlerMQTT)       // handler for setting MQTT
 	r.POST("/data", handlerData)       // typical data handler
+	r.POST("/gps", handlerGPS)         // typical GPS handler
 	r.POST("/reverse", handlerReverse) // typical data handler
 	r.POST("/learn", handlerFIND)      // backwards-compatible with FIND for learning
 	r.POST("/track", handlerFIND)      // backwards-compatible with FIND for tracking
@@ -304,6 +305,34 @@ func handlerData(c *gin.Context) {
 			err = err2
 		}
 	}
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
+	}
+}
+
+func handlerGPS(c *gin.Context) {
+	type GPSPost struct {
+		Data   models.GPS `json:"data"`
+		Family string     `json:"family"`
+	}
+	message, err := func(c *gin.Context) (message string, err error) {
+		var gps GPSPost
+		err = c.BindJSON(&gps)
+		if err != nil {
+			return
+		}
+		db, err := database.Open(gps.Family)
+		if err != nil {
+			return
+		}
+		defer db.Close()
+		err = db.SetGPS(gps.Data)
+		message = "inserted data"
+		return
+	}(c)
+
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	} else {

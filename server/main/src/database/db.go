@@ -76,6 +76,14 @@ func (d *Database) MakeTables() (err error) {
 		return
 	}
 
+	sqlStmt = `CREATE TABLE gps (mac TEXT PRIMARY KEY, lat REAL, lon REAL, alt REAL, timestamp INTEGER);`
+	_, err = d.db.Exec(sqlStmt)
+	if err != nil {
+		err = errors.Wrap(err, "MakeTables")
+		d.logger.Log.Error(err)
+		return
+	}
+
 	sensorDataSS, _ := stringsizer.New()
 	err = d.Set("sensorDataStringSizer", sensorDataSS.Save())
 	if err != nil {
@@ -760,6 +768,62 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 	err = rows.Err()
 	if err != nil {
 		err = errors.Wrap(err, "getRows")
+	}
+	return
+}
+
+// SetGPS will set a GPS value in the GPS database
+func (d *Database) SetGPS(gps models.GPS) (err error) {
+	tx, err := d.db.Begin()
+	if err != nil {
+		return errors.Wrap(err, "SetGPS")
+	}
+	stmt, err := tx.Prepare("insert or replace into gps(mac,lat,lon,alt,timestamp) values (?, ?, ?, ?, ?)")
+	if err != nil {
+		return errors.Wrap(err, "SetGPS")
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(gps.Mac, gps.Latitude, gps.Longitude, gps.Altitude, gps.Timestamp)
+	if err != nil {
+		return errors.Wrap(err, "SetGPS")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return errors.Wrap(err, "SetGPS")
+	}
+
+	return
+}
+
+// GetGPS will return a GPS for a given mac, if it exists
+// if it doesn't exist it will return an error
+func (d *Database) GetGPS(mac string) (gps models.GPS, err error) {
+	query := "SELECT mac,lat,lon,alt,timestamp FROM gps WHERE mac == ?"
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(mac)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&gps.Mac, &gps.Latitude, &gps.Longitude, &gps.Altitude, &gps.Timestamp)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
 	}
 	return
 }
