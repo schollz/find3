@@ -43,6 +43,27 @@ func SaveSensorData(p models.SensorData) (err error) {
 	return
 }
 
+// HasGPS returns true if any of the specified mac addresses has
+// a GPS coordinate in the database
+func HasGPS(fingerprint models.SensorData) (yes bool, err error) {
+	db, err := database.Open(fingerprint.Family)
+	if err != nil {
+		return
+	}
+	defer db.Close()
+
+	for sensorType := range fingerprint.Sensors {
+		for mac := range fingerprint.Sensors[sensorType] {
+			_, err = db.GetGPS(mac)
+			if err == nil {
+				yes = true
+				return
+			}
+		}
+	}
+	return
+}
+
 func updateCounter(family string) {
 	globalUpdateCounter.Lock()
 	if _, ok := globalUpdateCounter.Count[family]; !ok {

@@ -308,6 +308,11 @@ func handlerData(c *gin.Context) {
 		err2 := processSensorData(d)
 		if err2 == nil {
 			message = "inserted data"
+			hasGPS, _ := api.HasGPS(d)
+			logger.Log.Debug(hasGPS)
+			if !hasGPS {
+				message += " [need GPS]"
+			}
 		} else {
 			err = err2
 		}
@@ -320,22 +325,23 @@ func handlerData(c *gin.Context) {
 }
 
 func handlerGPS(c *gin.Context) {
-	type GPSPost struct {
-		Data   models.GPS `json:"data"`
-		Family string     `json:"family"`
-	}
 	message, err := func(c *gin.Context) (message string, err error) {
-		var gps GPSPost
+		family := c.DefaultQuery("family", "")
+		if family == "" {
+			err = errors.New("must specify family in query, ?family=X")
+			return
+		}
+		var gps models.GPS
 		err = c.BindJSON(&gps)
 		if err != nil {
 			return
 		}
-		db, err := database.Open(gps.Family)
+		db, err := database.Open(family)
 		if err != nil {
 			return
 		}
 		defer db.Close()
-		err = db.SetGPS(gps.Data)
+		err = db.SetGPS(gps)
 		message = "inserted data"
 		return
 	}(c)
