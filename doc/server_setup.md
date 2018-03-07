@@ -1,79 +1,60 @@
-# Setting up projectxserver
+# Server setup
 
 ## The easy way
 
-XX
+The easiest way to make your own FIND3 instance is to use Docker. Do not use `apt-get` to install Docker, just use
 
-## Conventions
-Throughout this document, we will mark commands to be run on your
-local machine with the shell prompt `local$` and commands to be
-run on your server with `server%`.
-
-For example:
-
-```
-local$ projectx signup -server=projectx.example.com you@gmail.com
-```
-and
-```
-server% sudo systemctl stop projectxserver.service
+```bash
+$ curl -sSL https://get.docker.com | sh
 ```
 
-## Introduction
-This document describes the process for creating an ProjectX installation by deploying
-an `projectxserver`, a combined ProjectX Store and Directory server, to
-a Linux-based machine.
+This command will work (and has been tested) on Raspberry Pis. If you are not on a Raspberry Pi, then you can just pull the latest image using:
 
-The installation will use the central ProjectX key server (`key.projectx.io`) for
-authentication, which permits inter-operation with other ProjectX servers.
+```bash
+$ docker pull schollz/find3
+```
 
-There are multiple versions of `projectxserver`, each depending on where the
-associated storage is kept, either on the server's local disk or with a cloud
-storage provider.
-The binaries that use cloud storage providers each have a suffix that
-identifies the provider, such as `projectxserver-gcp` for the Google Cloud
-Platform.
-These binaries are also kept in distinct repositories, such as `gcp.projectx.io`
-for the Google Cloud Platform.
+However, if you are using a Raspberry Pi, you'll need to build the `armf` version yourself. Then you should get the latest *Dockerfile*:
 
-The process follows these steps:
+```bash
+$ wget https://raw.githubusercontent.com/schollz/find3/master/Dockerfile
+$ docker build -t schollz/find3 .
+```
 
-- [sign up](#signup) for an ProjectX user account
-- [configure](#domain) a domain name and create an ProjectX user for the server,
-- if necessary, [set up the cloud](#cloud
-) storage service,
-- [deploy](#deploy) the `projectxserver` to a Linux-based server,
-- [configure](#configure) the `projectxserver`.
+That's it! Now FIND3 should be installed and read to go. To start it, make a directory to store the data, say `/home/$USER/FIND_DATA` and then start the Docker process in the background.
 
-Each of these steps (besides deployment) has a corresponding `projectx`
-subcommand to assist you with the process.
+```bash
+$ docker run -p 11883:1883 -p 8005:8003 \
+  -e EXTERNAL_ADDRESS='http://localhost:8005' \
+	-v /home/$USER/FIND_DATA:/data \
+	--name find3server -d -t schollz/find3
+```
 
-## Prerequisites
+Now the server will be running on port `8005` and have an MQTT instance running on port `11883`. Make sure to change the `EXTERNAL_ADDRESS` to reflect what you wil have as your public endpoint, it used to set the front-end materials.
 
-To deploy an `projectxserver` you need to decide on values for:
 
-- An Internet domain to which you can add DNS records.
-  (We will use `example.com` in this document.)
-  Note that the domain need not be dedicated to your ProjectX installation; it
-  just acts as a name space inside which you can create ProjectX users for
-  administrative purposes.
+## Run the test suite
 
-- Your ProjectX user name (an email address).
-  (We will use `you@gmail.com` in this document.)
-  This user will be the administrator of your ProjectX installation.
-  The address may be under any domain,
-  as long you can receive mail at that address.
+To test that things are working you can submit some test data to the server. Download a test script which will make requests to the server:
 
-- The host name of the server on which `projectxserver` will run.
-  (We will use `projectx.example.com` in this document.)
+```bash
+$ wget https://raw.githubusercontent.com/schollz/find3/master/server/main/testing/learn.sh
+$ chmod +x learn.sh
+$ ./learn.sh
+```
 
-## XX {#XX}
+You have just submitted about 300 fingerprints for three different locations for the family `testdb` for the device `zack`.
 
-To register your public key with the central key server run `projectx signup`,
-passing your chosen host name as its `-server` argument
-and your chosen ProjectX user name as its final argument.
-Then follow the onscreen instructions.
+This test data had `location` associated with it, so you can use it for learning. To do the learning just do 
 
-The [Signing up a new user](/doc/signup.md) document describes this process in
-detail.
-If you change your mind about the host name, you can update with `projectx user -put`.
+```bash
+$ http GET localhost:8005/api/v1/calibrate/testdb
+```
+
+Now you should be able to see your location data. You can get the data from the command line doing:
+
+```
+$ http GET localhost:8005/api/v1/location/testdb/zack
+```
+
+You can also see the data, in realtime, by going to `localhost:8005/view/location/testdb/zack`.If you run the test suite again you should see the values change (albeit very quickly).

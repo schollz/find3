@@ -10,9 +10,9 @@ The examples are Unix-oriented but it should be easy to adapt them to a Windows 
 
 ## The project
 
-### What is ProjectX? {#what}
+### What is FIND3? {#what}
 
-ProjectX attempts to ...
+FIND3 attempts to ...
 
 ### What are the goals of the project? {#goals}
 
@@ -21,16 +21,16 @@ ProjectX attempts to ...
 ### Why create something new rather than work on an existing system? {#why-new}
 
 There are many systems out there that can provide some of what
-ProjectX offers, but there is none that addresses its goals directly.
+FIND3 offers, but there is none that addresses its goals directly.
 
 The combination of:
 
 - ...
 
-and other properties make ProjectX unique.
+and other properties make FIND3 unique.
 
 
-### Can I use ProjectX on my phone? {#mobile}
+### Can I use FIND3 on my phone? {#mobile}
 
-### Can I access ProjectX from a web browser? {#browser}
+### Can I access FIND3 from a web browser? {#browser}
 

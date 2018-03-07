@@ -1,4 +1,4 @@
-# ProjectX Overview
+# FIND3 Overview
 
 ## Introduction
 
@@ -16,5 +16,5 @@
 
 ## Installing and Contributing
 
-The source for ProjectX is hosted on GitHub
-([https://github.com/githubuser/projectx](https://github.com/githubuser/projectx)).
+The source for FIND3 is hosted on GitHub
+([https://github.com/schollz/find3](https://github.com/schollz/find3)).

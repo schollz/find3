@@ -1,9 +1,9 @@
-// Copyright 2016 The ProjectX Authors. All rights reserved.
+// Copyright 2016 The FIND3 Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // Package frontend provides a web server that serves documentation and meta
-// tags to instruct "go get" where to find the ProjectX source repository.
+// tags to instruct "go get" where to find the FIND3 source repository.
 package doc
 
 import (
@@ -26,8 +26,8 @@ import (
 
 const (
 	extMarkdown  = ".md"
-	docHostname  = "projectx.io"      // redirect doc requests to this host
-	testHostname = "test.projectx.io" // don't redirect requests to this host
+	docHostname  = "find3.io"      // redirect doc requests to this host
+	testHostname = "test.find3.io" // don't redirect requests to this host
 )
 
 type server struct {
@@ -55,7 +55,7 @@ func NewServer(docs string) (http.Handler, error) {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(s.handleDoc))
 	mux.Handle("/images/", http.FileServer(http.Dir(docs)))
-	mux.Handle("/issue/", redirectHandler("/issue/", "https://github.com/githubuser/projectx/issues/"))
+	mux.Handle("/issue/", redirectHandler("/issue/", "https://github.com/schollz/find3/issues/"))
 	s.handlers = goGetHandler{gziphandler.GzipHandler(canonicalHostHandler{mux})}
 
 	return s, nil
@@ -115,7 +115,7 @@ func (s *server) renderDoc(w http.ResponseWriter, fn string) {
 		return
 	}
 	if err := s.tmpl.doc.Execute(w, pageData{
-		Title:    s.docTitle[fn] + " · ProjectX",
+		Title:    s.docTitle[fn] + " · FIND3",
 		Content:  template.HTML(b),
 		FileName: fn,
 	}); err != nil {
@@ -197,7 +197,7 @@ type canonicalHostHandler struct {
 }
 
 func (h canonicalHostHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Redirect requests to foo.projectx.io to projectx.io.
+	// Redirect requests to foo.find3.io to find3.io.
 	if r.Host != docHostname && r.Host != testHostname && strings.HasSuffix(r.Host, "."+docHostname) {
 		u := *r.URL
 		u.Host = docHostname

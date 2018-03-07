@@ -1,9 +1,9 @@
 <!--
-Copyright 2017 The ProjectX Authors. All rights reserved.
+Copyright 2017 The FIND3 Authors. All rights reserved.
 Use of this source code is governed by a BSD-style
 license that can be found in the LICENSE file.
 -->
-{{define "title"}}Download ProjectX{{end}}
+{{define "title"}}Download FIND3{{end}}
 {{define "styles"}}
 th {
 	text-align: left;
@@ -17,10 +17,10 @@ td.commits {
 }
 {{end}}
 {{define "content"}}
-	<h1>Download ProjectX</h1>
+	<h1>Download FIND3</h1>
 	<p>
-		This page provides binary downloads of the <code>projectx</code>
-		command-line tool and the <code>projectxfs</code> and
+		This page provides binary downloads of the <code>find3</code>
+		command-line tool and the <code>find3fs</code> and
 		<code>cacheserver</code> daemons.
 		Read the <a href="/doc/signup.md">Signing up a new user</a>
 		document for a guide to getting started with these tools.
@@ -45,7 +45,7 @@ td.commits {
 				<td>{{.Time.Format "02 Jan 06 at 15:04 MST"}}</td>
 				<td class="commits">
 				{{range .Commits}}
-					<a href="https://github.com/githubuser/{{.Repo}}/commit/{{.Hash}}">{{.Repo}}/{{.ShortHash}}</a><br>
+					<a href="https://github.com/schollz/{{.Repo}}/commit/{{.Hash}}">{{.Repo}}/{{.ShortHash}}</a><br>
 				{{end}}
 				</td>
 			</tr>
@@ -56,6 +56,6 @@ td.commits {
 	{{end}}
 	<p>
 		You can find the full list of past builds in the
-		<a href="/release@projectx.io">release@projectx.io</a> ProjectX tree.
+		<a href="/release@find3.io">release@find3.io</a> FIND3 tree.
 	</p>
 {{end}}
