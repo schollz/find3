@@ -118,13 +118,15 @@ func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[st
 		if len(prediction.Locations) == 0 {
 			continue
 		}
-		guessedLocation := aidata.LocationNames[prediction.Locations[0]]
-		efficacy := prediction.Probabilities[0] * algorithmEfficacy[prediction.Name][guessedLocation].Informedness
-		if _, ok := locationScores[guessedLocation]; !ok {
-			locationScores[guessedLocation] = float64(0)
-		}
-		if efficacy > 0 {
-			locationScores[guessedLocation] += efficacy
+		for i := range prediction.Locations {
+			guessedLocation := aidata.LocationNames[prediction.Locations[i]]
+			efficacy := prediction.Probabilities[i] * algorithmEfficacy[prediction.Name][guessedLocation].Informedness
+			if _, ok := locationScores[guessedLocation]; !ok {
+				locationScores[guessedLocation] = float64(0)
+			}
+			if efficacy > 0 {
+				locationScores[guessedLocation] += efficacy
+			}
 		}
 	}
 	logger.Log.Debugf("consensus: %+v", locationScores)
