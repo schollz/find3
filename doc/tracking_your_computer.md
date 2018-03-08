@@ -66,8 +66,8 @@ Once you have learned several locations and are tracking with the computers, you
 
 ## Issues?
 
-If you have issues, please file one on Github at https://github.com/schollz/find3-android-scanner/issues.
+If you have issues, please file one on Github at https://github.com/schollz/find3-cli-scanner/issues.
 
 ## Source
 
-If you are interested, the app is completely open-source and available at  https://github.com/schollz/find3-android-scanner.
+If you are interested, the app is completely open-source and available at  https://github.com/schollz/find3-cli-scanner.

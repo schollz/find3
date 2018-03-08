@@ -2,6 +2,9 @@
 
 ## Introduction
 
+The Framework for Internal Navigation and Discovery (FIND) allows you to use your (Android) smartphone or WiFi-enabled computer (laptop or Raspberry Pi or etc.) to determine your position within your home or office. You can easily use this system in place of motion sensors as its resolution will allow your phone to distinguish whether you are in the living room, the kitchen or the bedroom, etc. The position information can then be used in a variety of ways including home automation, way-finding, or tracking!
+
+Simply put, FIND will allow you to replace tons of motion sensors with a single smartphone!
 
 ## How does it work?
 
@@ -17,9 +20,11 @@ Locations are determined on the FIND server using classification. Currently the 
 
 There are two modes of localization that you can implement with FIND:
 
-- **Active scanning**: Your device (laptop or smartphone) actively scans for nearby Bluetooth/WiFi devices. It records their signal strengths, and sends these to the FIND3 server. The FIND3 server compares them to its database of known signal strengths, and calculates your device's most likely location. *Requires running a client on your device*.
+- **Active scanning**: In *active scanning* the scanner will report the classified location of the device that is doing the scanning. *Requires installing software on the device being tracked*.
 
-- **Passive scanning**: The FIND3 scanner runs on 2+ more nearby computers. Each scanner listens for any Bluetooth/Wifi broadcasts from your device. The scanner measures the signal strength of these broadcasts, and sends them to the FIND3 server. The FIND3 server compares them to its database of known signal strengths, and calculates your device's most likely location. *Requires running the FIND3 scanner on 2+ computers. Does not require a client on the device you are trying to locate*.
+- **Passive scanning**: In *passive scanning* the scanner will report the classified location of the devices that it scans. This mode requires having a WiFi card that supports monitor mode on the scanning device. No software is needed on the device that is being tracked.
+
+You can use *active scanning* to track your own phone or computer, as outlined in the [Tracking your phone](/doc/tracking_your_phone.md) and [Tracking your computer](/doc/tracking_your_computer.md) documents. The *passive sacnning* can be used to track others that are nearby, as outline in the [Passive tracking](/doc/passive_tracking.md).
 
 ## FIND3 vs FIND
 
