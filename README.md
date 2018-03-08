@@ -6,7 +6,8 @@
 
 **The Framework for Internal Navigation and Discovery** (_FIND_) is like indoor GPS for your house or business, using only a simple smartphone or laptop.
 
-Documentation: [find3.internalpositioning.com](https://find3.internalpositioning.com)
+Documentation:
+[www.internalpositioning.com/doc](https://www.internalpositioning.com/doc)
 
 > This version, 3.X, is a complete re-write of the [previous versions 2.x](https://github.com/schollz/find).
 
