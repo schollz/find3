@@ -16,6 +16,19 @@ The basis of this system is to catalog all the fingerprints about the Wifi route
 
 Locations are determined on the FIND server using classification. Currently the server supports several different machine learning algorithms. Positioning by classification is accomplished by first learning the distributions of WiFi signals for a given location and then classifying it during tracking. Learning only takes ~10 minutes and will last almost indefinitely. The WiFi fingerprints are also the same across all devices so that learning using one device is guaranteed to work across all devices.
 
+## Framework 
+
+FIND3 is an [open-source project](https://github.com/schollz/find3) that comprises several main components:
+
+
+1. Data storage server [(github.com/schollz/find3/server/main)](https://github.com/schollz/find3/tree/master/server/main)
+2. Machine learning server [(github.com/schollz/find3/server/ai)](https://github.com/schollz/find3/tree/master/server/ai)
+3. Command-line tool for gathering fingerprints [(schollz/find3-cli-scanner)](https://github.com/schollz/find3-cli-scanner)
+4. Android app for gathering fingerprints [(schollz/find3-android-scanner)](https://github.com/schollz/find3-android-scanner)
+
+Using these elements as building blocks, FIND3 provides the ability to track devices indoors, without motion sensors.
+
+
 ## Active and Passive scanning 
 
 There are two modes of localization that you can implement with FIND:
@@ -40,7 +53,3 @@ FIND3 is a complete re-write of the previous version of FIND ([github.com/scholl
 - Support for WiFi wardriving.
 
 
-## Installing and Contributing
-
-The source for FIND3 is hosted on GitHub
-([https://github.com/schollz/find3](https://github.com/schollz/find3)).

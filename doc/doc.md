@@ -1,4 +1,16 @@
-# Documentation
+# FIND Documentation 
+
+<img src="/images/find_logo.png" width="180px" alt="Home"/>
+
+Have you ever wanted to...
+
+- do home automation without motion sensors?
+- track your phone or laptop *indoors* without GPS?
+- monitor the whereaobouts and trajectories of cell phones?
+
+FIND stands for the **Framework for Internal Navigation and Discovery**, which is an attempt implement a solution to these questions. This version, FIND3, is v3.X of FIND (the latest version).
+
+To get started, read the documentation and take a look at the repo. The easiest way to start is to read [Tracking your phone](/doc/tracking_your_phone.md).
 
 ## Introduction
 
@@ -32,4 +44,24 @@
 
 - The [Setting up the server](/doc/server_setup.md) document explains how
   to set up your own FIND3 installation on a Linux server.
+
+
+## Community
+
+FIND3 is an open source project with a growing community
+of users and contributors.
+These resources support the open source project and
+point to things such as the GitHub repository,
+mailing lists, user forums, and so on.
+
+- [The FIND3 project on GitHub](https://github.com/schollz/find3)
+- [Issue tracker](https://github.com/schollz/find3/issues)
+- Official discussion forums / mailing lists:
+  - [Slack channel](https://join.slack.com/t/find3/shared_invite/enQtMzI0MjkwMjc3MDYzLWJiZWEzZjU5NTljM2JlYmE1MDY0NThiYmY2NDYwNGYxNTNmNTJjZjFmNjMwNGMwY2UyNzczNzZhZTIxZWY3ODQ),
+    for discussion FIND3 users and developers.
+  - [FIND mailing list](http://eepurl.com/bhfFI1),
+    a low-traffic list for important announcements about the project;
+    all FIND3 users should subscribe.
+- [Contribution guidelines](https://github.com/schollz/find3/blob/master/CONTRIBUTING.md)
+
 
