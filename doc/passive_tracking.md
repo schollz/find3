@@ -12,7 +12,7 @@ Note: It may be illegal to monitor networks for MAC addresses, especially on net
 
 ## Prerequisites
 
-You will need a Raspberry Pi. Ones with built-in Wifi work best:
+You will need 1+ scanner computers. Raspberry Pis with built-in Wifi work best:
 
 - [Raspberry Pi Zero W](https://www.amazon.com/gp/product/B071L2ZQZX/ref=as_li_tl?ie=UTF8&tag=scholl-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=B071L2ZQZX&linkId=ab2f9d564a4f517c5b004a760d0d6e29)
 - [Raspberry Pi 3](https://www.amazon.com/gp/product/B01C6EQNNK/ref=as_li_tl?ie=UTF8&tag=scholl-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=B01C6EQNNK&linkId=805012388be781415a6be827b50c76ac)
