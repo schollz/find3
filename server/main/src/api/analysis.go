@@ -127,7 +127,7 @@ func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[st
 			locationScores[guessedLocation] += efficacy
 		}
 	}
-	logger.Log.Infof("consensus: %+v", locationScores)
+	logger.Log.Debugf("consensus: %+v", locationScores)
 
 	total := float64(0)
 	for location := range locationScores {
