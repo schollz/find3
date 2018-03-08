@@ -24,8 +24,7 @@
 
 ## Tools
 
-- The [`find3 android app`](XX) is a app for using FIND3 with your phone.
-- The [`find3scanner`](XX) is a CLI tool for scanning fingerprints from your computer.
+- The [`find3-cli-scanner`](/doc/cli-scanner.md) is a CLI tool for scanning fingerprints from your computer.
 
 
 

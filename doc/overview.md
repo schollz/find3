@@ -35,14 +35,6 @@ FIND3 is a complete re-write of the previous version of FIND ([github.com/scholl
 - Support for WiFi wardriving.
 
 
-## What is included
-
-
-## Signing up
-
-
-## Comparison with existing systems
-
 ## Installing and Contributing
 
 The source for FIND3 is hosted on GitHub
