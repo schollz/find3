@@ -46,6 +46,9 @@ func Run() (err error) {
 	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
 	})
+	r.GET("/", func(c *gin.Context) { // handler for the uptime robot
+		c.String(http.StatusOK, "see www.internalpositioning.com/doc/api.md")
+	})
 	r.GET("/view/location/:family/:device", func(c *gin.Context) {
 		family := c.Param("family")
 		device := c.Param("device")
