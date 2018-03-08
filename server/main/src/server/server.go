@@ -22,6 +22,7 @@ var Port = "8003"
 var ExternalServerAddress = "http://localhost:8003"
 var UseSSL = false
 var UseMQTT = false
+var MinimumPassive = -1
 
 // Run will start the server listening on the specified port
 func Run() (err error) {
@@ -488,12 +489,20 @@ func parseRollingData(family string) (err error) {
 	db.Set("ReverseRollingData", rollingData)
 	db.Close()
 	for sensor := range sensorMap {
-		logger.Log.Debugf("saving reverse sensor data for %s", sensor)
 		logger.Log.Debugf("%+v", sensorMap[sensor])
+		numPassivePoints := 0
+		for sensorType := range sensorMap[sensor].Sensors {
+			numPassivePoints += len(sensorMap[sensor].Sensors[sensorType])
+		}
+		if numPassivePoints < MinimumPassive {
+			logger.Log.Debugf("skipped saving reverse sensor data for %s, not enough points", sensor)
+			continue
+		}
 		err := processSensorData(sensorMap[sensor])
 		if err != nil {
 			logger.Log.Warnf("problem saving: %s", err.Error())
 		}
+		logger.Log.Debugf("saved reverse sensor data for %s", sensor)
 	}
 
 	return

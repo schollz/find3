@@ -19,8 +19,13 @@ func main() {
 	port := flag.String("port", "8003", "port for the data (this) server")
 	debug := flag.Bool("debug", false, "turn on debug mode")
 	mqttFlag := flag.Bool("mqtt", false, "turn on mqtt")
+
 	var dataFolder string
 	flag.StringVar(&dataFolder, "data", "", "location to store data")
+
+	var minimumPassive int
+	flag.IntVar(&minimumPassive, "min-passive", -1, "minimum number of passive points (passive only)")
+
 	flag.Parse()
 
 	if dataFolder == "" {
@@ -46,7 +51,7 @@ func main() {
 	} else {
 		server.ExternalServerAddress = *externalAddress
 	}
-
+	server.MinimumPassive = minimumPassive
 	server.UseMQTT = *mqttFlag
 	err := server.Run()
 	if err != nil {
