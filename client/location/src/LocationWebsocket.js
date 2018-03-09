@@ -40,7 +40,7 @@ class LocationWebsocket extends React.Component {
         <p><strong>{this.state.family}</strong></p>
         <p>Device:</p>
         <p><strong>{this.state.device}</strong></p>
-        <p>Location esimates:</p>
+        <p>Location estimate:</p>
         {this.state.guesses.map(station => (
       <div><strong>{titleCase(station.location)}</strong>: {Math.round(100*station.probability)}%</div>
     ))}
