@@ -1,3 +1,4 @@
 *node_modules* linguist-vendored
 *static* linguist-vendored
 *testing* linguist-vendored
+*doc* linguist-vendored
