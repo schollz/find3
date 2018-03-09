@@ -27,6 +27,13 @@ func (d SensorData) Validate() (err error) {
 	} else if d.Timestamp <= 0 {
 		err = errors.New("timestamp is not valid")
 	}
+	numFingerprints := 0
+	for sensorType := range d.Sensors {
+		numFingerprints += len(d.Sensors[sensorType])
+	}
+	if numFingerprints == 0 {
+		err = errors.New("sensor data cannot be empty")
+	}
 	return
 }
 
