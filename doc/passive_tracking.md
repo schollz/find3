@@ -4,11 +4,28 @@
 
 It is possible to also use FIND3 to setup a system that can do *passive scanning*. In *passive scanning*, you setup multiple computers which capture probe requests from phones and use those to classify their location.
 
-A typical passive scanning system uses a network of Raspberry Pis which sniff the WiFi probe requests from WiFi-enabled devices and sends these parcels to a central server which compiles and forwards the fingerprint to the FIND server which then uses machine learning to classify the location based on the unique WiFi fingerprints.
+A typical passive scanning system uses a network of Raspberry Pis which sniff the WiFi broadcast requests from WiFi-enabled devices and sends these parcels to a central server which compiles and forwards the fingerprint to the FIND server which then uses machine learning to classify the location based on the unique WiFi fingerprints.
 
-This system does not require being logged into a particular WiFi - it will track any phone/device with WiFi enabled! (Caveat: for iOS devices it will only track if Wi-Fi is associated with a network - any network, though - because of MAC spoofing it uses for security). This system also does not require installing any apps on a phone. Tracking occurs anytime a WiFi chip makes a probe request (which is every minute or so). For this to work, it requires a one-time setup to populate the system with known fingerprints of known locations before it can pinpoint locations (see #3 below).
+This system does not require being logged into a particular WiFi - it will track any phone/device with WiFi enabled! (Caveat: for iOS devices it will only track if Wi-Fi is associated with a network - any network, though - because of MAC spoofing it uses for security). This system also does not require installing any apps on a phone.
 
-Note: It may be illegal to monitor networks for MAC addresses, especially on networks that you do not own. Please check your country's laws (for [US Section 18 U.S. Code § 2511](https://www.law.cornell.edu/uscode/text/18/2511)) - [discussion](https://github.com/schollz/howmanypeoplearearound/issues/4).
+*Note: It may be illegal to monitor networks for MAC addresses, especially on networks that you do not own. Please check your country's laws (for [US Section 18 U.S. Code § 2511](https://www.law.cornell.edu/uscode/text/18/2511)) - [discussion](https://github.com/schollz/howmanypeoplearearound/issues/4).*
+
+## Time resolution
+
+The time resolution of passive tracking revolves around the frequency that the device makes WiFi broadcasts. To get an idea of the frequency of these broadcasts, and thus the minimum time separation you will get with passive tracking, here are some measurements I made.
+
+### Affiliated devices
+
+These experiments were done with devices that were affiliated with a WiFi network.
+
+- When left unattended my laptop running Ubuntu 17 emits a WiFi broadcast every 2.1 ± 0.4 minutes. A desktop computer running Ubuntu 17 is similar, sending out a broadcast every 2.0 ± 0.4 minutes. 
+- A Google Home emits a WiFi broadcast every 6.5 ± 3.5 minutes. 
+- A Pixel2 running the [`find3-android-scanner`](https://play.google.com/store/apps/details?id=com.internalpositioning.find3.find3app) in the background will be detected every 2.1 ± 0.8 minutes.
+- A Samsung phone without any active scanning seems to run only when its screen is unlocked (i.e phone is used). When the screen is on, and it is being used, it scans every 2.0 ± 0.1 minutes.
+
+### Unaffiliated devices
+
+TBD.
 
 ## Prerequisites
 
@@ -80,13 +97,11 @@ $ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
 
 Unlike the active scanning, to do learning on the passive scanning mode you must tell the server which device to learn on. *You should not stop the scanning tool that is running on the scanning computers*. 
 
-First get a list of the devices that have been scanned.
+Choose the name of the family you are using, here we will use "`FAMILY`".
 
-```
-$ http GET https://cloud.internalpositioning.com/api/v1/devices/FAMILY
-```
+Then choose the device you would like to learn on. You can use multiple devices, computers or smartphones. You will need to get the MAC address of the device you are using. In smartphones this is under settings, and in computers it is located in the `ifconfig`. The device name in passive mode is also prefixed by `wifi-`, so if your MAC address is `60:57:18:3d:b8:14` your device name should be `wifi-60:57:18:3d:b8:14`. *Note:* If you are doing learning on your phone you can [download the `find3-android-scanner`](https://play.google.com/store/apps/details?id=com.internalpositioning.find3.find3app) to speed up the number of broadcasts the phone makes.
 
-Make sure to change `FAMILY` to the name of the family you are using. The device will be named something like `wifi-60:57:18:3d:b8:14`, where the prefix indicates the sensor (`wifi`/`bluetooth`) and the suffix is the MAC address. You can usually look up on a phone or your router information to get MAC addresses of devices. Once you have the device name you can tell the server where that device is, say the "living room".
+Once you have the device name you can tell the server where that device is, say the "living room". 
 
 ```
 $ http POST https://cloud.internalpositioning.com/passive \
@@ -95,7 +110,7 @@ $ http POST https://cloud.internalpositioning.com/passive \
 
 The family (`FAMILY`) and device (for example, `wifi-60:57:18:3d:b8:14`) are specified. The flag `t:=1` is to indicate to the server that you are changing the passive scanning parameters.
 
-Leave the device in the location for about 10 minutes to collect a good amount of fingerprints.
+Leave the device in the location for about 30 minutes to collect a good amount of fingerprints.
 
 It is *very important* to stop learning before you move the device away from that location. To stop learning, use the same command as above but without the `location` parameter:
 
