@@ -171,6 +171,11 @@ func (d *Database) Dump() (err error) {
 
 // AddPrediction will insert or update a prediction in the database
 func (d *Database) AddPrediction(timestamp int64, aidata []models.LocationPrediction) (err error) {
+	// truncate to two digits
+	for i := range aidata {
+		aidata[i].Probability = float64(int64(float64(aidata[i].Probability)*100)) / 100
+	}
+
 	var b []byte
 	b, err = json.Marshal(aidata)
 	if err != nil {
