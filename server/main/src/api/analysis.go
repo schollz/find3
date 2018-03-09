@@ -114,6 +114,9 @@ func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[st
 		}
 		for i := range prediction.Locations {
 			guessedLocation := aidata.LocationNames[prediction.Locations[i]]
+			if prediction.Probabilities[i] <= 0 {
+				continue
+			}
 			efficacy := prediction.Probabilities[i] * algorithmEfficacy[prediction.Name][guessedLocation].Informedness
 			if _, ok := locationScores[guessedLocation]; !ok {
 				locationScores[guessedLocation] = float64(0)
