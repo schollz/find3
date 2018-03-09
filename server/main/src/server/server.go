@@ -194,7 +194,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		}
 		sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
 
-		preAnalyzed := make(map[int64]models.LocationAnalysis)
+		preAnalyzed := make(map[int64][]models.LocationPrediction)
 		for _, sensor := range sensors {
 			a, errGet := d.GetPrediction(sensor.Timestamp)
 			if errGet != nil {
@@ -212,23 +212,25 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			if allowRandomization == false && isRandomized {
 				continue
 			}
-			var a models.LocationAnalysis
+			var a []models.LocationPrediction
 			if _, ok := preAnalyzed[s.Timestamp]; ok {
 				logger.Log.Debugf("using pre-analyzed for %d", s.Timestamp)
 				a = preAnalyzed[s.Timestamp]
 			} else {
-				a, err = api.AnalyzeSensorData(s)
+				var aidata models.LocationAnalysis
+				aidata, err = api.AnalyzeSensorData(s)
 				if err != nil {
 					return
 				}
+				a = aidata.Guesses
 			}
-			if _, ok := locations[a.Guesses[0].Location]; !ok {
-				locations[a.Guesses[0].Location] = []Location{}
+			if _, ok := locations[a[0].Location]; !ok {
+				locations[a[0].Location] = []Location{}
 			}
-			locations[a.Guesses[0].Location] = append(locations[a.Guesses[0].Location], Location{
+			locations[a[0].Location] = append(locations[a[0].Location], Location{
 				Device:      s.Device,
 				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
-				Probability: a.Guesses[0].Probability,
+				Probability: a[0].Probability,
 				Randomized:  isRandomized,
 			})
 		}

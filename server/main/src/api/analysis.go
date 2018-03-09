@@ -58,12 +58,6 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	}
 	defer d.Close()
 
-	// check if its already been classified
-	// aidata, err = d.GetPrediction(s.Timestamp)
-	// if err == nil {
-	// 	return
-	// }
-
 	// inquire the AI
 	var target AnalysisResponse
 	type ClassifyPayload struct {
@@ -106,7 +100,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 
 	// add prediction to the database
 	// adding predictions uses up a lot of space
-	err = d.AddPrediction(s.Timestamp, aidata)
+	err = d.AddPrediction(s.Timestamp, aidata.Guesses)
 
 	return
 }

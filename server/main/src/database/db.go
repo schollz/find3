@@ -170,7 +170,7 @@ func (d *Database) Dump() (err error) {
 }
 
 // AddPrediction will insert or update a prediction in the database
-func (d *Database) AddPrediction(timestamp int64, aidata models.LocationAnalysis) (err error) {
+func (d *Database) AddPrediction(timestamp int64, aidata []models.LocationPrediction) (err error) {
 	var b []byte
 	b, err = json.Marshal(aidata)
 	if err != nil {
@@ -199,7 +199,7 @@ func (d *Database) AddPrediction(timestamp int64, aidata models.LocationAnalysis
 }
 
 // GetPrediction will retrieve models.LocationAnalysis associated with that timestamp
-func (d *Database) GetPrediction(timestamp int64) (aidata models.LocationAnalysis, err error) {
+func (d *Database) GetPrediction(timestamp int64) (aidata []models.LocationPrediction, err error) {
 	stmt, err := d.db.Prepare("SELECT prediction FROM location_predictions WHERE timestamp = ?")
 	if err != nil {
 		err = errors.Wrap(err, "problem preparing SQL")
