@@ -20,7 +20,7 @@ type SensorData struct {
 }
 
 // Validate will validate that the fingerprint is okay
-func (d SensorData) Validate() (err error) {
+func (d *SensorData) Validate() (err error) {
 	d.Family = strings.TrimSpace(strings.ToLower(d.Family))
 	d.Device = strings.TrimSpace(strings.ToLower(d.Device))
 	d.Location = strings.TrimSpace(strings.ToLower(d.Location))

@@ -26,6 +26,8 @@ var MinimumPassive = -1
 
 // Run will start the server listening on the specified port
 func Run() (err error) {
+	defer logger.Log.Flush()
+
 	if UseMQTT {
 		// setup MQTT
 		err = mqtt.Setup()
@@ -203,7 +205,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		if err != nil {
 			return
 		}
-		logger.Log.Debugf("got %d sensors", len(sensors))
+		logger.Log.Debugf("[%s] got %d sensors", family, len(sensors))
 		for _, s := range sensors {
 			isRandomized := utils.IsMacRandomized(s.Device)
 			if allowRandomization == false && isRandomized {
@@ -211,7 +213,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			}
 			var a []models.LocationPrediction
 			if _, ok := preAnalyzed[s.Timestamp]; ok {
-				logger.Log.Debugf("using pre-analyzed for %d", s.Timestamp)
+				logger.Log.Debugf("[%s] using pre-analyzed for %d", family, s.Timestamp)
 				a = preAnalyzed[s.Timestamp]
 			} else {
 				var aidata models.LocationAnalysis
@@ -321,27 +323,33 @@ func sendOutLocation(family, device string) (s models.SensorData, analysis model
 }
 
 func handlerData(c *gin.Context) {
-	var err error
-	var message string
-	var d models.SensorData
-	err = c.BindJSON(&d)
-	if err == nil {
-		logger.Log.Debugf("/data %+v", d)
-		err2 := processSensorData(d)
-		if err2 == nil {
-			message = "inserted data"
-			hasGPS, errGPS := api.HasGPS(d)
-			if errGPS != nil {
-				logger.Log.Warn(errGPS)
-			}
-			logger.Log.Debug(hasGPS)
-			if !hasGPS {
-				message += " [need GPS]"
-			}
-		} else {
-			err = err2
+	message, err := func(c *gin.Context) (message string, err error) {
+		var d models.SensorData
+		err = c.BindJSON(&d)
+		if err != nil {
+			return
 		}
-	}
+
+		err = d.Validate()
+		if err != nil {
+			return
+		}
+
+		// process data
+		err = processSensorData(d)
+		if err != nil {
+			return
+		}
+		message = "inserted data"
+		hasGPS, _ := api.HasGPS(d)
+		if !hasGPS {
+			message += " [need GPS]"
+		}
+
+		logger.Log.Debugf("[%s] /data %+v", d.Family, d)
+		return
+	}(c)
+
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	} else {
@@ -421,6 +429,7 @@ func handlerReverseSettings(c *gin.Context) {
 		message += fmt.Sprintf("with time block of %2.0f seconds", rollingData.TimeBlock.Seconds())
 
 		err = db.Set("ReverseRollingData", rollingData)
+		logger.Log.Debugf("[%s] %s", d.Family, message)
 		return
 	}(c)
 
@@ -516,7 +525,7 @@ func parseRollingData(family string) (err error) {
 
 	sensorMap := make(map[string]models.SensorData)
 	if rollingData.HasData && time.Since(rollingData.Timestamp) > rollingData.TimeBlock {
-		logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Timestamp))
+		logger.Log.Debugf("[%s] New data arrived %s", family, time.Since(rollingData.Timestamp))
 		// merge data
 		for _, data := range rollingData.Datas {
 			for sensor := range data.Sensors {
@@ -548,20 +557,20 @@ func parseRollingData(family string) (err error) {
 	db.Set("ReverseRollingData", rollingData)
 	db.Close()
 	for sensor := range sensorMap {
-		logger.Log.Debugf("%+v", sensorMap[sensor])
+		logger.Log.Debugf("[%s] reverse sensor data: %+v", family, sensorMap[sensor])
 		numPassivePoints := 0
 		for sensorType := range sensorMap[sensor].Sensors {
 			numPassivePoints += len(sensorMap[sensor].Sensors[sensorType])
 		}
 		if numPassivePoints < MinimumPassive {
-			logger.Log.Debugf("skipped saving reverse sensor data for %s, not enough points", sensor)
+			logger.Log.Debugf("[%s] skipped saving reverse sensor data for %s, not enough points", family, sensor)
 			continue
 		}
 		err := processSensorData(sensorMap[sensor])
 		if err != nil {
-			logger.Log.Warnf("problem saving: %s", err.Error())
+			logger.Log.Warnf("[%s] problem saving: %s", family, err.Error())
 		}
-		logger.Log.Debugf("saved reverse sensor data for %s", sensor)
+		logger.Log.Debugf("[%s] saved reverse sensor data for %s", family, sensor)
 	}
 
 	return
