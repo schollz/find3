@@ -209,6 +209,9 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 	correct := 0
 	for i := range aidatas {
 		bestGuess := determineBestGuess(aidatas[i], algorithmEfficacy)
+		if len(bestGuess) == 0 {
+			continue
+		}
 		if bestGuess[0].Location == datas[i].Location {
 			correct++
 		}
