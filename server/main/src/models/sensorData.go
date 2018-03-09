@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 )
 
 // SensorData is the typical data structure for storing sensor data.
@@ -18,17 +19,17 @@ type SensorData struct {
 	Sensors map[string]map[string]interface{} `json:"s"`
 }
 
-// Save will inserts the fingerprint into a database
+// Validate will validate that the fingerprint is okay
 func (d SensorData) Validate() (err error) {
+	d.Family = strings.TrimSpace(strings.ToLower(d.Family))
+	d.Device = strings.TrimSpace(strings.ToLower(d.Device))
+	d.Location = strings.TrimSpace(strings.ToLower(d.Location))
 	if d.Family == "" {
 		err = errors.New("family cannot be empty")
 	} else if d.Device == "" {
 		err = errors.New("device cannot be empty")
 	} else if d.Timestamp <= 0 {
 		err = errors.New("timestamp is not valid")
-	}
-	if d.Timestamp == 1 {
-		return
 	}
 	numFingerprints := 0
 	for sensorType := range d.Sensors {

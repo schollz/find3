@@ -65,6 +65,7 @@ func Run() (err error) {
 	r.GET("/api/v1/locations/:family", handlerApiV1Locations)
 	r.GET("/api/v1/by_location/:family", handlerApiV1ByLocation)
 	r.GET("/api/v1/calibrate/*family", handlerApiV1Calibrate)
+	r.POST("/api/v1/settings/passive", handlerReverseSettings)
 	r.GET("/ping", ping)
 	r.GET("/test", handleTest)
 	r.GET("/ws", wshandler) // handler for the web sockets (see websockets.go)
@@ -77,10 +78,6 @@ func Run() (err error) {
 	r.POST("/learn", handlerFIND)      // backwards-compatible with FIND for learning
 	r.POST("/track", handlerFIND)      // backwards-compatible with FIND for tracking
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
-
-	// start goroutines
-	logger.Log.Debugf("starting background processes")
-	go checkRolingData()
 
 	logger.Log.Debugf("using external address '%s'", ExternalServerAddress)
 	err = r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
@@ -372,76 +369,136 @@ func handlerGPS(c *gin.Context) {
 	}
 }
 
-func handlerReverse(c *gin.Context) {
-	err := handleReverse(c)
+func handlerReverseSettings(c *gin.Context) {
+	message, err := func(c *gin.Context) (message string, err error) {
+		// bind sensor data
+		var d models.SensorData
+		err = c.BindJSON(&d)
+		if err != nil {
+			return
+		}
+		d.Family = strings.TrimSpace(strings.ToLower(d.Family))
+		d.Device = strings.TrimSpace(strings.ToLower(d.Device))
+		d.Location = strings.TrimSpace(strings.ToLower(d.Location))
+
+		// open database
+		db, err := database.Open(d.Family)
+		if err != nil {
+			return
+		}
+		defer db.Close()
+
+		var rollingData models.ReverseRollingData
+		err = db.Get("ReverseRollingData", &rollingData)
+		if err != nil {
+			rollingData = models.ReverseRollingData{
+				Family:         d.Family,
+				DeviceLocation: make(map[string]string),
+				TimeBlock:      20 * time.Second,
+			}
+		}
+		if rollingData.TimeBlock.Seconds() == 0 {
+			rollingData.TimeBlock = 20 * time.Second
+		}
+
+		// set tracking information
+		if d.Device != "" {
+			if d.Location != "" {
+				message = fmt.Sprintf("Set location to '%s' for %s for learning with device '%s'", d.Location, d.Family, d.Device)
+				rollingData.DeviceLocation[d.Device] = d.Location
+			} else {
+				message = fmt.Sprintf("switched to tracking for %s", d.Family)
+				delete(rollingData.DeviceLocation, d.Device)
+			}
+			message += ". "
+		}
+		message += fmt.Sprintf("Now learning on %d devices: %+v", len(rollingData.DeviceLocation), rollingData.DeviceLocation)
+
+		// set time block information
+		if d.Timestamp > 0 {
+			rollingData.TimeBlock = time.Duration(d.Timestamp) * time.Second
+		}
+		message += fmt.Sprintf("with time block of %2.0f seconds", rollingData.TimeBlock.Seconds())
+
+		err = db.Set("ReverseRollingData", rollingData)
+		return
+	}(c)
+
 	if err != nil {
+		logger.Log.Warn(err)
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
 	}
 }
-func handleReverse(c *gin.Context) (err error) {
-	// bind sensor data
-	var d models.SensorData
-	err = c.BindJSON(&d)
-	if err != nil {
-		return
-	}
 
-	// validate sensor data
-	err = d.Validate()
-	if err != nil {
-		return
-	}
-
-	// open database
-	db, err := database.Open(d.Family)
-	if err != nil {
-		return
-	}
-	defer db.Close()
-
-	var rollingData models.ReverseRollingData
-	err = db.Get("ReverseRollingData", &rollingData)
-	if err != nil {
-		rollingData = models.ReverseRollingData{
-			Family:         d.Family,
-			DeviceLocation: make(map[string]string),
+func handlerReverse(c *gin.Context) {
+	message, err := func(c *gin.Context) (message string, err error) {
+		// bind sensor data
+		var d models.SensorData
+		err = c.BindJSON(&d)
+		if err != nil {
+			return
 		}
-	}
-	var message string
-	success := true
-	if d.Timestamp == 1 {
-		if d.Location != "" {
-			message = fmt.Sprintf("set location to '%s' for %s for learning with device '%s'", d.Location, d.Family, d.Device)
-			rollingData.DeviceLocation[d.Device] = d.Location
-		} else {
-			message = fmt.Sprintf("switched to tracking for %s", d.Family)
-			delete(rollingData.DeviceLocation, d.Device)
+
+		// validate sensor data
+		err = d.Validate()
+		if err != nil {
+			return
 		}
-		message += fmt.Sprintf(", now learning on %d devices: %+v", len(rollingData.DeviceLocation), rollingData.DeviceLocation)
-	} else {
+
+		// open database
+		db, err := database.Open(d.Family)
+		if err != nil {
+			return
+		}
+		defer db.Close()
+
+		var rollingData models.ReverseRollingData
+		err = db.Get("ReverseRollingData", &rollingData)
+		if err != nil {
+			// defaults
+			rollingData = models.ReverseRollingData{
+				Family:         d.Family,
+				DeviceLocation: make(map[string]string),
+				TimeBlock:      20 * time.Second,
+			}
+		}
+		if rollingData.TimeBlock.Seconds() == 0 {
+			rollingData.TimeBlock = 20 * time.Second
+		}
+
 		if !rollingData.HasData {
 			rollingData.Timestamp = time.Now().UTC()
 			rollingData.Datas = []models.SensorData{}
 			rollingData.HasData = true
 		}
 		if len(d.Sensors) == 0 {
-			return errors.New("no fingerprints")
-		} else {
-			rollingData.Datas = append(rollingData.Datas, d)
-			numFingerprints := 0
-			for sensor := range d.Sensors {
-				numFingerprints += len(d.Sensors[sensor])
-			}
-			message = fmt.Sprintf("inserted %d fingerprints for %s", numFingerprints, d.Family)
+			err = errors.New("no fingerprints")
+			return
 		}
-	}
-	err = db.Set("ReverseRollingData", rollingData)
-	if err != nil {
+
+		rollingData.Datas = append(rollingData.Datas, d)
+		numFingerprints := 0
+		for sensor := range d.Sensors {
+			numFingerprints += len(d.Sensors[sensor])
+		}
+		err = db.Set("ReverseRollingData", rollingData)
+		message = fmt.Sprintf("inserted %d fingerprints for %s", numFingerprints, d.Family)
+
+		if err == nil {
+			go parseRollingData(d.Family)
+		}
 		return
+	}(c)
+
+	if err != nil {
+		logger.Log.Warn(err)
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
 	}
-	logger.Log.Debugf("success: %v, %s", success, message)
-	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
-	return
+
 }
 
 func parseRollingData(family string) (err error) {
@@ -458,7 +515,7 @@ func parseRollingData(family string) (err error) {
 	}
 
 	sensorMap := make(map[string]models.SensorData)
-	if rollingData.HasData && time.Since(rollingData.Timestamp) > 100*time.Second {
+	if rollingData.HasData && time.Since(rollingData.Timestamp) > rollingData.TimeBlock {
 		logger.Log.Debugf("%s has new data, %s", family, time.Since(rollingData.Timestamp))
 		// merge data
 		for _, data := range rollingData.Datas {
@@ -508,15 +565,6 @@ func parseRollingData(family string) (err error) {
 	}
 
 	return
-}
-
-func checkRolingData() {
-	for {
-		time.Sleep(6 * time.Second)
-		for _, family := range database.GetFamilies() {
-			parseRollingData(family)
-		}
-	}
 }
 
 func handlerFIND(c *gin.Context) {

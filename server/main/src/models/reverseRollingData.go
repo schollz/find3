@@ -9,5 +9,6 @@ type ReverseRollingData struct {
 	Family         string
 	Datas          []SensorData
 	Timestamp      time.Time
+	TimeBlock      time.Duration
 	DeviceLocation map[string]string // Device -> Location for learning
 }
