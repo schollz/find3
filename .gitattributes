@@ -2,4 +2,4 @@
 *static* linguist-vendored
 *testing* linguist-vendored
 *doc* linguist-vendored
-*testing* linguist-vendored
+server/main/testing/learn.sh linguist-vendored
