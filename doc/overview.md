@@ -53,3 +53,89 @@ FIND3 is a complete re-write of the previous version of FIND ([github.com/scholl
 - Support for WiFi wardriving.
 
 
+
+## Machine learning {#machine-learning}
+
+The principal behind FIND is to collect sensor data and then *classify* that sensor data using a machine learning algorithm. Classification is done by splitting the original data into two datasets - 70% of the original data goes towards learning and 30% goes towards testing. The learning data is composed of **unique identifies** (MAC addresses usually) and **signal values** (Bluetooth, WiFi, or whatever other signals) and a label of the **location** that the signals were evaluated at.
+
+The learning data is fed into a machine learning algorithm that can do classification with probability. There are currently 10 classifiers that are enabled. The #1-9 come `sklearn`, and the #10-11 are ones that I implemented in Python.
+
+1. [Classifier implementing the k-nearest neighbors vote](http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html)
+2. [Support Vector classification (linear)](http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html)
+3. [Support Vector classification (gamma)](http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html)
+4. [Decision tree classifiers](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)
+5. [Random forest classifiers](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)
+6. [Multi-layer perceptron classifier](http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html)
+7. [AdaBoost classifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
+8. [Gaussian naive bayes](http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html)
+9. [Quadratic discriminant analysis](http://scikit-learn.org/stable/modules/lda_qda.html).
+10. [Extended naive bayes without signal](#extended-naive-bayes2)
+11. ~~Extended naive bayes with signal~~, disabled because of memory consumption
+
+### Extended Naive Bayes without signal {#extended-naive-bayes2}
+
+The basic question we want to answer is what is $P(location_y)$ for each of the $N$ possible locations that have been learned? In each location there are $M$ sensor data that is specified by $mac_x$. Assuming each device is independent, the probability of the location can be given by the product.
+
+<div>
+$$P(location_y) = \Pi_{i=1}^{M} P(location_y | mac_x)$$
+</div>
+
+In pratice though, its easier to take the log and compute the sum of logs. We just need to determine $P(location_y | mac_x)$ for each $y$ location and $mac_x$.
+
+
+<div>
+$$ P(location_y | mac_x)  = \frac{P(mac_x | location_y) P(location_y)}{P(mac_x | location_y) P(location_y) + P(mac_x | \neg location_y) P(\neg location_y)}$$
+</div>
+
+The implementation is found in [`naive_bayes2.py`](https://github.com/schollz/find3/blob/master/server/ai/src/naive_bayes2.py#L124-L153).
+
+## Meta-learning
+
+Random forests is arguably the best algorithm for doing this type of classification as it has the highest specificity and sensitivity of any other algorithms listed above. On one of my given datasets it scores an average of 75% accuracy across all locations (most locations have > 90% accuracy and some have less). Its fine to just use Random forests then to do the classification.
+
+However, using 10 different machine learning algorithms will eek out a little more accuracy - in my particular example above I was able to get 87% average accuracy (all locations have >90% except one) using all 10 machine learning algorithms. How?
+
+### Calculations
+
+After the learning I use the test suite to generate another metric - the [**informedness**](https://en.wikipedia.org/wiki/Youden%27s_J_statistic) (also called the Youden's J statistic). This metric combines the true positives (tp), false negatives (fn), true negatives (tn) and false positives (fp) into a single value. This metric can be determined for each of $y$ location.
+
+<div>
+$$ J_y = \frac{tp}{tp + fn} + \frac{tn}{tn + fp} - 1$$
+</div>
+
+<div>
+Each of the $N$ machine learning algorithms provides a probability for each location $P_w(location_y)$. This probability can then be weighted by the informedness statistic to return a weighted probability metric, $Q_{w,y}$ for each algorithm $w$ and location $y$.
+</div>
+
+<div>
+$$Q_{w,y} = J_y  P_w(location_y)$$
+</div>
+
+<div>
+After computing this for each algorithm, then a total value can be assigned to each location by summation over each algorithm $w$,
+</div>
+
+<div>
+$$\sum_{i=1}^{N} Q_{w,y}(location_y) = Q_{y}$$
+</div>
+
+<div>
+The server then returns an ordered set of normalized values of $Q_{y}$, where the highest value is likely the best answer. TODO: See whether the highest value of $Q_{y}$ indicates whether or not it is a good guess.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>

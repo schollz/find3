@@ -23,6 +23,8 @@ To get started, read the documentation and take a look at the repo. The easiest 
 
 - The [FAQ](/doc/faq.md) answers common questions about FIND3.
 
+- The [Machine learning guide](/doc/overview.md#machine-learning) explains how the machine learning works in FIND3.
+
 ## User guide
 
 - The [Tracking your phone](/doc/tracking_your_phone.md) document describes how to get started tracking your phone (most people should start here).
