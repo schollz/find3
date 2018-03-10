@@ -9,9 +9,11 @@ class LocationWebsocket extends React.Component {
     this.state = {
       family: window.find3.family,
       device: window.find3.device,
-      websocket_url:window.origin.replace('http','ws') + '/ws?family='+window.find3.family+'&device='+window.find3.device,
+      // websocket_url:window.origin.replace('http','ws') + '/ws?family='+window.find3.family+'&device='+window.find3.device,
+      websocket_url:'ws://localhost:8003/ws?family='+window.find3.family+'&device='+window.find3.device,
       guesses: [{"location":"","probability":0.0}],
       time:0,
+      sensors:{'s':{}},
     };
   }
 
@@ -25,6 +27,7 @@ class LocationWebsocket extends React.Component {
       device: result.sensors.d,
       time: result.sensors.t,
       guesses: result.analysis.guesses,
+      sensors: result.sensors,
     });
   }
 
@@ -35,16 +38,14 @@ class LocationWebsocket extends React.Component {
     var titleCase = require('title-case');
     return (
       <div>
-        <TimeAgo date={this.state.time} />
-        <p>Family:</p>
-        <p><strong>{this.state.family}</strong></p>
-        <p>Device:</p>
-        <p><strong>{this.state.device}</strong></p>
-        <p>Location estimate:</p>
+        <h2>{this.state.family} / {this.state.device}</h2>
+        <h3>Last seen <TimeAgo date={this.state.time} /></h3>
+        <p><strong>Location estimate:</strong></p>
         {this.state.guesses.map(station => (
-      <div><strong>{titleCase(station.location)}</strong>: {Math.round(100*station.probability)}%</div>
-    ))}
-         
+      <div>{titleCase(station.location)}: {Math.round(100*station.probability)}%</div>
+    ))}         
+        <p><strong>Sensor data:</strong></p>
+        <p>{JSON.stringify(this.state.sensors.s, null, 2) }</p>
          <p><strong>{this.state.error_message}</strong></p>
 
          {/* ?family=X&device=Y should come from server */}
