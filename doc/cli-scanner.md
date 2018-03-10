@@ -111,7 +111,7 @@ The default server is https://cloud.internalpositioning.com which you can specif
 
 I suggest using a scantime of about 10 seconds, which you can specify with `-scantime 10`. If you want bluetooth to be scanned as well, just add `-bluetooth`.
 
-To keep the scanner running, just add `-forever`. If you'd like to have the scanner run in the background forever you can prefix with `nohup` and suffix with `&`. 
+To keep the scanner running, just add `-forever`. Even if the scanner is unable to reach the server (i.e. the server is down) the scanner will continue to send out data. If the server does come back on, then it will automatically be reconnected. If you'd like to have the scanner run in the background forever you can prefix with `nohup` and suffix with `&`. 
 
 Finally, the basic command then becomes:
 
