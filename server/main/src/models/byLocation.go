@@ -7,7 +7,7 @@ type ByLocationDevice struct {
 	Vendor      string    `json:"vendor,omitempty"`
 	Timestamp   time.Time `json:"timestamp"`
 	Probability float64   `json:"probability"`
-	Randomized  bool      `json:"random_mac"`
+	Randomized  bool      `json:"randomized"`
 	NumScanners int       `json:"num_scanners"`
 	ActiveMins  int       `json:"active_mins"`
 	FirstSeen   time.Time `json:"first_seen"`

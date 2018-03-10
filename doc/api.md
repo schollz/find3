@@ -378,10 +378,17 @@ GET /api/v1/locations/FAMILY
 ```
 GET /api/v1/by_location/FAMILY
 ```
+> This route has the following query parameters:
+>
+> - `history=X` will return the latest X minutes of historical data (default 120)
+> - `randomized=1` will return only non-randomized macs if not 1 (default 1)
+> - `active_mins=X` will return only devices that have a total active time greater than `X`  (default 0)
+> - `num_scanners=X` will return only devices that have seen at least `X` of the scanners (default 0)
+> - `probability=X` will return only devices who have a probability of `X` or greater (default 0.00)
 >
 > **Response**
 > 
-> Returns a map of `locations` where each key is a `location` that contains an array of devices. The devices are specified by `device` and the probability that they are in that location (`probability`). The `random_mac` specifies, if it is a mac address, whether or not it is randomized (i.e. is the 2nd LSB not set). The `timestamp` specifies the last time they were found in that location.
+> Returns a map of `locations` where each key is a `location` that contains an array of devices. The devices are specified by `device` and the probability that they are in that location (`probability`). The `randomized` specifies, if it is a mac address, whether or not it is randomized (i.e. is the 2nd LSB not set). The `timestamp` specifies the last time they were found in that location.
 > 
 ```
 {
@@ -390,7 +397,7 @@ GET /api/v1/by_location/FAMILY
             {
                 "device": "device2",
                 "probability": 0.5,
-                "random_mac": false,
+                "randomized": false,
                 "timestamp": "2015-08-15T00:04:25.993Z"
             }
         ],
@@ -398,13 +405,13 @@ GET /api/v1/by_location/FAMILY
             {
                 "device": "device1",
                 "probability": 0.75,
-                "random_mac": false,
+                "randomized": false,
                 "timestamp": "2015-08-14T23:55:33.831Z"
             },
             {
                 "device": "device3",
                 "probability": 0.9,
-                "random_mac": false,
+                "randomized": false,
                 "timestamp": "2015-08-14T23:55:43.831Z"
             },
         ]

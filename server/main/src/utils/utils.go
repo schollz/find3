@@ -1,12 +1,33 @@
 package utils
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 )
+
+var ouiDatabase map[string]string
+
+func init() {
+	ouiBytes, _ := ioutil.ReadFile("static/oui.json")
+	json.Unmarshal(ouiBytes, &ouiDatabase)
+}
+
+func GetVendorFromOUI(s string) (string, error) {
+	if strings.Count(s, ":") == 5 {
+		ouiHeader := strings.ToUpper(strings.Replace(strings.TrimPrefix(s, "wifi-"), ":", "", -1))
+		if v, ok := ouiDatabase[ouiHeader[:6]]; ok {
+			return strings.Split(v, "\n")[0], nil
+		}
+		return "?", nil
+	}
+	return "", errors.New("not a mac address")
+}
 
 // src is seeds the random generator for generating random strings
 var src = rand.NewSource(time.Now().UnixNano())
@@ -52,5 +73,5 @@ func IsMacRandomized(mac string) bool {
 		}
 	}
 	v, _ := strconv.ParseUint(hexes[0], 16, 8)
-	return fmt.Sprintf("%08b", v)[6] == byte(48)
+	return fmt.Sprintf("%08b", v)[6] == byte(49)
 }

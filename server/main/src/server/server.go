@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,12 +22,6 @@ var Port = "8003"
 var UseSSL = false
 var UseMQTT = false
 var MinimumPassive = -1
-var ouiDatabase map[string]string
-
-func init() {
-	ouiBytes, _ := ioutil.ReadFile("static/oui.json")
-	json.Unmarshal(ouiBytes, &ouiDatabase)
-}
 
 // Run will start the server listening on the specified port
 func Run() (err error) {
@@ -213,16 +206,19 @@ func handlerEfficacy(c *gin.Context) {
 }
 
 func handlerApiV1ByLocation(c *gin.Context) {
-
 	locations, err := func(c *gin.Context) (byLocations []models.ByLocation, err error) {
 		family := strings.TrimSpace(c.Param("family"))
 		minutesAgo := strings.TrimSpace(c.DefaultQuery("history", "120"))
-		allowRandomization := c.DefaultQuery("random", "1") == "1"
+		showRandomized := c.DefaultQuery("randomized", "1") == "1"
 		activeMinsThreshold, err := strconv.Atoi(c.DefaultQuery("active_mins", "0"))
 		if err != nil {
 			return
 		}
 		minScanners, err := strconv.Atoi(c.DefaultQuery("num_scanners", "0"))
+		if err != nil {
+			return
+		}
+		minProbability, err := strconv.ParseFloat(c.DefaultQuery("probability", "0"), 64)
 		if err != nil {
 			return
 		}
@@ -263,17 +259,20 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			return
 		}
 
-		logger.Log.Debugf("[%s] got %d sensors", family, len(sensors))
+		d.Close()
+
 		locations := make(map[string][]models.ByLocationDevice)
 		for _, s := range sensors {
 			isRandomized := utils.IsMacRandomized(s.Device)
-			if allowRandomization == false && isRandomized {
+			if !showRandomized && isRandomized {
 				continue
 			}
 			if _, ok := deviceCounts[s.Device]; !ok {
+				logger.Log.Warnf("missing device counts for %s", s.Device)
 				continue
 			}
 			if _, ok := deviceFirstTime[s.Device]; !ok {
+				logger.Log.Warnf("missing deviceFirstTime for %s", s.Device)
 				continue
 			}
 			if int(deviceCounts[s.Device])*int(rollingData.TimeBlock.Seconds())/60 < activeMinsThreshold {
@@ -291,6 +290,13 @@ func handlerApiV1ByLocation(c *gin.Context) {
 				}
 				a = aidata.Guesses
 			}
+
+			// filter on probability
+			logger.Log.Debug(a[0].Probability, minProbability)
+			if a[0].Probability < minProbability {
+				continue
+			}
+
 			if _, ok := locations[a[0].Location]; !ok {
 				locations[a[0].Location] = []models.ByLocationDevice{}
 			}
@@ -311,14 +317,9 @@ func handlerApiV1ByLocation(c *gin.Context) {
 				ActiveMins:  int(deviceCounts[s.Device]) * int(rollingData.TimeBlock.Seconds()) / 60,
 				FirstSeen:   deviceFirstTime[s.Device],
 			}
-			if strings.Count(s.Device, ":") == 5 {
-				ouiHeader := strings.ToUpper(strings.Replace(strings.TrimPrefix(s.Device, "wifi-"), ":", "", -1))
-				logger.Log.Debug(ouiHeader)
-				if v, ok := ouiDatabase[ouiHeader[:6]]; ok {
-					dL.Vendor = strings.Split(v, "\n")[0]
-				} else {
-					dL.Vendor = "?"
-				}
+			vendor, vendorErr := utils.GetVendorFromOUI(s.Device)
+			if vendorErr == nil {
+				dL.Vendor = vendor
 			}
 			locations[a[0].Location] = append(locations[a[0].Location], dL)
 		}

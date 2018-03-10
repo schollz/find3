@@ -759,6 +759,9 @@ func (d *Database) Debug(debugMode bool) {
 
 // Close will close the database connection and remove the filelock.
 func (d *Database) Close() (err error) {
+	if d.isClosed {
+		return
+	}
 	// close filelock
 	err = d.fileLock.Unlock()
 	if err != nil {
@@ -776,6 +779,7 @@ func (d *Database) Close() (err error) {
 	} else {
 		// d.logger.Log.Debug("closed database")
 	}
+	d.isClosed = true
 	return
 }
 

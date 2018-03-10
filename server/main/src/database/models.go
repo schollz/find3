@@ -19,4 +19,5 @@ type Database struct {
 	db       *sql.DB
 	fileLock *flock.Flock
 	logger   *logging.SeelogWrapper
+	isClosed bool
 }
