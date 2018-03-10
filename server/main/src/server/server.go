@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/schollz/find3/server/main/src/api"
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/models"
@@ -66,6 +66,7 @@ func Run() (err error) {
 	r.GET("/api/v1/by_location/:family", handlerApiV1ByLocation)
 	r.GET("/api/v1/calibrate/*family", handlerApiV1Calibrate)
 	r.POST("/api/v1/settings/passive", handlerReverseSettings)
+	r.GET("/api/v1/efficacy/:family", handlerEfficacy)
 	r.GET("/ping", ping)
 	r.GET("/test", handleTest)
 	r.GET("/ws", wshandler) // handler for the web sockets (see websockets.go)
@@ -161,6 +162,46 @@ func handlerApiV1Locations(c *gin.Context) {
 	} else {
 
 		c.JSON(http.StatusOK, gin.H{"message": "got locations", "success": err == nil, "locations": locations})
+	}
+}
+
+func handlerEfficacy(c *gin.Context) {
+	type Efficacy struct {
+		AccuracyBreakdown   map[string]float64                       `json:"accuracy_breakdown"`
+		ConfusionMetrics    map[string]map[string]models.BinaryStats `json:"confusion_metrics"`
+		LastCalibrationTime time.Time                                `json:"last_calibration_time"`
+	}
+	efficacy, err := func(c *gin.Context) (efficacy Efficacy, err error) {
+		family := strings.TrimSpace(c.Param("family"))
+
+		d, err := database.Open(family, true)
+		if err != nil {
+			return
+		}
+		defer d.Close()
+
+		err = d.Get("LastCalibrationTime", &efficacy.LastCalibrationTime)
+		if err != nil {
+			err = errors.Wrap(err, "could not get LastCalibrationTime")
+			return
+		}
+		err = d.Get("AccuracyBreakdown", &efficacy.AccuracyBreakdown)
+		if err != nil {
+			err = errors.Wrap(err, "could not get AccuracyBreakdown")
+			return
+		}
+		err = d.Get("AlgorithmEfficacy", &efficacy.ConfusionMetrics)
+		if err != nil {
+			err = errors.Wrap(err, "could not get AlgorithmEfficacy")
+			return
+		}
+		return
+	}(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
+	} else {
+
+		c.JSON(http.StatusOK, gin.H{"message": "got stats", "success": err == nil, "efficacy": efficacy})
 	}
 }
 

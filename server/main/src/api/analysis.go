@@ -94,7 +94,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	}
 
 	aidata = target.Data
-	var algorithmEfficacy map[string]map[string]BinaryStats
+	var algorithmEfficacy map[string]map[string]models.BinaryStats
 	d.Get("AlgorithmEfficacy", &algorithmEfficacy)
 	aidata.Guesses = determineBestGuess(aidata, algorithmEfficacy)
 
@@ -105,7 +105,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	return
 }
 
-func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[string]map[string]BinaryStats) (b []models.LocationPrediction) {
+func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[string]map[string]models.BinaryStats) (b []models.LocationPrediction) {
 	// determine consensus
 	locationScores := make(map[string]float64)
 	for _, prediction := range aidata.Predictions {
@@ -126,7 +126,6 @@ func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[st
 			}
 		}
 	}
-	logger.Log.Debugf("consensus: %+v", locationScores)
 
 	total := float64(0)
 	for location := range locationScores {
