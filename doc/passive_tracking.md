@@ -2,7 +2,7 @@
 
 ## Introduction 
 
-It is possible to also use FIND3 to setup a system that can do *passive scanning*. In *passive scanning*, you setup multiple computers which capture probe requests from phones and use those to classify their location.
+It is possible to also use FIND3 to setup a system that can do *passive scanning*. In *passive scanning*, you setup multiple computers which capture packets from phones and use those to classify their location. In this mode the packets used for classification are only broadcast packets, that is packets that originate from a device that are being transmitted to all devices on the network. See [Time resolution](#time-resolution) for information on typical frequencies for these types of broadcasts.
 
 A typical passive scanning system uses a network of Raspberry Pis which sniff the WiFi broadcast requests from WiFi-enabled devices and sends these parcels to a central server which compiles and forwards the fingerprint to the FIND server which then uses machine learning to classify the location based on the unique WiFi fingerprints.
 
@@ -10,7 +10,7 @@ This system does not require being logged into a particular WiFi - it will track
 
 *Note: It may be illegal to monitor networks for MAC addresses, especially on networks that you do not own. Please check your country's laws (for [US Section 18 U.S. Code § 2511](https://www.law.cornell.edu/uscode/text/18/2511)) - [discussion](https://github.com/schollz/howmanypeoplearearound/issues/4).*
 
-## Time resolution
+## Time resolution {#time-resolution}
 
 The time resolution of passive tracking revolves around the frequency that the device makes WiFi broadcasts. To get an idea of the frequency of these broadcasts, and thus the minimum time separation you will get with passive tracking, here are some measurements I made.
 
