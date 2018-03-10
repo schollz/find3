@@ -17,7 +17,9 @@ func main() {
 	aiPort := flag.String("ai", "8002", "port for the AI server")
 	port := flag.String("port", "8003", "port for the data (this) server")
 	debug := flag.Bool("debug", false, "turn on debug mode")
-	mqttFlag := flag.Bool("mqtt", false, "turn on mqtt")
+	mqttServer := flag.String("mqtt-server", "", "add MQTT server")
+	mqttAdmin := flag.String("mqtt-admin", "admin", "name for mqtt admin")
+	mqttPass := flag.String("mqtt-pass", "1234", "password for mqtt admin")
 
 	var dataFolder string
 	flag.StringVar(&dataFolder, "data", "", "location to store data")
@@ -40,9 +42,25 @@ func main() {
 	server.Debug(*debug)
 	mqtt.Debug = *debug
 
+	if os.Getenv("MQTT_ADMIN") != "" {
+		mqtt.AdminUser = os.Getenv("MQTT_ADMIN")
+	} else {
+		mqtt.AdminUser = *mqttAdmin
+	}
+	if os.Getenv("MQTT_PASS") != "" {
+		mqtt.AdminPassword = os.Getenv("MQTT_PASS")
+	} else {
+		mqtt.AdminPassword = *mqttPass
+	}
+	if os.Getenv("MQTT_SERVER") != "" {
+		mqtt.Server = os.Getenv("MQTT_SERVER")
+	} else {
+		mqtt.Server = *mqttServer
+	}
+
 	api.AIPort = *aiPort
 	server.Port = *port
-	server.UseMQTT = *mqttFlag
+	server.UseMQTT = *mqttServer != ""
 	err := server.Run()
 	if err != nil {
 		fmt.Print("error: ")

@@ -71,7 +71,7 @@ func Run() (err error) {
 	r.GET("/test", handleTest)
 	r.GET("/ws", wshandler) // handler for the web sockets (see websockets.go)
 	if UseMQTT {
-		r.POST("/mqtt", handlerMQTT) // handler for setting MQTT
+		r.GET("/api/v1/mqtt/:family", handlerMQTT) // handler for setting MQTT
 	}
 	r.POST("/data", handlerData)       // typical data handler
 	r.POST("/gps", handlerGPS)         // typical GPS handler
@@ -365,7 +365,6 @@ func handlerApiV1Location(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
 	} else {
-
 		c.JSON(http.StatusOK, gin.H{"message": "got location", "success": err == nil, "sensors": s, "analysis": analysis})
 	}
 }
@@ -386,25 +385,25 @@ func handlerApiV1Calibrate(c *gin.Context) {
 }
 
 func handlerMQTT(c *gin.Context) {
-	type Payload struct {
-		Family string `json:"family" binding:"required"`
-		//	OTP    string `json:"otp" binding:"required"`
-	}
-	success := false
-	var message string
-	var p Payload
-	if errBind := c.ShouldBindJSON(&p); errBind == nil {
-		// TODO: authenticate p.OTP
-		passphrase, err := mqtt.AddFamily(p.Family)
-		if err != nil {
-			message = err.Error()
-		} else {
-			message = fmt.Sprintf("Added '%s' for mqtt. Your passphrase is '%s'", p.Family, passphrase)
+	message, err := func(c *gin.Context) (message string, err error) {
+		family := strings.TrimSpace(c.Param("family"))
+		if family == "" {
+			err = errors.New("invalid family")
+			return
 		}
+		passphrase, err := mqtt.AddFamily(family)
+		if err != nil {
+			return
+		}
+		message = fmt.Sprintf("Added '%s' for mqtt. Your passphrase is '%s'", family, passphrase)
+		return
+	}(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
 	} else {
-		message = errBind.Error()
+		c.JSON(http.StatusOK, gin.H{"message": message, "success": err == nil})
 	}
-	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
+	return
 }
 
 func sendOutLocation(family, device string) (s models.SensorData, analysis models.LocationAnalysis, err error) {
