@@ -123,12 +123,18 @@ $ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
 
 ### Custom scan times
 
-In the above the `scantime` was set to 40 seconds. The 40 seconds is suggested because the default window for scanning in the server for collecting fingerprints from passive scanners is 90 seconds (> twice the default scantime). If you want, you can change the the `scantime` on the scanning computers (`-scantime X`) but if you do, you need to change the time window on the server for collecting data to at least twice the value. For instance, if you set the scantime on the scanning computers to 10 seconds, you should change the server window to about 25 seconds.
+Each scanning computer submits the data point for one device. The server synchronizes all the scanning computers by waiting a specified amount of time (the time window) for collecting the data point for each device. This time window is 90 seconds by default which is enough time to guarantee that the server will hear from every scanning computer (that have a scan time of 40 seconds). You can change these parameters.
+
+To change the scantime on a scanning computer just use the flag `-scantime`. 
+
+To change the window to `X` seconds, use:
 
 ```
 $ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
-    family=FAMILY window:=25
+    family=FAMILY window:=X
 ```
+
+Make sure to change the time window on the server for collecting data to at least twice the scan time of a scanning computer. For instance, if you set the scantime on the scanning computers to 10 seconds, you should change the server window to about 25 seconds.
 
 ### Minimum passive scan points
 
