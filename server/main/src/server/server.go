@@ -358,7 +358,11 @@ func handlerApiV1Location(c *gin.Context) {
 		}
 		analysis, err = api.AnalyzeSensorData(s)
 		if err != nil {
-			return
+			err = api.Calibrate(family, true)
+			if err != nil {
+				return
+			}
+			analysis, err = api.AnalyzeSensorData(s)
 		}
 		return
 	}(c)
@@ -417,6 +421,11 @@ func sendOutLocation(family, device string) (s models.SensorData, analysis model
 		return
 	}
 	analysis, err = sendOutData(s)
+	err = api.Calibrate(family, true)
+	if err != nil {
+		return
+	}
+	analysis, err = api.AnalyzeSensorData(s)
 	return
 }
 
