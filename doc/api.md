@@ -11,7 +11,7 @@ At this stage the front-end is very minimal. The only front-end available right 
 
 ## General
 
-> ### Ping server
+> ### Ping server  {#ping}
 > 
 > This is useful for seeing if the server is up.
 > 
@@ -28,9 +28,9 @@ pong
 >
 
 
-## Posting and learning
+## General scanning
 
-> ### Post sensor data
+> ### Post sensor data  {#sensor}
 > 
 > **Request**
 ```
@@ -82,11 +82,11 @@ POST /data
 > After posting you'll recieve "`success`" boolean. If false it relies the error in the message. There is a special message for a successful request - it may include "`[need GPS]`" which is specified when the posted MAC addresses have no GPS coordinates associated with them (this is used for war-driving in the Android app but may be otherwise ignored).
 >
 
-&nbsp; 
+## Passive scanning 
 
-> ### Post passive sensor data
+> ### Post passive sensor data  {#post-passive}
 > 
-> This endpoint is used for passive scanning. It will alert the server to effectively holdover these data for a certain amount of time (default 25 seconds) and then reverse the sensor data and put into the database.
+> This endpoint is used for passive scanning. It will alert the server to effectively holdover these data for a certain amount of time (default 90 seconds) and then reverse the sensor data and put into the database.
 > 
 > **Request**
 ```
@@ -106,26 +106,33 @@ POST /passive
 
 &nbsp; 
 
-> ### Toggle learning for passive scanning
+> ### Customize passive scanning  {#passive}
 > 
-> This endpoint is used for passive scanning. It will tell the server to filter out specified mac addresses for learning specified locations. 
+> This endpoint is used for customizing passive scanning. It will tell the server to filter out specified mac addresses for learning specified locations or change the window for collecting fingerprints.
 > 
-> Yes, it is reusing the same endpoint for posting data, but it is set using a special `"t":1` flag to indicate toggling of learning.
 >   
 > **Request**
 ```
-POST /passive
+POST /api/v1/settings/passive
 ```
+>
+> There are a few parameters to specify. You must always specify "`family`". When you want to toggle learning on/off you must include "`device`", and if you include "`location`" it will automatically toggle learning.
+>
+> The "`minimum_passive`" will create a threshold that will then only accept fingerprints that are collected with at least that many scanners. So if you have three scanning computers and you want to make sure that any device gets data from all three scanners, you can set it to 3.
+>
+> The "`window`" specifies the amount of time to wait before merging the collected sensor data from different scanning computers. Make sure to set this to twice the scan time. For instance, if you are having several computers scanning at 40 second intervals (the default), then to make sure that all scanning computers submit their data to the server in a single window you must specify a window of 90 seconds (default).
+>
 ```
 {
-    "t":1,
-    "f":"FAMILY",
-    "d":"DEVICE",
-    "l":"LOCATION"
+    "family":"FAMILY",
+    "device":"DEVICE",
+    "location":"LOCATION"
+    "minimum_passive": -1,
+    "window": 90,
 }
 ```
 > 
-> **Important:** Learning for **DEVICE** is turned **on** if the location ("`l`") is specified. Learning for **DEVICE** is turned **off** is the location ("`l`") is empty.
+> **Important:** Learning for **DEVICE** is turned **on** if the location ("`location`") is specified. Learning for **DEVICE** is turned **off** is the location ("`location`") is empty.
 >
 > You can learn on multiple devices in multiple locations simultaneously. *Always make sure to turn off learning before moving a device!*
 >
@@ -147,9 +154,9 @@ POST /passive
 ```
 > 
 
-&nbsp; 
+## Calibration and analysis
 
-> ### Calibrate machine learning algorithms
+> ### Calibrate machine learning algorithms  {#calibration}
 > 
 > This endpoint is used for calibrating and will cause the server to update all the machine learning algorithms with the latest learning data. Normally this endpoint will automatically run after aquiring ~20 fingerprints, but you can manually run it to make sure you get the most up-to-date calibration.
 > 
@@ -168,11 +175,64 @@ GET /api/v1/calibrate/FAMILY
 ```
 >
 
+&nbsp;
+
+> ### Get analysis of calibration {#analysis}
+> 
+> This endpoint lists a lot of analysis that can give you an idea of how well the calibration did. It returns the `accuracy_breakdown` which is the location-specific correct guess percentage for the testing training set (a sequested 30% of original data not used for learning). 
+> 
+> The `confusion_metrics` have a lot of metrics determined from a [Confusion Matrix](https://en.wikipedia.org/wiki/Confusion_matrix) from the test data.
+>
+> **Request**
+```
+GET /api/v1/efficacy/FAMILY
+```
+>
+> **Response**
+> 
+```
+{  
+   "efficacy":{  
+      "accuracy_breakdown":{  
+         "bathroom":0.7,
+         "bedroom":0.8717948717948718,
+      },
+      "confusion_metrics":{  
+         "AdaBoost":{  
+            "bathroom":{  
+               "true_positives":20,
+               "false_positives":120,
+               "true_negatives":1320,
+               "false_negatives":120,
+               "sensitivity":0.14285714285714285,
+               "specificity":0.9166666666666666,
+               "informedness":0.059523809523809534
+            },
+            "bedroom":{  
+               "true_positives":36,
+               "false_positives":92,
+               "true_negatives":621,
+               "false_negatives":45,
+               "sensitivity":0.4444444444444444,
+               "specificity":0.8709677419354839,
+               "informedness":0.3154121863799282
+            }
+         }
+      },
+      "last_calibration_time":"2018-03-09T21:13:13.300237656-07:00"
+   },
+   "message":"got stats",
+   "success":true
+}
+```
+>
+
+
 ## Tracking and getting information
 
 The following API calls are useful for getting information after the server has been taught about locations.
 
-> ### Get a list of all devices
+> ### Get a list of all devices  {#devices}
 > **Request**
 ```
 GET /api/v1/devices/FAMILY
@@ -194,7 +254,7 @@ GET /api/v1/devices/FAMILY
 
 &nbsp; 
 
-> ### Get the last known location for a device
+> ### Get the last known location for a device  {#location}
 > **Request** 
 > 
 ```
@@ -299,7 +359,7 @@ GET /api/v1/location/FAMILY/DEVICE
 
 &nbsp; 
 
-> ### Get a list of all location data for all devices
+> ### Get a list of all location data for all devices  {#locations}
 > **Request**
 ```
 GET /api/v1/locations/FAMILY
@@ -313,7 +373,7 @@ GET /api/v1/locations/FAMILY
 
 &nbsp; 
 
-> ### Get simple list of devices grouped by location
+> ### Get simple list of devices grouped by location  {#by_location}
 > **Request**
 ```
 GET /api/v1/by_location/FAMILY
