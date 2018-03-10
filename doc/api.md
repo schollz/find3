@@ -228,7 +228,7 @@ GET /api/v1/efficacy/FAMILY
 >
 
 
-## Tracking and getting information
+## Tracking and getting information {#tracking}
 
 The following API calls are useful for getting information after the server has been taught about locations.
 
