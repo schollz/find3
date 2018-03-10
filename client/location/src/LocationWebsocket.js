@@ -9,8 +9,8 @@ class LocationWebsocket extends React.Component {
     this.state = {
       family: window.find3.family,
       device: window.find3.device,
-      // websocket_url:window.origin.replace('http','ws') + '/ws?family='+window.find3.family+'&device='+window.find3.device,
-      websocket_url:'ws://localhost:8003/ws?family='+window.find3.family+'&device='+window.find3.device,
+      websocket_url:window.origin.replace('http','ws') + '/ws?family='+window.find3.family+'&device='+window.find3.device,
+      // websocket_url:'ws://localhost:8003/ws?family='+window.find3.family+'&device='+window.find3.device,
       guesses: [{"location":"","probability":0.0}],
       time:0,
       sensors:{'s':{}},
