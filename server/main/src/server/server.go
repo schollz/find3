@@ -215,6 +215,10 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		if err != nil {
 			return
 		}
+		minScanners, err := strconv.Atoi(c.DefaultQuery("num_scanners", "0"))
+		if err != nil {
+			return
+		}
 
 		minutesAgoInt, err := strconv.Atoi(minutesAgo)
 		if err != nil {
@@ -286,6 +290,9 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			numScanners := 0
 			for sensorType := range s.Sensors {
 				numScanners += len(s.Sensors[sensorType])
+			}
+			if numScanners < minScanners {
+				continue
 			}
 
 			locations[a[0].Location] = append(locations[a[0].Location], models.ByLocationDevice{
