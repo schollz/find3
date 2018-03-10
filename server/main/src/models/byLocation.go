@@ -11,7 +11,7 @@ type ByLocationDevice struct {
 }
 
 type ByLocation struct {
-	Devices  []ByLocationDevice `json:"device"`
+	Devices  []ByLocationDevice `json:"devices"`
 	Location string             `json:"location"`
 	Total    int                `json:"total"`
 }
