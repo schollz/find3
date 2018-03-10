@@ -14,7 +14,6 @@ class DeviceList extends React.Component {
   }
 
   componentDidMount() {
-    const queryString = require('query-string');
     fetch("/api/v1/devices/"+window.find3.family)
       .then(res => res.json())
       .then(
@@ -45,7 +44,6 @@ class DeviceList extends React.Component {
 
   render() {
     const { error, isLoaded, items } = this.state;
-    const queryString = require('query-string');
     if (error) {
       return <div>Error: {error.message}</div>;
     } else if (this.state.error_message) {
