@@ -377,7 +377,19 @@ func handlerGPS(c *gin.Context) {
 func handlerReverseSettings(c *gin.Context) {
 	message, err := func(c *gin.Context) (message string, err error) {
 		// bind sensor data
-		var d models.SensorData
+		type ReverseSettings struct {
+			// Minimum number of passive
+			MinimumPassive int `json:"minimum_passive"`
+			// Timespan of window
+			Window int64 `json:"window"`
+			// Family is a group of devices
+			Family string `json:"family" binding:"required"`
+			// Device are unique within a family
+			Device string `json:"device"`
+			// Location is optional, used for designating learning
+			Location string `json:"location"`
+		}
+		var d ReverseSettings
 		err = c.BindJSON(&d)
 		if err != nil {
 			return
@@ -420,10 +432,15 @@ func handlerReverseSettings(c *gin.Context) {
 		message += fmt.Sprintf("Now learning on %d devices: %+v", len(rollingData.DeviceLocation), rollingData.DeviceLocation)
 
 		// set time block information
-		if d.Timestamp > 0 {
-			rollingData.TimeBlock = time.Duration(d.Timestamp) * time.Second
+		if d.Window > 0 {
+			rollingData.TimeBlock = time.Duration(d.Window) * time.Second
 		}
 		message += fmt.Sprintf("with time block of %2.0f seconds", rollingData.TimeBlock.Seconds())
+
+		if d.MinimumPassive != 0 {
+			rollingData.MinimumPassive = d.MinimumPassive
+			message += fmt.Sprintf(" and set minimum passive to %d", rollingData.MinimumPassive)
+		}
 
 		err = db.Set("ReverseRollingData", rollingData)
 		logger.Log.Debugf("[%s] %s", d.Family, message)
@@ -559,8 +576,8 @@ func parseRollingData(family string) (err error) {
 		for sensorType := range sensorMap[sensor].Sensors {
 			numPassivePoints += len(sensorMap[sensor].Sensors[sensorType])
 		}
-		if numPassivePoints < MinimumPassive {
-			logger.Log.Debugf("[%s] skipped saving reverse sensor data for %s, not enough points", family, sensor)
+		if numPassivePoints < rollingData.MinimumPassive {
+			logger.Log.Debugf("[%s] skipped saving reverse sensor data for %s, not enough points (< %d)", family, sensor, rollingData.MinimumPassive)
 			continue
 		}
 		err := processSensorData(sensorMap[sensor])
