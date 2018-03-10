@@ -4,6 +4,7 @@ import "time"
 
 type ByLocationDevice struct {
 	Device      string    `json:"device"`
+	Vendor      string    `json:"vendor,omitempty"`
 	Timestamp   time.Time `json:"timestamp"`
 	Probability float64   `json:"probability"`
 	Randomized  bool      `json:"random_mac"`

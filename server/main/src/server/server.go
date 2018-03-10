@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,6 +23,12 @@ var Port = "8003"
 var UseSSL = false
 var UseMQTT = false
 var MinimumPassive = -1
+var ouiDatabase map[string]string
+
+func init() {
+	ouiBytes, _ := ioutil.ReadFile("static/oui.json")
+	json.Unmarshal(ouiBytes, &ouiDatabase)
+}
 
 // Run will start the server listening on the specified port
 func Run() (err error) {
@@ -295,7 +302,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 				continue
 			}
 
-			locations[a[0].Location] = append(locations[a[0].Location], models.ByLocationDevice{
+			dL := models.ByLocationDevice{
 				Device:      s.Device,
 				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
 				Probability: a[0].Probability,
@@ -303,7 +310,17 @@ func handlerApiV1ByLocation(c *gin.Context) {
 				NumScanners: numScanners,
 				ActiveMins:  int(deviceCounts[s.Device]) * int(rollingData.TimeBlock.Seconds()) / 60,
 				FirstSeen:   deviceFirstTime[s.Device],
-			})
+			}
+			if strings.Count(s.Device, ":") == 5 {
+				ouiHeader := strings.ToUpper(strings.Replace(strings.TrimPrefix(s.Device, "wifi-"), ":", "", -1))
+				logger.Log.Debug(ouiHeader)
+				if v, ok := ouiDatabase[ouiHeader[:6]]; ok {
+					dL.Vendor = strings.Split(v, "\n")[0]
+				} else {
+					dL.Vendor = "?"
+				}
+			}
+			locations[a[0].Location] = append(locations[a[0].Location], dL)
 		}
 
 		byLocations = make([]models.ByLocation, len(locations))
