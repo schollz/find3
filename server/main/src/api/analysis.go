@@ -52,6 +52,9 @@ type AnalysisResponse struct {
 }
 
 func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err error) {
+	aidata.Guesses = []models.LocationPrediction{}
+	aidata.LocationNames = make(map[string]string)
+
 	d, err := database.Open(s.Family)
 	if err != nil {
 		return

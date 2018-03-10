@@ -421,11 +421,17 @@ func sendOutLocation(family, device string) (s models.SensorData, analysis model
 		return
 	}
 	analysis, err = sendOutData(s)
-	err = api.Calibrate(family, true)
 	if err != nil {
 		return
 	}
 	analysis, err = api.AnalyzeSensorData(s)
+	if err != nil {
+		err = api.Calibrate(family, true)
+		if err != nil {
+			logger.Log.Warn(err)
+			return
+		}
+	}
 	return
 }
 
@@ -736,7 +742,6 @@ func processSensorData(p models.SensorData) (err error) {
 
 func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err error) {
 	analysis, _ = api.AnalyzeSensorData(p)
-
 	type Payload struct {
 		Sensors  models.SensorData       `json:"sensors"`
 		Analysis models.LocationAnalysis `json:"analysis"`
