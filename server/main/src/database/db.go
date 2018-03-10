@@ -380,6 +380,86 @@ func (d *Database) GetSensorFromGreaterTime(timeBlockInMilliseconds int64) (sens
 	return
 }
 
+func (d *Database) NumDevices() (num int, err error) {
+	stmt, err := d.db.Prepare("select count(id) from devices")
+	if err != nil {
+		err = errors.Wrap(err, "problem preparing SQL")
+		return
+	}
+	defer stmt.Close()
+	err = stmt.QueryRow().Scan(&num)
+	if err != nil {
+		err = errors.Wrap(err, "problem getting key")
+	}
+	return
+}
+
+func (d *Database) GetDeviceFirstTime() (firstTime map[string]time.Time, err error) {
+	firstTime = make(map[string]time.Time)
+	query := "select n,t from (select devices.name as n,sensors.timestamp as t from sensors inner join devices on sensors.deviceid=devices.id order by timestamp desc) group by n"
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		var ts int64
+		err = rows.Scan(&name, &ts)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+		firstTime[name] = time.Unix(0, ts*1000000).UTC()
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
+func (d *Database) GetDeviceCounts() (counts map[string]int, err error) {
+	counts = make(map[string]int)
+	query := "select devices.name,count(sensors.timestamp) as num from sensors inner join devices on sensors.deviceid=devices.id group by sensors.deviceid"
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		var count int
+		err = rows.Scan(&name, &count)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+		counts[name] = count
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
 // GetAnalysisFromGreaterTime will return the analysis for a given timeframe
 // func (d *Database) GetAnalysisFromGreaterTime(timestamp interface{}) {
 // 	select sensors.timestamp, devices.name, location_predictions.prediction from sensors inner join location_predictions on location_predictions.timestamp=sensors.timestamp inner join devices on sensors.deviceid=devices.id WHERE sensors.timestamp > 0 GROUP BY devices.name ORDER BY sensors.timestamp DESC;

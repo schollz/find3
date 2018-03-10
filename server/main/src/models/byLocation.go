@@ -8,6 +8,8 @@ type ByLocationDevice struct {
 	Probability float64   `json:"probability"`
 	Randomized  bool      `json:"random_mac"`
 	NumScanners int       `json:"num_scanners"`
+	ActiveMins  int       `json:"active_mins"`
+	FirstSeen   time.Time `json:"first_seen"`
 }
 
 type ByLocation struct {

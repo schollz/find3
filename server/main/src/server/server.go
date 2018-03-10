@@ -211,6 +211,10 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		family := strings.TrimSpace(c.Param("family"))
 		minutesAgo := strings.TrimSpace(c.DefaultQuery("history", "120"))
 		allowRandomization := c.DefaultQuery("random", "1") == "1"
+		activeMinsThreshold, err := strconv.Atoi(c.DefaultQuery("active_mins", "0"))
+		if err != nil {
+			return
+		}
 
 		minutesAgoInt, err := strconv.Atoi(minutesAgo)
 		if err != nil {
@@ -222,6 +226,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		if err != nil {
 			return
 		}
+		defer d.Close()
 		sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
 
 		preAnalyzed := make(map[int64][]models.LocationPrediction)
@@ -232,10 +237,21 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			}
 			preAnalyzed[sensor.Timestamp] = a
 		}
-		d.Close()
+		deviceCounts, err := d.GetDeviceCounts()
 		if err != nil {
 			return
 		}
+		deviceFirstTime, err := d.GetDeviceFirstTime()
+		if err != nil {
+			return
+		}
+
+		var rollingData models.ReverseRollingData
+		err = d.Get("ReverseRollingData", &rollingData)
+		if err != nil {
+			return
+		}
+
 		logger.Log.Debugf("[%s] got %d sensors", family, len(sensors))
 		locations := make(map[string][]models.ByLocationDevice)
 		for _, s := range sensors {
@@ -243,6 +259,16 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			if allowRandomization == false && isRandomized {
 				continue
 			}
+			if _, ok := deviceCounts[s.Device]; !ok {
+				continue
+			}
+			if _, ok := deviceFirstTime[s.Device]; !ok {
+				continue
+			}
+			if int(deviceCounts[s.Device])*int(rollingData.TimeBlock.Seconds())/60 < activeMinsThreshold {
+				continue
+			}
+
 			var a []models.LocationPrediction
 			if _, ok := preAnalyzed[s.Timestamp]; ok {
 				a = preAnalyzed[s.Timestamp]
@@ -261,12 +287,15 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			for sensorType := range s.Sensors {
 				numScanners += len(s.Sensors[sensorType])
 			}
+
 			locations[a[0].Location] = append(locations[a[0].Location], models.ByLocationDevice{
 				Device:      s.Device,
 				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
 				Probability: a[0].Probability,
 				Randomized:  isRandomized,
 				NumScanners: numScanners,
+				ActiveMins:  int(deviceCounts[s.Device]) * int(rollingData.TimeBlock.Seconds()) / 60,
+				FirstSeen:   deviceFirstTime[s.Device],
 			})
 		}
 
