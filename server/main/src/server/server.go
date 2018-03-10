@@ -19,7 +19,6 @@ import (
 
 // Port defines the public port
 var Port = "8003"
-var ExternalServerAddress = "http://localhost:8003"
 var UseSSL = false
 var UseMQTT = false
 var MinimumPassive = -1
@@ -59,7 +58,6 @@ func Run() (err error) {
 			"Family": family,
 			"Device": device,
 			"SSL":    UseSSL,
-			"ExternalServerAddress": ExternalServerAddress,
 		})
 	})
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
@@ -81,7 +79,6 @@ func Run() (err error) {
 	r.POST("/track", handlerFIND)      // backwards-compatible with FIND for tracking
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
 
-	logger.Log.Debugf("using external address '%s'", ExternalServerAddress)
 	err = r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
 	return
 }
