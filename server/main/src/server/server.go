@@ -357,7 +357,7 @@ func handlerData(c *gin.Context) {
 func handlerGPS(c *gin.Context) {
 	message, err := func(c *gin.Context) (message string, err error) {
 		var data models.FingerprintWithGPS
-		err = c.BindJSON(&data)
+		err = c.ShouldBindJSON(&data)
 		if err != nil {
 			return
 		}
