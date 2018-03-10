@@ -206,15 +206,8 @@ func handlerEfficacy(c *gin.Context) {
 }
 
 func handlerApiV1ByLocation(c *gin.Context) {
-	type Location struct {
-		Device      string    `json:"device"`
-		Timestamp   time.Time `json:"timestamp"`
-		Probability float64   `json:"probability"`
-		Randomized  bool      `json:"random_mac"`
-	}
 
-	locations, err := func(c *gin.Context) (locations map[string][]Location, err error) {
-		locations = make(map[string][]Location)
+	locations, err := func(c *gin.Context) (byLocations []models.ByLocation, err error) {
 		family := strings.TrimSpace(c.Param("family"))
 		minutesAgo := strings.TrimSpace(c.DefaultQuery("history", "120"))
 		allowRandomization := c.DefaultQuery("random", "1") == "1"
@@ -244,6 +237,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			return
 		}
 		logger.Log.Debugf("[%s] got %d sensors", family, len(sensors))
+		locations := make(map[string][]models.ByLocationDevice)
 		for _, s := range sensors {
 			isRandomized := utils.IsMacRandomized(s.Device)
 			if allowRandomization == false && isRandomized {
@@ -262,14 +256,23 @@ func handlerApiV1ByLocation(c *gin.Context) {
 				a = aidata.Guesses
 			}
 			if _, ok := locations[a[0].Location]; !ok {
-				locations[a[0].Location] = []Location{}
+				locations[a[0].Location] = []models.ByLocationDevice{}
 			}
-			locations[a[0].Location] = append(locations[a[0].Location], Location{
+			locations[a[0].Location] = append(locations[a[0].Location], models.ByLocationDevice{
 				Device:      s.Device,
 				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
 				Probability: a[0].Probability,
 				Randomized:  isRandomized,
 			})
+		}
+
+		byLocations = make([]models.ByLocation, len(locations))
+		i := 0
+		for location := range locations {
+			byLocations[i].Location = location
+			byLocations[i].Devices = locations[location]
+			byLocations[i].Total = len(locations[location])
+			i++
 		}
 		return
 	}(c)
