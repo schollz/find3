@@ -39,7 +39,6 @@ To get started, read the documentation and take a look at the repo. The easiest 
 - The [`find3-cli-scanner`](/doc/cli-scanner.md) is a CLI tool for scanning fingerprints from your computer.
 
 
-
 ## System setup and administration
 
 - The [Setting up the server](/doc/server_setup.md) document explains how

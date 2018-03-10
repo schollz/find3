@@ -71,7 +71,7 @@ You need to run the scanner commands using `sudo` to have priveleges to modify t
 ```
 $ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
     -server https://cloud.internalpositioning.com \
-    -scantime 10 -forever -passive
+    -scantime 40 -forever -passive
 ```
 
 This command-line flag `-passive` tells the scanner to capture the packets with `tshark`. This command will start a scanner that submits to the main server (https://cloud.internalpositioning.com). If you set the `-forever` flag it will also continue running forever.
@@ -89,7 +89,7 @@ Then, add the `-no-modify` flag to tell the tool not to alter the promsicuousnes
 ```
 $ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
     -server https://cloud.internalpositioning.com \
-    -scantime 10 -forever -passive -no-modify
+    -scantime 40 -forever -passive -no-modify
 ```
 
 
@@ -104,19 +104,39 @@ Then choose the device you would like to learn on. You can use multiple devices,
 Once you have the device name you can tell the server where that device is, say the "living room". 
 
 ```
-$ http POST https://cloud.internalpositioning.com/passive \
-     t:=1 f=FAMILY  d=wifi-60:57:18:3d:b8:14 l="living room"
+$ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
+     family=FAMILY device=wifi-60:57:18:3d:b8:14 location="living room"
 ```
 
-The family (`FAMILY`) and device (for example, `wifi-60:57:18:3d:b8:14`) are specified. The flag `t:=1` is to indicate to the server that you are changing the passive scanning parameters.
+The family (`FAMILY`) and device (for example, `wifi-60:57:18:3d:b8:14`) are specified.
 
 Leave the device in the location for about 30 minutes to collect a good amount of fingerprints.
 
 It is *very important* to stop learning before you move the device away from that location. To stop learning, use the same command as above but without the `location` parameter:
 
 ```
-$ http POST https://cloud.internalpositioning.com/passive \
-    t:=1 f=FAMILY  d=wifi-60:57:18:3d:b8:14
+$ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
+   family=FAMILY device=wifi-60:57:18:3d:b8:14
+```
+
+## Passive parameters
+
+### Custom scan times
+
+In the above the `scantime` was set to 40 seconds. The 40 seconds is suggested because the default window for scanning in the server for collecting fingerprints from passive scanners is 90 seconds (> twice the default scantime). If you want, you can change the the `scantime` on the scanning computers (`-scantime X`) but if you do, you need to change the time window on the server for collecting data to at least twice the value. For instance, if you set the scantime on the scanning computers to 10 seconds, you should change the server window to about 25 seconds.
+
+```
+$ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
+    family=FAMILY window:=25
+```
+
+### Minimum passive scan points
+
+After the window of data collection, all fingerprints with at least 1 data point will be processed. To change this you can set `miniumum_passive`. For instance, if you have three scanning computers, and you want to ensure that all passive scanning data processed has data from at least 2 scanning computers you should do
+
+```
+$ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
+    family=FAMILY minimum_passive:=2
 ```
 
 ## Get data
