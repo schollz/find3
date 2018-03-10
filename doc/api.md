@@ -181,7 +181,7 @@ GET /api/v1/calibrate/FAMILY
 > 
 > This endpoint lists a lot of analysis that can give you an idea of how well the calibration did. It returns the `accuracy_breakdown` which is the location-specific correct guess percentage for the testing training set (a sequested 30% of original data not used for learning). 
 > 
-> The `confusion_metrics` have a lot of metrics determined from a [Confusion Matrix](https://en.wikipedia.org/wiki/Confusion_matrix) from the test data.
+> The `confusion_metrics` have a lot of metrics determined from a [Confusion Matrix](https://en.wikipedia.org/wiki/Confusion_matrix) from the test data. It is organized by machine learning algorithm. The one that is of use is the `informedness` which is used to determine the end probability for selecting a location guess.
 >
 > **Request**
 ```
