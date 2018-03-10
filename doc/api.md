@@ -388,34 +388,58 @@ GET /api/v1/by_location/FAMILY
 >
 > **Response**
 > 
-> Returns a map of `locations` where each key is a `location` that contains an array of devices. The devices are specified by `device` and the probability that they are in that location (`probability`). The `randomized` specifies, if it is a mac address, whether or not it is randomized (i.e. is the 2nd LSB not set). The `timestamp` specifies the last time they were found in that location.
+> Returns a list of `locations` which is a map containing the name of the location ("`location`"), and the total number of devices seen and a list of devices ("`devices`"). 
+>
+>Each device in the list has the name ("`device`"), the vendor determined from the Mac address ("`vendor`", if applicable), the timestamp that it was seen ("`timestamp`"), the probability it associates with that location ("`probability`"), whether or not the mac address is randomized ("`randomized`"), the number of devices is saw in its last sensor dump (`"num_scanners"`), the total time that the device as been seen in minutes (`"active_mins"`), and the time that the device was first seen ("`first_seen`").
 > 
+> Example:
+>
 ```
 {
-    "locations": {
-        "floor 1 kitchen": [
-            {
-                "device": "device2",
-                "probability": 0.5,
-                "randomized": false,
-                "timestamp": "2015-08-15T00:04:25.993Z"
-            }
-        ],
-        "floor 2 office": [
-            {
-                "device": "device1",
-                "probability": 0.75,
-                "randomized": false,
-                "timestamp": "2015-08-14T23:55:33.831Z"
-            },
-            {
-                "device": "device3",
-                "probability": 0.9,
-                "randomized": false,
-                "timestamp": "2015-08-14T23:55:43.831Z"
-            },
-        ]
-    },
+    "locations": [
+        {
+            "devices": [
+                {
+                    "device": "wifi-88:d7:f6:a7:2a:48",
+                    "vendor": "ASUSTek Computer Inc.",
+                    "timestamp": "2018-03-10T11:29:33.063Z",
+                    "probability": 0.89,
+                    "randomized": false,
+                    "num_scanners": 3,
+                    "active_mins": 1295,
+                    "first_seen": "2018-03-09T06:58:21.327Z"
+                },
+                {
+                    "device": "wifi-40:4e:36:89:63:a5",
+                    "vendor": "HTC Corporation",
+                    "timestamp": "2018-03-10T11:25:34.469Z",
+                    "probability": 0.83,
+                    "randomized": false,
+                    "num_scanners": 3,
+                    "active_mins": 815,
+                    "first_seen": "2018-03-09T07:16:49.934Z"
+                }
+            ],
+            "location": "desk",
+            "total": 2
+        },
+        {
+            "devices": [
+                {
+                    "device": "wifi-20:df:b9:49:1c:61",
+                    "vendor": "Google, Inc.",
+                    "timestamp": "2018-03-10T11:29:33.043Z",
+                    "probability": 0.88,
+                    "randomized": false,
+                    "num_scanners": 3,
+                    "active_mins": 1123,
+                    "first_seen": "2018-03-09T06:59:34.364Z"
+                }
+            ],
+            "location": "kitchen",
+            "total": 1
+        }
+    ],
     "message": "got locations",
     "success": true
 }
