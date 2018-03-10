@@ -26,7 +26,7 @@ To get started, enter in a **family** name. The **family** is used to distinguis
 
 Then enter in a **device** name. The **device** name is used to distinguish this particular device. This can also be the name of the person carrying the device, if that helps you when you see the results.
 
-The **server** is already specified as **cloud.internalpositioning.com**,
+The **server** is already specified as https://cloud.internalpositioning.com,
 the public server. If you are hosting your own server, you can change this
 to the address of your self-hosted server. [See here if you want to setup
 your own server](/docs/server_setup/).

@@ -8,7 +8,7 @@ Simply put, FIND will allow you to replace tons of motion sensors with a single 
 
 ## How does it work?
 
-Each time a Bluetooth/WiFi-enabled device conducts a scan of nearby devices, it will recieve a unique identifier and a signal strength that correlates with the distance to that device. A compilation of these different signals can be compiled into a fingerprint which can be used to uniquely classify the current location of that device.
+Each time a Bluetooth/WiFi-enabled device conducts a scan of nearby devices, it will receive a unique identifier and a signal strength that correlates with the distance to that device. A compilation of these different signals can be compiled into a fingerprint which can be used to uniquely classify the current location of that device.
 
 The access points can be anything - routers, Rokus, Raspberry Pis. They also can be anywhere - since they only need to be seen and not connected to, it will successfully use routers that are in a different building.
 
@@ -37,7 +37,7 @@ There are two modes of localization that you can implement with FIND:
 
 - **Passive scanning**: In *passive scanning* the scanner will report the classified location of the devices that it scans. This mode requires having a WiFi card that supports monitor mode on the scanning device. No software is needed on the device that is being tracked.
 
-You can use *active scanning* to track your own phone or computer, as outlined in the [Tracking your phone](/doc/tracking_your_phone.md) and [Tracking your computer](/doc/tracking_your_computer.md) documents. The *passive sacnning* can be used to track others that are nearby, as outline in the [Passive tracking](/doc/passive_tracking.md).
+You can use *active scanning* to track your own phone or computer, as outlined in the [Tracking your phone](/doc/tracking_your_phone.md) and [Tracking your computer](/doc/tracking_your_computer.md) documents. The *passive scanning* can be used to track others that are nearby, as outline in the [Passive tracking](/doc/passive_tracking.md).
 
 ## FIND3 vs FIND
 

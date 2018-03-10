@@ -66,7 +66,7 @@ Choose a **device name**, like the name of your computer. We will use `DEVICE` f
 
 Choose a **family name** which is a unique namespace that you can use to store data for all your devices. Each scanning computer should have the *same* family name. We will use `FAMILY` for the rest of this document.
 
-You need to run the scanner commands using `sudo` to have priveleges to modify the WiFi card. However, if you are using Docker you don't need the `sudo` command.
+You need to run the scanner commands using `sudo` to have privileges to modify the WiFi card. However, if you are using Docker you don't need the `sudo` command.
 
 ```
 $ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
@@ -84,7 +84,7 @@ If you have two WiFi interfaces, you can set one to be promiscuous permanently.
 $ sudo ./find3-cli-scanner -i wlan0 -monitor-mode
 ```
 
-Then, add the `-no-modify` flag to tell the tool not to alter the promsicuousness of the interface
+Then, add the `-no-modify` flag to tell the tool not to alter the promiscuousness of the interface
 
 ```
 $ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \

@@ -46,7 +46,7 @@ Now the server will be running on port `8005` and have an MQTT instance running 
 
 The hard way is to run FIND3 from the source. 
 
-There are a couple of pre-requisities before installing from source. First install Python 3.5+ and Go 1.6+. Then install a C compiler for SQLite.
+There are a couple of prerequisites before installing from source. First install Python 3.5+ and Go 1.6+. Then install a C compiler for SQLite.
 
 ```
 $ sudo apt-get install g++

@@ -151,7 +151,7 @@ The above command will start by enabling monitor mode of the specified interface
 $ find3-cli-scanner -i YOURINTERFACE -monitor-mode
 ```
 
-After enabling monitor moe permanetly you need to add a flag `-no-modify` to tell the command line scanner not to enable/disable automatically.
+After enabling monitor moe permanently you need to add a flag `-no-modify` to tell the command line scanner not to enable/disable automatically.
 
 ```
 $ nohup find3-cli-scanner -i YOURINTERFACE \

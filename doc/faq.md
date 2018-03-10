@@ -17,7 +17,7 @@ FIND3 attempts to simplify internal positioning.
 Internal positioning, simplified
 Using FIND, and only your smartphone or laptop, you will be able to pinpoint your position in your home or office. 
 
-Unlike GPS on your smartphone, this system has a gelocation precision of below 10 sq ft. Also unlike GPS, the app utilizes pre-existing operations so it has no significant cost to your battery. 
+Unlike GPS on your smartphone, this system has a geo-location precision of below 10 sq ft. Also unlike GPS, the app utilizes pre-existing operations so it has no significant cost to your battery. 
 
 This system is open-source and fully configurable but also easy to use and simple to set up. It is suited to small-scale home applications as well as large-scale business and school applications.
 
