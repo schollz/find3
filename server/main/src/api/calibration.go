@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"net/http"
 	"os"
@@ -263,6 +264,30 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 	}
 	logger.Log.Infof("[%s] total correct: %d/%d", datas[0].Family, correct, len(aidatas))
 
+	goodProbs := make([]float64, len(ProbabilitiesOfBestGuess))
+	i := 0
+	for _, v := range ProbabilitiesOfBestGuess {
+		if v > 0 {
+			goodProbs[i] = v
+			i++
+		}
+	}
+	goodProbs = goodProbs[:i]
+	goodMean := average(goodProbs)
+	goodSD := stdDev(goodProbs, goodMean)
+
+	badProbs := make([]float64, len(ProbabilitiesOfBestGuess))
+	i = 0
+	for _, v := range ProbabilitiesOfBestGuess {
+		if v < 0 {
+			badProbs[i] = -1 * v
+			i++
+		}
+	}
+	badProbs = badProbs[:i]
+	badMean := average(badProbs)
+	badSD := stdDev(badProbs, badMean)
+
 	for loc := range accuracyBreakdown {
 		accuracyBreakdown[loc] = accuracyBreakdown[loc] / accuracyBreakdownTotal[loc]
 		logger.Log.Infof("[%s] %s accuracy: %2.0f%%", datas[0].Family, loc, accuracyBreakdown[loc]*100)
@@ -275,6 +300,11 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		return
 	}
 	defer db.Close()
+
+	err = db.Set("ProbabilityMeans", []float64{goodMean, goodSD, badMean, badSD})
+	if err != nil {
+		logger.Log.Error(err)
+	}
 	err = db.Set("ProbabilitiesOfBestGuess", ProbabilitiesOfBestGuess)
 	if err != nil {
 		logger.Log.Error(err)
@@ -300,6 +330,23 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		logger.Log.Error(err)
 	}
 	return
+}
+
+func average(xs []float64) float64 {
+	total := 0.0
+	for _, v := range xs {
+		total += v
+	}
+	return total / float64(len(xs))
+}
+
+func stdDev(numbers []float64, mean float64) float64 {
+	total := 0.0
+	for _, number := range numbers {
+		total += math.Pow(number-mean, 2)
+	}
+	variance := total / float64(len(numbers)-1)
+	return math.Sqrt(variance)
 }
 
 func dumpSensorsToCSV(datas []models.SensorData, csvFile string) (err error) {

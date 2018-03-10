@@ -7,6 +7,7 @@ type ByLocationDevice struct {
 	Timestamp   time.Time `json:"timestamp"`
 	Probability float64   `json:"probability"`
 	Randomized  bool      `json:"random_mac"`
+	NumScanners int       `json:"num_scanners"`
 }
 
 type ByLocation struct {

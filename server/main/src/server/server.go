@@ -245,7 +245,6 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			}
 			var a []models.LocationPrediction
 			if _, ok := preAnalyzed[s.Timestamp]; ok {
-				logger.Log.Debugf("[%s] using pre-analyzed for %d", family, s.Timestamp)
 				a = preAnalyzed[s.Timestamp]
 			} else {
 				var aidata models.LocationAnalysis
@@ -258,11 +257,16 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			if _, ok := locations[a[0].Location]; !ok {
 				locations[a[0].Location] = []models.ByLocationDevice{}
 			}
+			numScanners := 0
+			for sensorType := range s.Sensors {
+				numScanners += len(s.Sensors[sensorType])
+			}
 			locations[a[0].Location] = append(locations[a[0].Location], models.ByLocationDevice{
 				Device:      s.Device,
 				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
 				Probability: a[0].Probability,
 				Randomized:  isRandomized,
+				NumScanners: numScanners,
 			})
 		}
 
