@@ -110,7 +110,7 @@ $ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
 
 The family (`FAMILY`) and device (for example, `wifi-60:57:18:3d:b8:14`) are specified.
 
-Leave the device in the location for about 30 minutes to collect a good amount of fingerprints.
+Leave the device in the location for about 30 minutes to collect a good amount of fingerprints. This will allow you to collect about 15 pieces of sensor data per location.
 
 It is *very important* to stop learning before you move the device away from that location. To stop learning, use the same command as above but without the `location` parameter:
 
