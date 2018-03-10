@@ -35,12 +35,11 @@ That's it! Now FIND3 should be installed and read to go. To start it, make a dir
 
 ```bash
 $ docker run -p 11883:1883 -p 8005:8003 \
-  -e EXTERNAL_ADDRESS='http://localhost:8005' \
 	-v /home/$USER/FIND_DATA:/data \
 	--name find3server -d -t schollz/find3
 ```
 
-Now the server will be running on port `8005` and have an MQTT instance running on port `11883`. Make sure to change the `EXTERNAL_ADDRESS` to reflect what you wil have as your public endpoint, it used to set the front-end materials.
+Now the server will be running on port `8005` and have an MQTT instance running on port `11883`. 
 
 ### The hard way
 
@@ -83,12 +82,8 @@ In the other terminal you can run the main data storage server.
 ```
 $ cd $GOPATH/src/github.com/schollz/find3/server/main
 $ go build -v
-$ ./main -port 8005 -external http://127.0.0.1:8005
+$ ./main -port 8005 
 ```
-
-In this case the external address is `http://127.0.0.1:8005` but you should change it to what you need.
-
-
 
 ## Run the test suite
 
