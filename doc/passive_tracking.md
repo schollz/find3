@@ -66,12 +66,12 @@ Choose a **device name**, like the name of your computer. We will use `DEVICE` f
 
 Choose a **family name** which is a unique namespace that you can use to store data for all your devices. Each scanning computer should have the *same* family name. We will use `FAMILY` for the rest of this document.
 
-You need to run the scanner commands using `sudo` to have priveleges to modify the WiFi card. However, if you are using Docker you don't need the `sudo` command.
+You need to run the scanner commands using `sudo` to have privileges to modify the WiFi card. However, if you are using Docker you don't need the `sudo` command.
 
 ```
 $ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
     -server https://cloud.internalpositioning.com \
-    -scantime 10 -forever -passive
+    -scantime 40 -forever -passive
 ```
 
 This command-line flag `-passive` tells the scanner to capture the packets with `tshark`. This command will start a scanner that submits to the main server (https://cloud.internalpositioning.com). If you set the `-forever` flag it will also continue running forever.
@@ -84,12 +84,12 @@ If you have two WiFi interfaces, you can set one to be promiscuous permanently.
 $ sudo ./find3-cli-scanner -i wlan0 -monitor-mode
 ```
 
-Then, add the `-no-modify` flag to tell the tool not to alter the promsicuousness of the interface
+Then, add the `-no-modify` flag to tell the tool not to alter the promiscuousness of the interface
 
 ```
 $ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
     -server https://cloud.internalpositioning.com \
-    -scantime 10 -forever -passive -no-modify
+    -scantime 40 -forever -passive -no-modify
 ```
 
 
@@ -104,19 +104,45 @@ Then choose the device you would like to learn on. You can use multiple devices,
 Once you have the device name you can tell the server where that device is, say the "living room". 
 
 ```
-$ http POST https://cloud.internalpositioning.com/passive \
-     t:=1 f=FAMILY  d=wifi-60:57:18:3d:b8:14 l="living room"
+$ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
+     family=FAMILY device=wifi-60:57:18:3d:b8:14 location="living room"
 ```
 
-The family (`FAMILY`) and device (for example, `wifi-60:57:18:3d:b8:14`) are specified. The flag `t:=1` is to indicate to the server that you are changing the passive scanning parameters.
+The family (`FAMILY`) and device (for example, `wifi-60:57:18:3d:b8:14`) are specified.
 
 Leave the device in the location for about 30 minutes to collect a good amount of fingerprints.
 
 It is *very important* to stop learning before you move the device away from that location. To stop learning, use the same command as above but without the `location` parameter:
 
 ```
-$ http POST https://cloud.internalpositioning.com/passive \
-    t:=1 f=FAMILY  d=wifi-60:57:18:3d:b8:14
+$ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
+   family=FAMILY device=wifi-60:57:18:3d:b8:14
+```
+
+## Passive parameters
+
+### Custom scan times
+
+Each scanning computer submits the data point for one device. The server synchronizes all the scanning computers by waiting a specified amount of time (the time window) for collecting the data point for each device. This time window is 90 seconds by default which is enough time to guarantee that the server will hear from every scanning computer (that have a scan time of 40 seconds). You can change these parameters.
+
+To change the scantime on a scanning computer just use the flag `-scantime`. 
+
+To change the window to `X` seconds, use:
+
+```
+$ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
+    family=FAMILY window:=X
+```
+
+Make sure to change the time window on the server for collecting data to at least twice the scan time of a scanning computer. For instance, if you set the scantime on the scanning computers to 10 seconds, you should change the server window to about 25 seconds.
+
+### Minimum passive scan points
+
+After the window of data collection, all fingerprints with at least 1 data point will be processed. To change this you can set `miniumum_passive`. For instance, if you have three scanning computers, and you want to ensure that all passive scanning data processed has data from at least 2 scanning computers you should do
+
+```
+$ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
+    family=FAMILY minimum_passive:=2
 ```
 
 ## Get data

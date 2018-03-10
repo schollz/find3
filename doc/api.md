@@ -110,7 +110,7 @@ POST /passive
 > 
 > This endpoint is used for passive scanning. It will tell the server to filter out specified mac addresses for learning specified locations. 
 > 
-> Yes, it is resuing the same endpoint for posting data, but it is set using a special `"t":1` flag to indicate toggling of learning.
+> Yes, it is reusing the same endpoint for posting data, but it is set using a special `"t":1` flag to indicate toggling of learning.
 >   
 > **Request**
 ```

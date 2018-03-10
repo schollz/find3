@@ -6,7 +6,7 @@ Have you ever wanted to...
 
 - do home automation without motion sensors?
 - track your phone or laptop *indoors* without GPS?
-- monitor the whereaobouts and trajectories of cell phones?
+- monitor the whereabouts and trajectories of cell phones?
 
 FIND stands for the **Framework for Internal Navigation and Discovery**, which is an attempt implement a solution to these questions. This version, FIND3, is v3.X of FIND (the latest version).
 
@@ -37,7 +37,6 @@ To get started, read the documentation and take a look at the repo. The easiest 
 ## Tools
 
 - The [`find3-cli-scanner`](/doc/cli-scanner.md) is a CLI tool for scanning fingerprints from your computer.
-
 
 
 ## System setup and administration

@@ -452,11 +452,11 @@ func handlerReverseSettings(c *gin.Context) {
 			rollingData = models.ReverseRollingData{
 				Family:         d.Family,
 				DeviceLocation: make(map[string]string),
-				TimeBlock:      20 * time.Second,
+				TimeBlock:      90 * time.Second,
 			}
 		}
 		if rollingData.TimeBlock.Seconds() == 0 {
-			rollingData.TimeBlock = 20 * time.Second
+			rollingData.TimeBlock = 90 * time.Second
 		}
 
 		// set tracking information
@@ -525,11 +525,11 @@ func handlerReverse(c *gin.Context) {
 			rollingData = models.ReverseRollingData{
 				Family:         d.Family,
 				DeviceLocation: make(map[string]string),
-				TimeBlock:      20 * time.Second,
+				TimeBlock:      90 * time.Second,
 			}
 		}
 		if rollingData.TimeBlock.Seconds() == 0 {
-			rollingData.TimeBlock = 20 * time.Second
+			rollingData.TimeBlock = 90 * time.Second
 		}
 
 		if !rollingData.HasData {

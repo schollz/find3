@@ -6,7 +6,7 @@ Have you ever wanted to...
 
 - do home automation without motion sensors?
 - track your phone or laptop *indoors* without GPS?
-- monitor the whereaobouts and trajectories of cell phones?
+- monitor the whereabouts and trajectories of cell phones?
 
 FIND3 is an attempt implement a solution to these questions.
 
