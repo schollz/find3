@@ -70,12 +70,17 @@ def learn():
     data_folder = '.'
     if 'data_folder' in payload:
         data_folder = payload['data_folder']
+    else:
+        logger.debug("could not find data_folder in payload")
+
+    logger.debug(data_folder)
 
     ai = AI(to_base58(payload['family']), data_folder)
+    fname = os.path.join(data_folder, payload['csv_file'])
     try:
-        ai.learn(os.path.join(data_folder, payload['csv_file']))
+        ai.learn(fname)
     except FileNotFoundError:
-        return jsonify({"success": False, "message": "could not find '{p[csv_file]}'".format(p=payload)})
+        return jsonify({"success": False, "message": "could not find '{}'".format(fname)})
 
     ai.save(os.path.join(data_folder, to_base58(
         payload['family']) + ".de0gee.ai"))

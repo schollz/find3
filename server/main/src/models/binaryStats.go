@@ -1,5 +1,7 @@
 package models
 
+import "math"
+
 // BinaryStats is a structure that derives the following metrics https://en.wikipedia.org/wiki/Sensitivity_and_specificity
 type BinaryStats struct {
 	TruePositives  int `json:"true_positives"`
@@ -13,6 +15,8 @@ type BinaryStats struct {
 	Specificity float64 `json:"specificity"`
 	// Informedness (TPR + SPC - 1)
 	Informedness float64 `json:"informedness"`
+	// Martthews Correlation coefficient
+	MCC float64 `json:"mcc"`
 }
 
 // NewBinaryStats returns a binary stats object
@@ -38,5 +42,6 @@ func NewBinaryStats(tp, fp, tn, fn int) BinaryStats {
 		Sensitivity:  sensitivity,
 		Specificity:  specificity,
 		Informedness: specificity + sensitivity - 1,
+		MCC:          (tpf*tnf - fpf*fnf) / math.Sqrt((tpf+fpf)*(tpf+fnf)*(tnf+fpf)*(tnf+fnf)),
 	}
 }

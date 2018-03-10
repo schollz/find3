@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/schollz/find3/server/main/src/database"
@@ -94,4 +96,41 @@ func TestDumpSensorsToCSV(t *testing.T) {
 	db.Debug(false)
 	err := dumpSensorsToCSV(ss, "test.csv")
 	assert.Nil(t, err)
+}
+
+func TestRisingEfficacy(t *testing.T) {
+	DataFolder, _ = filepath.Abs("../../data")
+	database.DataFolder = DataFolder
+
+	db, err := database.Open("pike5")
+	assert.Nil(t, err)
+	datas, err := db.GetAllForClassification()
+	assert.Nil(t, err)
+	db.Close()
+	datas = datas[:100]
+	fmt.Println(len(datas))
+
+	datasLearn, datasTest, err := splitDataForLearning(datas, true)
+	assert.Nil(t, err)
+	fmt.Println(len(datasLearn))
+	fmt.Println(len(datasTest))
+
+	err = learnFromData("pike5", datasLearn)
+	assert.Nil(t, err)
+
+	algorithmEfficacy, err := findBestAlgorithm(datasTest)
+	assert.Nil(t, err)
+	fmt.Println(algorithmEfficacy)
+	bestInformedness := make(map[string][]float64)
+	for alg := range algorithmEfficacy {
+		for loc := range algorithmEfficacy[alg] {
+			if _, ok := bestInformedness[loc]; !ok {
+				bestInformedness[loc] = []float64{}
+			}
+			bestInformedness[loc] = append(bestInformedness[loc], algorithmEfficacy[alg][loc].MCC)
+		}
+	}
+	for loc := range bestInformedness {
+		fmt.Println(loc, average(bestInformedness[loc]))
+	}
 }
