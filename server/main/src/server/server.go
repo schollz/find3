@@ -743,12 +743,12 @@ func processSensorData(p models.SensorData) (err error) {
 func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err error) {
 	analysis, _ = api.AnalyzeSensorData(p)
 	type Payload struct {
-		Sensors  models.SensorData       `json:"sensors"`
-		Analysis models.LocationAnalysis `json:"analysis"`
+		Sensors models.SensorData           `json:"sensors"`
+		Guesses []models.LocationPrediction `json:"guesses"`
 	}
 	payload := Payload{
-		Sensors:  p,
-		Analysis: analysis,
+		Sensors: p,
+		Guesses: analysis.Guesses,
 	}
 	bTarget, err := json.Marshal(payload)
 	if err != nil {
@@ -759,7 +759,7 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 	SendMessageOverWebsockets(p.Family, p.Device, bTarget)
 
 	if UseMQTT {
-		// logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
+		logger.Log.Debugf("[%s] sending data over mqtt (%s)", p.Family, p.Device)
 		mqtt.Publish(p.Family, p.Device, string(bTarget))
 	}
 	return

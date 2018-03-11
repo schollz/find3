@@ -26,7 +26,7 @@ class LocationWebsocket extends React.Component {
     this.setState({
       device: result.sensors.d,
       time: result.sensors.t,
-      guesses: result.analysis.guesses,
+      guesses: result.guesses,
       sensors: result.sensors,
     });
   }
