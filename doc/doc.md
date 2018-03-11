@@ -35,6 +35,8 @@ To get started, read the documentation and take a look at the repo. The easiest 
 
 - The [API](/doc/api.md) document has a detailed guide on how to access the FIND3 data after tracking/learning.
 
+- The [MQTT](/doc/mqtt.md) document will explain how to subscribe to FIND using MQTT.
+
 
 ## Tools
 

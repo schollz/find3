@@ -52,6 +52,9 @@ type AnalysisResponse struct {
 }
 
 func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err error) {
+	aidata.Guesses = []models.LocationPrediction{}
+	aidata.LocationNames = make(map[string]string)
+
 	d, err := database.Open(s.Family)
 	if err != nil {
 		return
@@ -117,6 +120,9 @@ func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[st
 			if prediction.Probabilities[i] <= 0 {
 				continue
 			}
+			if len(guessedLocation) == 0 {
+				continue
+			}
 			efficacy := prediction.Probabilities[i] * algorithmEfficacy[prediction.Name][guessedLocation].Informedness
 			if _, ok := locationScores[guessedLocation]; !ok {
 				locationScores[guessedLocation] = float64(0)
@@ -145,6 +151,11 @@ func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[st
 		b[i].Location = pl[i].Key
 		b[i].Probability = pl[i].Value
 	}
+
+	if len(locationScores) == 1 {
+		b[0].Probability = 1
+	}
+
 	return b
 }
 
