@@ -60,7 +60,7 @@ func main() {
 
 	api.AIPort = *aiPort
 	server.Port = *port
-	server.UseMQTT = *mqttServer != ""
+	server.UseMQTT = mqtt.Server != ""
 	err := server.Run()
 	if err != nil {
 		fmt.Print("error: ")
