@@ -36,13 +36,13 @@ That's it! Now FIND3 should be installed and read to go. To start it, make a dir
 ```bash
 $ docker run -p 11883:1883 -p 8005:8003 \
 	-v /home/$USER/FIND_DATA:/data \
-    -e MQTT_ADMIN=admin \
-    -e MQTT_PASS=1234 \
+    -e MQTT_ADMIN=ADMIN \
+    -e MQTT_PASS=PASSWORD \
     -e MQTT_SERVER='localhost:1883' \
 	--name find3server -d -t schollz/find3
 ```
 
-Now the server will be running on port `8005` and have an MQTT instance running on port `11883`. 
+Now the server will be running on port `8005` and have an MQTT instance running on port `11883`. Make sure to change `ADMIN` and `PASSWORD` to a admin user name and password. Do not change `MQTT_SERVER`, as it runs on the Docker image.
 
 ### The hard way
 
