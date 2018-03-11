@@ -1,6 +1,9 @@
 package models
 
-import "math"
+import (
+	"math"
+	"math/big"
+)
 
 // BinaryStats is a structure that derives the following metrics https://en.wikipedia.org/wiki/Sensitivity_and_specificity
 type BinaryStats struct {
@@ -17,6 +20,8 @@ type BinaryStats struct {
 	Informedness float64 `json:"informedness"`
 	// Martthews Correlation coefficient
 	MCC float64 `json:"mcc"`
+	// Fisher's P test
+	FisherP float64 `json:"fisher_p"`
 }
 
 // NewBinaryStats returns a binary stats object
@@ -33,6 +38,15 @@ func NewBinaryStats(tp, fp, tn, fn int) BinaryStats {
 	if tnf+fpf != 0 {
 		specificity = tnf / (tnf + fpf)
 	}
+	mcc := float64(0)
+	if math.Sqrt((tpf+fpf)*(tpf+fnf)*(tnf+fpf)*(tnf+fnf)) > 0 {
+		mcc = (tpf*tnf - fpf*fnf) / math.Sqrt((tpf+fpf)*(tpf+fnf)*(tnf+fpf)*(tnf+fnf))
+	}
+	fisher_p := float64(1)
+	if NChooseK(tpf+fpf+tnf+fnf, tpf+fpf) > 0 {
+		fisher_p = NChooseK(tpf+fnf, tpf) * NChooseK(fpf+tnf, fpf) / NChooseK(tpf+fpf+tnf+fnf, tpf+fpf)
+	}
+
 	return BinaryStats{
 		TruePositives:  tp,
 		FalsePositives: fp,
@@ -42,6 +56,14 @@ func NewBinaryStats(tp, fp, tn, fn int) BinaryStats {
 		Sensitivity:  sensitivity,
 		Specificity:  specificity,
 		Informedness: specificity + sensitivity - 1,
-		MCC:          (tpf*tnf - fpf*fnf) / math.Sqrt((tpf+fpf)*(tpf+fnf)*(tnf+fpf)*(tnf+fnf)),
+		MCC:          mcc,
+		FisherP:      fisher_p,
 	}
+}
+
+func NChooseK(n float64, k float64) float64 {
+	a := big.NewInt(0)
+	a.Binomial(int64(n), int64(k))
+	f, _ := (new(big.Float).SetInt(a).Float64())
+	return f
 }
