@@ -2,7 +2,7 @@
 # mkdir /tmp/find3
 # docker run -p 11883:1883 -p 8003:8003 -v /tmp/find3:/data -t find3
 
-FROM ubuntu:18.04
+FROM ubuntu:17.10
 
 RUN echo "starting..."
 RUN apt-get update 
@@ -22,7 +22,7 @@ ENV GOPATH /usr/local/work
 RUN go get -v github.com/mattn/go-sqlite3
 RUN go install -v github.com/mattn/go-sqlite3
 
-RUN echo "v3.0.2"
+RUN echo "v3.0.3"
 RUN go get -v github.com/schollz/find3/...
 
 RUN mkdir /data

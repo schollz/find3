@@ -467,7 +467,7 @@ func (d *Database) GetDeviceCounts() (counts map[string]int, err error) {
 
 // GetAllForClassification will return a sensor data for classifying
 func (d *Database) GetAllForClassification() (s []models.SensorData, err error) {
-	return d.GetAllFromQuery("SELECT * FROM sensors WHERE sensors.locationid !=''")
+	return d.GetAllFromQuery("SELECT * FROM sensors WHERE sensors.locationid !='' ORDER BY timestamp")
 }
 
 // GetLatest will return a sensor data for classifying

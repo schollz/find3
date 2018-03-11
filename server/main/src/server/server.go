@@ -71,7 +71,7 @@ func Run() (err error) {
 	r.GET("/test", handleTest)
 	r.GET("/ws", wshandler) // handler for the web sockets (see websockets.go)
 	if UseMQTT {
-		r.POST("/mqtt", handlerMQTT) // handler for setting MQTT
+		r.GET("/api/v1/mqtt/:family", handlerMQTT) // handler for setting MQTT
 	}
 	r.POST("/data", handlerData)       // typical data handler
 	r.POST("/gps", handlerGPS)         // typical GPS handler
@@ -358,14 +358,17 @@ func handlerApiV1Location(c *gin.Context) {
 		}
 		analysis, err = api.AnalyzeSensorData(s)
 		if err != nil {
-			return
+			err = api.Calibrate(family, true)
+			if err != nil {
+				return
+			}
+			analysis, err = api.AnalyzeSensorData(s)
 		}
 		return
 	}(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
 	} else {
-
 		c.JSON(http.StatusOK, gin.H{"message": "got location", "success": err == nil, "sensors": s, "analysis": analysis})
 	}
 }
@@ -386,25 +389,25 @@ func handlerApiV1Calibrate(c *gin.Context) {
 }
 
 func handlerMQTT(c *gin.Context) {
-	type Payload struct {
-		Family string `json:"family" binding:"required"`
-		//	OTP    string `json:"otp" binding:"required"`
-	}
-	success := false
-	var message string
-	var p Payload
-	if errBind := c.ShouldBindJSON(&p); errBind == nil {
-		// TODO: authenticate p.OTP
-		passphrase, err := mqtt.AddFamily(p.Family)
-		if err != nil {
-			message = err.Error()
-		} else {
-			message = fmt.Sprintf("Added '%s' for mqtt. Your passphrase is '%s'", p.Family, passphrase)
+	message, err := func(c *gin.Context) (message string, err error) {
+		family := strings.TrimSpace(c.Param("family"))
+		if family == "" {
+			err = errors.New("invalid family")
+			return
 		}
+		passphrase, err := mqtt.AddFamily(family)
+		if err != nil {
+			return
+		}
+		message = fmt.Sprintf("Added '%s' for mqtt. Your passphrase is '%s'", family, passphrase)
+		return
+	}(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
 	} else {
-		message = errBind.Error()
+		c.JSON(http.StatusOK, gin.H{"message": message, "success": err == nil})
 	}
-	c.JSON(http.StatusOK, gin.H{"message": message, "success": success})
+	return
 }
 
 func sendOutLocation(family, device string) (s models.SensorData, analysis models.LocationAnalysis, err error) {
@@ -418,6 +421,17 @@ func sendOutLocation(family, device string) (s models.SensorData, analysis model
 		return
 	}
 	analysis, err = sendOutData(s)
+	if err != nil {
+		return
+	}
+	analysis, err = api.AnalyzeSensorData(s)
+	if err != nil {
+		err = api.Calibrate(family, true)
+		if err != nil {
+			logger.Log.Warn(err)
+			return
+		}
+	}
 	return
 }
 
@@ -728,14 +742,13 @@ func processSensorData(p models.SensorData) (err error) {
 
 func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err error) {
 	analysis, _ = api.AnalyzeSensorData(p)
-
 	type Payload struct {
-		Sensors  models.SensorData       `json:"sensors"`
-		Analysis models.LocationAnalysis `json:"analysis"`
+		Sensors models.SensorData           `json:"sensors"`
+		Guesses []models.LocationPrediction `json:"guesses"`
 	}
 	payload := Payload{
-		Sensors:  p,
-		Analysis: analysis,
+		Sensors: p,
+		Guesses: analysis.Guesses,
 	}
 	bTarget, err := json.Marshal(payload)
 	if err != nil {
@@ -746,7 +759,7 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 	SendMessageOverWebsockets(p.Family, p.Device, bTarget)
 
 	if UseMQTT {
-		// logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
+		logger.Log.Debugf("[%s] sending data over mqtt (%s)", p.Family, p.Device)
 		mqtt.Publish(p.Family, p.Device, string(bTarget))
 	}
 	return

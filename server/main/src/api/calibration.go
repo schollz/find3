@@ -20,18 +20,6 @@ import (
 
 // Calibrate will send the sensor data for a specific family to the machine learning algorithms
 func Calibrate(family string, crossValidation ...bool) (err error) {
-
-	// inquire the AI
-	type Payload struct {
-		Family     string `json:"family"`
-		CSVFile    string `json:"csv_file"`
-		DataFolder string `json:"data_folder"`
-	}
-	var p Payload
-	p.CSVFile = utils.RandomString(8) + ".csv"
-	p.Family = family
-	p.DataFolder = DataFolder
-
 	// gather the data
 	db, err := database.Open(family, true)
 	if err != nil {
@@ -43,8 +31,28 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 	}
 	db.Close()
 
+	datasLearn, datasTest, err := splitDataForLearning(datas, crossValidation...)
+	if err != nil {
+		return
+	}
+
+	err = learnFromData(family, datasLearn)
+	if err != nil {
+		return
+	}
+
+	if len(crossValidation) > 0 && crossValidation[0] {
+		go findBestAlgorithm(datasTest)
+	}
+	return
+}
+
+func splitDataForLearning(datas []models.SensorData, crossValidation ...bool) (datasLearn []models.SensorData, datasTest []models.SensorData, err error) {
+	if len(datas) < 2 {
+		err = errors.New("not enough data")
+		return
+	}
 	// for cross validation only
-	var datasTest []models.SensorData
 	if len(crossValidation) > 0 && crossValidation[0] {
 		// randomize data order
 		for i := range datas {
@@ -64,13 +72,13 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 		// for each location, make test set and learn set
 		datasTest = make([]models.SensorData, len(datas))
 		datasTestI := 0
-		datasLearn := make([]models.SensorData, len(datas))
+		datasLearn = make([]models.SensorData, len(datas))
 		datasLearnI := 0
 		for loc := range dataLocations {
 			splitI := 1
 			numDataPoints := len(dataLocations[loc])
 			if numDataPoints < 2 {
-				logger.Log.Warnf("[%s] not enough data to split %s", family, loc)
+				continue
 			} else if numDataPoints < 10 {
 				splitI = numDataPoints / 2 // 50% split
 			} else {
@@ -86,13 +94,27 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 					datasTestI++
 				}
 			}
-			logger.Log.Debugf("[%s] splitting %s data for cross validation (%d -> %d)", family, loc, numDataPoints, splitI)
+			logger.Log.Debugf("splitting %s data for cross validation (%d -> %d)", loc, numDataPoints, splitI)
 		}
 
-		datas = datasLearn[:datasLearnI]
+		datasLearn = datasLearn[:datasLearnI]
 		datasTest = datasTest[:datasTestI]
-		logger.Log.Debugf("[%s] learning: %d, testing: %d", family, len(datas), len(datasTest))
+		logger.Log.Debugf("learning: %d, testing: %d", len(datas), len(datasTest))
 	}
+	return
+}
+
+func learnFromData(family string, datas []models.SensorData) (err error) {
+	// inquire the AI
+	type Payload struct {
+		Family     string `json:"family"`
+		CSVFile    string `json:"csv_file"`
+		DataFolder string `json:"data_folder"`
+	}
+	var p Payload
+	p.CSVFile = utils.RandomString(8) + ".csv"
+	p.Family = family
+	p.DataFolder = DataFolder
 
 	logger.Log.Debugf("[%s] writing data to %s", family, path.Join(p.DataFolder, p.CSVFile))
 	err = dumpSensorsToCSV(datas, path.Join(p.DataFolder, p.CSVFile))
@@ -127,17 +149,10 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 		logger.Log.Debugf("failure: %s", target.Message)
 		err = errors.New("failed in AI server: " + target.Message)
 	}
-	if err != nil {
-		return
-	}
-
-	if len(crossValidation) > 0 && crossValidation[0] {
-		go FindBestAlgorithm(datasTest)
-	}
 	return
 }
 
-func FindBestAlgorithm(datas []models.SensorData) (err error) {
+func findBestAlgorithm(datas []models.SensorData) (algorithmEfficacy map[string]map[string]models.BinaryStats, err error) {
 	if len(datas) == 0 {
 		err = errors.New("no data specified")
 		return
@@ -196,7 +211,8 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 				continue
 			}
 			if len(aidata.LocationNames) == 0 {
-				return errors.New("no location names")
+				err = errors.New("no location names")
+				return
 			}
 			guessedLocation := aidata.LocationNames[prediction.Locations[0]]
 			predictionAnalysis[prediction.Name][correctLocation][guessedLocation]++
@@ -212,7 +228,7 @@ func FindBestAlgorithm(datas []models.SensorData) (err error) {
 		}
 		locationTotals[data.Location]++
 	}
-	algorithmEfficacy := make(map[string]map[string]models.BinaryStats)
+	algorithmEfficacy = make(map[string]map[string]models.BinaryStats)
 	for alg := range predictionAnalysis {
 		if _, ok := algorithmEfficacy[alg]; !ok {
 			algorithmEfficacy[alg] = make(map[string]models.BinaryStats)

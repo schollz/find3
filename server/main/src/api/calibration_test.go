@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"path/filepath"
 	"testing"
 
 	"github.com/schollz/find3/server/main/src/database"
@@ -94,4 +96,65 @@ func TestDumpSensorsToCSV(t *testing.T) {
 	db.Debug(false)
 	err := dumpSensorsToCSV(ss, "test.csv")
 	assert.Nil(t, err)
+}
+
+func TestRisingEfficacy(t *testing.T) {
+	DataFolder, _ = filepath.Abs("../../data")
+	database.DataFolder = DataFolder
+
+	db, err := database.Open("pike5")
+	assert.Nil(t, err)
+	datas, err := db.GetAllForClassification()
+	assert.Nil(t, err)
+	db.Close()
+	datas = datas[:2000]
+	fmt.Println(len(datas))
+
+	datasLearn, datasTest, err := splitDataForLearning(datas, true)
+	assert.Nil(t, err)
+	fmt.Println(len(datasLearn))
+	fmt.Println(len(datasTest))
+
+	err = learnFromData("pike5", datasLearn)
+	assert.Nil(t, err)
+
+	algorithmEfficacy, err := findBestAlgorithm(datasTest)
+	assert.Nil(t, err)
+	// bA, _ := json.MarshalIndent(algorithmEfficacy, "", " ")
+	// fmt.Println(string(bA))
+	bestInformedness := make(map[string][]float64)
+	for alg := range algorithmEfficacy {
+		for loc := range algorithmEfficacy[alg] {
+			if _, ok := bestInformedness[loc]; !ok {
+				bestInformedness[loc] = []float64{}
+			}
+			bestInformedness[loc] = append(bestInformedness[loc], algorithmEfficacy[alg][loc].Informedness)
+		}
+	}
+	for loc := range bestInformedness {
+		fmt.Println(loc, Max(bestInformedness[loc]))
+	}
+}
+
+// Max returns the maximum value in the input slice. If the slice is empty, Max will panic.
+func Max(s []float64) float64 {
+	return s[MaxIdx(s)]
+}
+
+// MaxIdx returns the index of the maximum value in the input slice. If several
+// entries have the maximum value, the first such index is returned. If the slice
+// is empty, MaxIdx will panic.
+func MaxIdx(s []float64) int {
+	if len(s) == 0 {
+		panic("floats: zero slice length")
+	}
+	max := s[0]
+	var ind int
+	for i, v := range s {
+		if v > max {
+			max = v
+			ind = i
+		}
+	}
+	return ind
 }
