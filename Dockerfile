@@ -73,7 +73,7 @@ pid_file mosquitto_config/pid\n'\
 
 # Update the latest
 WORKDIR /usr/local/work/src/github.com/schollz/find3
-RUN echo "v3.0.0.4"
+RUN echo "v3.0.0.5"
 RUN git pull -v
 WORKDIR /usr/local/work/src/github.com/schollz/find3/server/main
 RUN go build -v
