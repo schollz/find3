@@ -14,18 +14,18 @@ type SensorData struct {
 	// Device are unique within a family
 	Device string `json:"d"`
 	// Location is optional, used for classification
-	Location string `json:"l"`
+	Location string `json:"l,omitempty"`
 	// Sensors contains a map of map of sensor data
 	Sensors map[string]map[string]interface{} `json:"s"`
 	// GPS is optional
-	GPS GPS `json:"gps"`
+	GPS GPS `json:"gps,omitempty"`
 }
 
 // GPS contains GPS data
 type GPS struct {
-	Latitude  float64 `json:"lat"`
-	Longitude float64 `json:"lon"`
-	Altitude  float64 `json:"alt"`
+	Latitude  float64 `json:"lat,omitempty"`
+	Longitude float64 `json:"lon,omitempty"`
+	Altitude  float64 `json:"alt,omitempty"`
 }
 
 // Validate will validate that the fingerprint is okay

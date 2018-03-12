@@ -20,6 +20,7 @@ func main() {
 	mqttServer := flag.String("mqtt-server", "", "add MQTT server")
 	mqttAdmin := flag.String("mqtt-admin", "admin", "name for mqtt admin")
 	mqttPass := flag.String("mqtt-pass", "1234", "password for mqtt admin")
+	dump := flag.String("dump", "", "family database to dump")
 
 	var dataFolder string
 	flag.StringVar(&dataFolder, "data", "", "location to store data")
@@ -61,7 +62,13 @@ func main() {
 	api.AIPort = *aiPort
 	server.Port = *port
 	server.UseMQTT = mqtt.Server != ""
-	err := server.Run()
+
+	var err error
+	if *dump != "" {
+		err = api.Dump(*dump)
+	} else {
+		err = server.Run()
+	}
 	if err != nil {
 		fmt.Print("error: ")
 		fmt.Println(err)

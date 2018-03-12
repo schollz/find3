@@ -470,6 +470,11 @@ func (d *Database) GetAllForClassification() (s []models.SensorData, err error) 
 	return d.GetAllFromQuery("SELECT * FROM sensors WHERE sensors.locationid !='' ORDER BY timestamp")
 }
 
+// GetAllForClassification will return a sensor data for classifying
+func (d *Database) GetAllNotForClassification() (s []models.SensorData, err error) {
+	return d.GetAllFromQuery("SELECT * FROM sensors WHERE sensors.locationid =='' ORDER BY timestamp")
+}
+
 // GetLatest will return a sensor data for classifying
 func (d *Database) GetLatest(device string) (s models.SensorData, err error) {
 	deviceID, err := d.GetID("devices", device)
