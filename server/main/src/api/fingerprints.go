@@ -33,10 +33,14 @@ func SaveSensorData(p models.SensorData) (err error) {
 		return
 	}
 	err = db.AddSensor(p)
+	if p.GPS.Longitude != 0 && p.GPS.Latitude != 0 {
+		db.SetGPS(p)
+	}
 	db.Close()
 	if err != nil {
 		return
 	}
+
 	if p.Location != "" {
 		go updateCounter(p.Family)
 	}
@@ -51,54 +55,6 @@ func SavePrediction(s models.SensorData, p models.LocationAnalysis) (err error) 
 	}
 	err = db.AddPrediction(s.Timestamp, p.Guesses)
 	db.Close()
-	return
-}
-
-// HasGPS returns true if any of the specified mac addresses has
-// a GPS coordinate in the database
-func HasGPS(fingerprint models.SensorData) (yes bool, err error) {
-	db, err := database.Open(fingerprint.Family)
-	if err != nil {
-		return
-	}
-	defer db.Close()
-
-	for sensorType := range fingerprint.Sensors {
-		for mac := range fingerprint.Sensors[sensorType] {
-			_, errGet := db.GetGPS(sensorType + "-" + mac)
-			if errGet == nil {
-				yes = true
-				return
-			}
-		}
-	}
-	return
-}
-
-// AddGPSData will add GPS data to the database
-func AddGPSData(data models.FingerprintWithGPS) (err error) {
-	logger.Log.Debugf("adding GPS %+v", data)
-	db, err := database.Open(data.Fingerprint.Family)
-	if err != nil {
-		return
-	}
-	defer db.Close()
-
-	for sensorType := range data.Fingerprint.Sensors {
-		for mac := range data.Fingerprint.Sensors[sensorType] {
-			logger.Log.Debugf("adding gps data for %s", mac)
-			err = db.SetGPS(models.GPS{
-				Longitude: data.GPS.Longitude,
-				Latitude:  data.GPS.Latitude,
-				Altitude:  data.GPS.Altitude,
-				Timestamp: data.Fingerprint.Timestamp,
-				Mac:       sensorType + "-" + mac,
-			})
-			if err != nil {
-				return
-			}
-		}
-	}
 	return
 }
 

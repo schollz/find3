@@ -74,7 +74,6 @@ func Run() (err error) {
 		r.GET("/api/v1/mqtt/:family", handlerMQTT) // handler for setting MQTT
 	}
 	r.POST("/data", handlerData)       // typical data handler
-	r.POST("/gps", handlerGPS)         // typical GPS handler
 	r.POST("/passive", handlerReverse) // typical data handler
 	r.POST("/learn", handlerFIND)      // backwards-compatible with FIND for learning
 	r.POST("/track", handlerFIND)      // backwards-compatible with FIND for tracking
@@ -454,36 +453,12 @@ func handlerData(c *gin.Context) {
 			return
 		}
 		message = "inserted data"
-		hasGPS, _ := api.HasGPS(d)
-		if !hasGPS {
-			message += " [need GPS]"
-		}
 
 		logger.Log.Debugf("[%s] /data %+v", d.Family, d)
 		return
 	}(c)
 
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
-	}
-}
-
-func handlerGPS(c *gin.Context) {
-	message, err := func(c *gin.Context) (message string, err error) {
-		var data models.FingerprintWithGPS
-		err = c.ShouldBindJSON(&data)
-		if err != nil {
-			return
-		}
-		err = api.AddGPSData(data)
-		message = "added data"
-		return
-	}(c)
-
-	if err != nil {
-		logger.Log.Warn(err)
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
@@ -504,6 +479,12 @@ func handlerReverseSettings(c *gin.Context) {
 			Device string `json:"device"`
 			// Location is optional, used for designating learning
 			Location string `json:"location"`
+			// Latitude
+			Latitude float64 `json:"lat"`
+			// Longitude
+			Longitude float64 `json:"lon"`
+			// Altitude
+			Altitude float64 `json:"alt"`
 		}
 		var d ReverseSettings
 		err = c.BindJSON(&d)
@@ -527,6 +508,7 @@ func handlerReverseSettings(c *gin.Context) {
 			rollingData = models.ReverseRollingData{
 				Family:         d.Family,
 				DeviceLocation: make(map[string]string),
+				DeviceGPS:      make(map[string]models.GPS),
 				TimeBlock:      90 * time.Second,
 			}
 		}
@@ -539,6 +521,13 @@ func handlerReverseSettings(c *gin.Context) {
 			if d.Location != "" {
 				message = fmt.Sprintf("Set location to '%s' for %s for learning with device '%s'", d.Location, d.Family, d.Device)
 				rollingData.DeviceLocation[d.Device] = d.Location
+				if d.Latitude != 0 && d.Longitude != 0 {
+					rollingData.DeviceGPS[d.Device] = models.GPS{
+						Latitude:  d.Latitude,
+						Longitude: d.Longitude,
+						Altitude:  d.Altitude,
+					}
+				}
 			} else {
 				message = fmt.Sprintf("switched to tracking for %s", d.Family)
 				delete(rollingData.DeviceLocation, d.Device)
@@ -668,12 +657,17 @@ func parseRollingData(family string) (err error) {
 						if loc, hasMac := rollingData.DeviceLocation[trackedDeviceName]; hasMac {
 							location = loc
 						}
+						var gps models.GPS
+						if g, hasMac := rollingData.DeviceGPS[trackedDeviceName]; hasMac {
+							gps = g
+						}
 						sensorMap[trackedDeviceName] = models.SensorData{
 							Family:    family,
 							Device:    trackedDeviceName,
 							Timestamp: time.Now().UTC().UnixNano() / int64(time.Millisecond),
 							Sensors:   make(map[string]map[string]interface{}),
 							Location:  location,
+							GPS:       gps,
 						}
 						time.Sleep(10 * time.Millisecond)
 						sensorMap[trackedDeviceName].Sensors[sensor] = make(map[string]interface{})
