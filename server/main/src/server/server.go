@@ -439,11 +439,13 @@ func handlerData(c *gin.Context) {
 		var d models.SensorData
 		err = c.BindJSON(&d)
 		if err != nil {
+			err = errors.Wrap(err, "problem binding data")
 			return
 		}
 
 		err = d.Validate()
 		if err != nil {
+			err = errors.Wrap(err, "problem validating data")
 			return
 		}
 

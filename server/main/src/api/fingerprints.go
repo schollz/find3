@@ -78,11 +78,10 @@ func updateCounter(family string) {
 	var lastCalibrationTime time.Time
 	err = db.Get("LastCalibrationTime", &lastCalibrationTime)
 	defer db.Close()
-	if err != nil {
-		return
-	}
-	if time.Since(lastCalibrationTime) < 5*time.Minute && count < 20 {
-		return
+	if err == nil {
+		if time.Since(lastCalibrationTime) < 5*time.Minute && count < 20 {
+			return
+		}
 	}
 	logger.Log.Infof("have %d new fingerprints for '%s', re-calibrating since last calibration was %s", count, family, time.Since(lastCalibrationTime))
 	globalUpdateCounter.Lock()
