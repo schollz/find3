@@ -45,7 +45,7 @@ def classify():
         data_folder = payload['data_folder']
 
     fname = os.path.join(data_folder, to_base58(
-        payload['sensor_data']['f']) + ".de0gee.ai")
+        payload['sensor_data']['f']) + ".find3.ai")
 
     ai = AI(to_base58(payload['sensor_data']['f']), data_folder)
     logger.debug("loading {}".format(fname))
@@ -83,7 +83,7 @@ def learn():
         return jsonify({"success": False, "message": "could not find '{}'".format(fname)})
 
     ai.save(os.path.join(data_folder, to_base58(
-        payload['family']) + ".de0gee.ai"))
+        payload['family']) + ".find3.ai"))
     return jsonify({"success": True, "message": "calibrated data"})
 
 

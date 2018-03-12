@@ -317,8 +317,8 @@ def do():
 
 # ai = AI()
 # ai.learn("../testing/testdb.csv")
-# ai.save("dGVzdGRi.de0gee.ai")
-# ai.load("dGVzdGRi.de0gee.ai")
+# ai.save("dGVzdGRi.find3.ai")
+# ai.load("dGVzdGRi.find3.ai")
 # a = json.load(open('../testing/testdb_single_rec.json'))
 # classified = ai.classify(a)
 # print(json.dumps(classified,indent=2))

@@ -7,7 +7,7 @@ def test_to_base58():
 def basic_learning():
     ai = AI()
     ai.learn('../testing/testdb.csv')
-    ai.save('dGVzdGRi.de0gee.ai')
+    ai.save('dGVzdGRi.find3.ai')
 
 def test_basic_learning(benchmark):
     result = benchmark(basic_learning)
@@ -26,7 +26,7 @@ def test_basic_classifying(benchmark):
 
 def basic_reloading():
     ai = AI()
-    ai.load('dGVzdGRi.de0gee.ai')
+    ai.load('dGVzdGRi.find3.ai')
     return True
 
 def test_basic_reloading(benchmark):
