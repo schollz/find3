@@ -79,7 +79,7 @@ func updateCounter(family string) {
 	err = db.Get("LastCalibrationTime", &lastCalibrationTime)
 	defer db.Close()
 	if err == nil {
-		if time.Since(lastCalibrationTime) < 5*time.Minute && count < 20 {
+		if time.Since(lastCalibrationTime) < 5*time.Minute {
 			return
 		}
 	}
