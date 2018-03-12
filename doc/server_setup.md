@@ -2,9 +2,11 @@
 
 ## Introduction
 
-In command-line examples on this page, commands to be typed to the shell begin with a dollar sign “$”. Lines that do not begin with “$” show command output.
+This document explains how to setup the `FIND3` server on your own setup.
 
-The examples are Unix-oriented but it should be easy to adapt them to a Windows environment.
+## Pre-requisites
+
+Make sure you have about 1 GB of RAM and a Linux computer (unless you are using Docker).
 
 ## Install and run 
 

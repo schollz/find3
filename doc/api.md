@@ -60,6 +60,11 @@ POST /data
          "dc:fe:07:79:aa:c0":-90,
          "dc:fe:07:79:aa:c3":-89
       }
+   },
+   "gps":{
+       "lat":12.1,
+       "lon":10.1,
+       "alt":54
    }
 }
 ```
@@ -70,16 +75,17 @@ POST /data
 > The sensor data ("`s`") is a map where the keys are the type of the data. You can insert *any* type of data, but `wifi` and `bluetooth` are most common. These types of data are keys to a map of all the devices and their signals associated with that signal type.
 >
 > **Important:** The location("`l`") is optional. If it is specified it designates that sensor data to be used for learning. If it is not specified it designates that the sensor data will be used for only tracking. 
+>
+> The GPS coordinates are optional. If submitted, they will be saved in a database with the location (if provided) and the sensor data. 
 > 
 > **Response**
 > 
 ```
 {
-    "message": "posted data [need GPS]",
+    "message": "posted data",
     "success": true
 }
 ```
-> After posting you'll recieve "`success`" boolean. If false it relies the error in the message. There is a special message for a successful request - it may include "`[need GPS]`" which is specified when the posted MAC addresses have no GPS coordinates associated with them (this is used for war-driving in the Android app but may be otherwise ignored).
 >
 
 ## Passive scanning 

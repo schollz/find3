@@ -93,7 +93,7 @@ $ sudo ./find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
 ```
 
 
-## Learning
+## Learning {#learning}
 
 Unlike the active scanning, to do learning on the passive scanning mode you must tell the server which device to learn on. *You should not stop the scanning tool that is running on the scanning computers*. 
 

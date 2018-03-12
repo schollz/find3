@@ -38,15 +38,16 @@ To get started, read the documentation and take a look at the repo. The easiest 
 - The [MQTT](/doc/mqtt.md) document will explain how to subscribe to FIND using MQTT.
 
 
-## Tools
+## System
 
 - The [`find3-cli-scanner`](/doc/cli-scanner.md) is a CLI tool for scanning fingerprints from your computer.
 
-
-## System setup and administration
-
-- The [Setting up the server](/doc/server_setup.md) document explains how
+- The [`find3-server`](/doc/server_setup.md) document explains how
   to set up your own FIND3 installation on a Linux server.
+
+## Applications
+
+- The [Home Automation](/doc/automation.md) document describes the basics for getting started with FIND and openHAB or Home Assistant.
 
 
 ## Community
