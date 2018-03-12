@@ -894,60 +894,63 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 }
 
 // SetGPS will set a GPS value in the GPS database
-func (d *Database) SetGPS(gps models.GPS) (err error) {
+func (d *Database) SetGPS(p models.SensorData) (err error) {
 	tx, err := d.db.Begin()
 	if err != nil {
 		return errors.Wrap(err, "SetGPS")
 	}
-	stmt, err := tx.Prepare("insert or replace into gps(mac,lat,lon,alt,timestamp) values (?, ?, ?, ?, ?)")
+	stmt, err := tx.Prepare("insert or replace into gps(timestamp ,mac, loc, lat, lon, alt) values (?, ?, ?, ?, ?,?)")
 	if err != nil {
 		return errors.Wrap(err, "SetGPS")
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(gps.Mac, gps.Latitude, gps.Longitude, gps.Altitude, gps.Timestamp)
-	if err != nil {
-		return errors.Wrap(err, "SetGPS")
+	for sensorType := range p.Sensors {
+		for mac := range p.Sensors[sensorType] {
+			_, err = stmt.Exec(p.Timestamp, sensorType+"-"+mac, p.Location, p.GPS.Latitude, p.GPS.Longitude, p.GPS.Altitude)
+			if err != nil {
+				return errors.Wrap(err, "SetGPS")
+			}
+		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		return errors.Wrap(err, "SetGPS")
 	}
-
 	return
 }
 
-// GetGPS will return a GPS for a given mac, if it exists
-// if it doesn't exist it will return an error
-func (d *Database) GetGPS(mac string) (gps models.GPS, err error) {
-	query := "SELECT mac,lat,lon,alt,timestamp FROM gps WHERE mac == ?"
-	stmt, err := d.db.Prepare(query)
-	if err != nil {
-		err = errors.Wrap(err, query)
-		return
-	}
-	defer stmt.Close()
-	rows, err := stmt.Query(mac)
-	if err != nil {
-		err = errors.Wrap(err, query)
-		return
-	}
-	defer rows.Close()
+// // GetGPS will return a GPS for a given mac, if it exists
+// // if it doesn't exist it will return an error
+// func (d *Database) GetGPS(mac string) (gps models.GPS, err error) {
+// 	query := "SELECT mac,lat,lon,alt,timestamp FROM gps WHERE mac == ?"
+// 	stmt, err := d.db.Prepare(query)
+// 	if err != nil {
+// 		err = errors.Wrap(err, query)
+// 		return
+// 	}
+// 	defer stmt.Close()
+// 	rows, err := stmt.Query(mac)
+// 	if err != nil {
+// 		err = errors.Wrap(err, query)
+// 		return
+// 	}
+// 	defer rows.Close()
 
-	for rows.Next() {
-		err = rows.Scan(&gps.Mac, &gps.Latitude, &gps.Longitude, &gps.Altitude, &gps.Timestamp)
-		if err != nil {
-			err = errors.Wrap(err, "scanning")
-			return
-		}
-	}
-	err = rows.Err()
-	if err != nil {
-		err = errors.Wrap(err, "rows")
-	}
-	if gps.Mac == "" {
-		err = errors.New(mac + " does not exist in gps table")
-	}
-	return
-}
+// 	for rows.Next() {
+// 		err = rows.Scan(&gps.Mac, &gps.Latitude, &gps.Longitude, &gps.Altitude, &gps.Timestamp)
+// 		if err != nil {
+// 			err = errors.Wrap(err, "scanning")
+// 			return
+// 		}
+// 	}
+// 	err = rows.Err()
+// 	if err != nil {
+// 		err = errors.Wrap(err, "rows")
+// 	}
+// 	if gps.Mac == "" {
+// 		err = errors.New(mac + " does not exist in gps table")
+// 	}
+// 	return
+// }

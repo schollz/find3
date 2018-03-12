@@ -74,7 +74,6 @@ func Run() (err error) {
 		r.GET("/api/v1/mqtt/:family", handlerMQTT) // handler for setting MQTT
 	}
 	r.POST("/data", handlerData)       // typical data handler
-	r.POST("/gps", handlerGPS)         // typical GPS handler
 	r.POST("/passive", handlerReverse) // typical data handler
 	r.POST("/learn", handlerFIND)      // backwards-compatible with FIND for learning
 	r.POST("/track", handlerFIND)      // backwards-compatible with FIND for tracking
@@ -454,36 +453,12 @@ func handlerData(c *gin.Context) {
 			return
 		}
 		message = "inserted data"
-		hasGPS, _ := api.HasGPS(d)
-		if !hasGPS {
-			message += " [need GPS]"
-		}
 
 		logger.Log.Debugf("[%s] /data %+v", d.Family, d)
 		return
 	}(c)
 
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
-	}
-}
-
-func handlerGPS(c *gin.Context) {
-	message, err := func(c *gin.Context) (message string, err error) {
-		var data models.FingerprintWithGPS
-		err = c.ShouldBindJSON(&data)
-		if err != nil {
-			return
-		}
-		err = api.AddGPSData(data)
-		message = "added data"
-		return
-	}(c)
-
-	if err != nil {
-		logger.Log.Warn(err)
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
@@ -547,9 +522,11 @@ func handlerReverseSettings(c *gin.Context) {
 				message = fmt.Sprintf("Set location to '%s' for %s for learning with device '%s'", d.Location, d.Family, d.Device)
 				rollingData.DeviceLocation[d.Device] = d.Location
 				if d.Latitude != 0 && d.Longitude != 0 {
-					rollingData.DeviceGPS[d.Device].Latitude = d.Latitude
-					rollingData.DeviceGPS[d.Device].Longitude = d.Longitude
-					rollingData.DeviceGPS[d.Device].Altitude = d.Altitude
+					rollingData.DeviceGPS[d.Device] = models.GPS{
+						Latitude:  d.Latitude,
+						Longitude: d.Longitude,
+						Altitude:  d.Altitude,
+					}
 				}
 			} else {
 				message = fmt.Sprintf("switched to tracking for %s", d.Family)
