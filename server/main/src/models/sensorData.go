@@ -17,6 +17,15 @@ type SensorData struct {
 	Location string `json:"l"`
 	// Sensors contains a map of map of sensor data
 	Sensors map[string]map[string]interface{} `json:"s"`
+	// GPS is optional
+	GPS GPS `json:"gps"`
+}
+
+// GPS contains GPS data
+type GPS struct {
+	Latitude  float64 `json:"lat"`
+	Longitude float64 `json:"lon"`
+	Altitude  float64 `json:"alt"`
 }
 
 // Validate will validate that the fingerprint is okay

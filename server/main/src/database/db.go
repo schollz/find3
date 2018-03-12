@@ -76,7 +76,7 @@ func (d *Database) MakeTables() (err error) {
 		return
 	}
 
-	sqlStmt = `CREATE TABLE gps (mac TEXT PRIMARY KEY, lat REAL, lon REAL, alt REAL, timestamp INTEGER);`
+	sqlStmt = `CREATE TABLE gps (id INTEGER PRIMARY KEY, timestamp INTEGER, mac TEXT, lat REAL, lon REAL, alt REAL);`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
