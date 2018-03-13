@@ -228,6 +228,7 @@ func (d *Database) GetPrediction(timestamp int64) (aidata []models.LocationPredi
 // AddSensor will insert a sensor data into the database
 // TODO: AddSensor should be special case of AddSensors
 func (d *Database) AddSensor(s models.SensorData) (err error) {
+	startTime := time.Now()
 	// determine the current table coluss
 	oldColumns := make(map[string]struct{})
 	columnList, err := d.Columns()
@@ -248,6 +249,7 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 	if err != nil {
 		return
 	}
+	previousCurrent := sensorDataSS.Current
 
 	// setup the database
 	tx, err := d.db.Begin()
@@ -313,8 +315,8 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 
 	sqlStatement := "insert or replace into sensors(" + strings.Join(newColumnList, ",") + ") values (" + strings.Join(argsQ, ",") + ")"
 	stmt, err := tx.Prepare(sqlStatement)
-	logger.Log.Debug("columns", columnList)
-	logger.Log.Debug("args", args)
+	// logger.Log.Debug("columns", columnList)
+	// logger.Log.Debug("args", args)
 	if err != nil {
 		return errors.Wrap(err, "AddSensor, prepare "+sqlStatement)
 	}
@@ -331,12 +333,14 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 	}
 
 	// update the map key slimmer
-	err = d.Set("sensorDataStringSizer", sensorDataSS.Save())
-	if err != nil {
-		return
+	if previousCurrent != sensorDataSS.Current {
+		err = d.Set("sensorDataStringSizer", sensorDataSS.Save())
+		if err != nil {
+			return
+		}
 	}
 
-	logger.Log.Debug("inserted sensor data")
+	logger.Log.Debugf("[%s] inserted sensor data, %s", s.Family, time.Since(startTime))
 	return
 
 }
