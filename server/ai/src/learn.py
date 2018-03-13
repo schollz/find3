@@ -94,16 +94,16 @@ class AI(object):
                 continue
             payload['predictions'].append(predict_payload)
 
-        # t2 = time.time()
-        # name = "Extended Naive Bayes"
-        # clf = ExtendedNaiveBayes(self.family,path_to_data=self.path_to_data)
-        # predictions = clf.predict_proba(header,csv_data)
-        # predict_payload = {'name': name,'locations': [], 'probabilities': []}
-        # for tup in predictions:
-        #     predict_payload['locations'].append(str(self.naming['from'][tup[0]]))
-        #     predict_payload['probabilities'].append(round(tup[1],2))
-        # payload['predictions'].append(predict_payload)
-        # self.logger.debug("{} {:d} ms".format(name,int(1000 * (t2 - time.time()))))
+        t2 = time.time()
+        name = "Extended Naive Bayes"
+        clf = ExtendedNaiveBayes(self.family,path_to_data=self.path_to_data)
+        predictions = clf.predict_proba(header,csv_data)
+        predict_payload = {'name': name,'locations': [], 'probabilities': []}
+        for tup in predictions:
+            predict_payload['locations'].append(str(self.naming['from'][tup[0]]))
+            predict_payload['probabilities'].append(round(tup[1],2))
+        payload['predictions'].append(predict_payload)
+        self.logger.debug("{} {:d} ms".format(name,int(1000 * (t2 - time.time()))))
 
         t2 = time.time()
         name = "Extended Naive Bayes2"
@@ -199,12 +199,12 @@ class AI(object):
             self.logger.debug("learned {}, {:d} ms".format(
                 name, int(1000 * (t2 - time.time()))))
 
-        # t2 = time.time()
-        # name = "Extended Naive Bayes"
-        # clf = ExtendedNaiveBayes(self.family, path_to_data=self.path_to_data)
-        # clf.fit(fname)
-        # self.logger.debug("learned {}, {:d} ms".format(
-        #     name, int(1000 * (t2 - time.time()))))
+        t2 = time.time()
+        name = "Extended Naive Bayes"
+        clf = ExtendedNaiveBayes(self.family, path_to_data=self.path_to_data)
+        clf.fit(fname)
+        self.logger.debug("learned {}, {:d} ms".format(
+            name, int(1000 * (t2 - time.time()))))
 
         t2 = time.time()
         name = "Extended Naive Bayes2"
