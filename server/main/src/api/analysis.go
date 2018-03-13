@@ -3,11 +3,11 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"sort"
 	"time"
 
+	"github.com/pkg/errors"
 	cache "github.com/robfig/go-cache"
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/models"
@@ -73,18 +73,21 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	url := "http://localhost:" + AIPort + "/classify"
 	bPayload, err := json.Marshal(p2)
 	if err != nil {
+		err = errors.Wrap(err, "problem marshaling data")
 		return
 	}
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bPayload))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := httpClient.Do(req)
 	if err != nil {
+		err = errors.Wrap(err, "problem posting payload")
 		return
 	}
 	defer resp.Body.Close()
 
 	err = json.NewDecoder(resp.Body).Decode(&target)
 	if err != nil {
+		err = errors.Wrap(err, "problem decoding response")
 		return
 	}
 	if !target.Success {

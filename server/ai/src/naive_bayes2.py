@@ -114,6 +114,8 @@ class ExtendedNaiveBayes2:
         else:
             c.execute('''SELECT 10000*(SELECT SUM(count) FROM data WHERE loc != ? AND mac = ?)/(SELECT SUM(count) FROM data WHERE mac = ?)''',(loc,mac,mac))
         Pvalue_times_10000 = c.fetchone()[0]
+        if Pvalue_times_10000 == None:
+            Pvalue_times_10000 = 0
         db.close()
         P = float(Pvalue_times_10000) / float(10000)
         if P == 0:
