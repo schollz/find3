@@ -30,6 +30,8 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
 
+    <link rel="stylesheet" href="http://codeseven.github.io/toastr/build/toastr.min.css">
+
     <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/html5shiv/3.7.3/html5shiv.min.js"></script> -->
 
 </head>
@@ -344,10 +346,30 @@
     <script src="/static/js/lib/data-table/buttons.colVis.min.js"></script>
     <script src="/static/js/lib/data-table/datatables-init.js"></script>
     <script src="https://rawgit.com/emn178/js-sha256/master/build/sha256.min.js"></script>
+    <script src="http://codeseven.github.io/toastr/build/toastr.min.js"></script>
 
 
     <script type="text/javascript">
         $(document).ready(function () {
+
+toastr.options = {
+    "closeButton": false,
+    "debug": false,
+    "newestOnTop": false,
+    "progressBar": false,
+    "positionClass": "toast-top-right",
+    "preventDuplicates": false,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": "5000",
+    "extendedTimeOut": "1000",
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut"
+  }
+
             $('#bootstrap-data-table-export').DataTable();
             $("#getLocation").click(function(e){
                 console.log("HI");
@@ -385,6 +407,7 @@
                         console.log(data);
                         idName = sha256.sha256(data.sensors.d);
                         console.log(idName);
+                        var lastLocation = $("#location-" + idName).text();
                         $("#location-" + idName).text(data.guesses[0].location);
                         $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
                             "%");
@@ -392,6 +415,12 @@
                         date.setUTCMilliseconds(data.sensors.t);
                         console.log(date);
                         $("#lastseen-" + idName).text(date.toUTCString().replace(" GMT", ""));
+                        var entered = " entered ";
+                        if (lastLocation == data.guesses[0].location) {
+                            entered = " still at "
+                        }
+                        toastr["success"](data.sensors.d +entered + data.guesses[0].location + " (" +Math.round(100 * data.guesses[0].probability) +
+                        "%)" );
                     }
 
                     socket.onclose = function () {
