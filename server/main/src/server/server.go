@@ -14,6 +14,7 @@ import (
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/find3/server/main/src/mqtt"
+	"github.com/schollz/utils"
 )
 
 // Port defines the public port
@@ -116,7 +117,7 @@ func Run() (err error) {
 			for key := range accuracyBreakdown {
 				l := LocEff{Name: strings.Title(key)}
 				l.PercentCorrect = int64(100 * accuracyBreakdown[key])
-				l.Total = int64(confusionMetrics["AdaBoost"][key].FalseNegatives+confusionMetrics["AdaBoost"][key].TruePositives) * 10 / 3
+				l.Total = int64(confusionMetrics["AdaBoost"][key].FalseNegatives+confusionMetrics["AdaBoost"][key].TruePositives)*10/3 + 1
 				efficacy.AccuracyBreakdown[i] = l
 				i++
 			}
@@ -126,6 +127,7 @@ func Run() (err error) {
 				logger.Log.Warn(err)
 			}
 			type DeviceTable struct {
+				ID           string
 				Name         string
 				LastLocation string
 				LastSeen     time.Time
@@ -136,6 +138,7 @@ func Run() (err error) {
 			for _, byLocation := range byLocations {
 				for _, device := range byLocation.Devices {
 					table = append(table, DeviceTable{
+						ID:           utils.Hash(device.Device),
 						Name:         device.Device,
 						LastLocation: byLocation.Location,
 						LastSeen:     device.Timestamp,
@@ -178,6 +181,10 @@ func Run() (err error) {
 
 	err = r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
 	return
+}
+
+func replace(input, from, to string) string {
+	return strings.Replace(input, from, to, -1)
 }
 
 func ping(c *gin.Context) {
@@ -746,6 +753,7 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 
 	// logger.Log.Debugf("sending data over websockets (%s/%s):%s", p.Family, p.Device, bTarget)
 	SendMessageOverWebsockets(p.Family, p.Device, bTarget)
+	SendMessageOverWebsockets(p.Family, "all", bTarget)
 
 	if UseMQTT {
 		logger.Log.Debugf("[%s] sending data over mqtt (%s)", p.Family, p.Device)

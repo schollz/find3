@@ -250,9 +250,9 @@
                                                 {{ range .Devices }}
                                                 <tr>
                                                     <td>{{ .Name }}</td>
-                                                    <td>{{ .LastSeen.Format "Mon Jan 2 15:04:05 MST 2006" }}</td>
-                                                    <td>{{ .LastLocation }}</td>
-                                                    <td>{{ .Probability }}%</td>
+                                                    <td id="lastseen-{{.ID}}">{{ .LastSeen.Format "Mon, 2 Jan 2006 15:04:05" }}</td>
+                                                    <td id="location-{{.ID}}">{{ .LastLocation }}</td>
+                                                    <td id="probability-{{.ID}}">{{ .Probability }}%</td>
                                                     <td>{{ .ActiveTime }}</td>
                                                 </tr>
                                                 {{ end }}
@@ -299,8 +299,7 @@
     <script src="/static/js/lib/data-table/buttons.print.min.js"></script>
     <script src="/static/js/lib/data-table/buttons.colVis.min.js"></script>
     <script src="/static/js/lib/data-table/datatables-init.js"></script>
-
-
+    <script src="https://rawgit.com/emn178/js-sha256/master/build/sha256.min.js"></script>
 
 
 
@@ -308,6 +307,40 @@
     <script type="text/javascript">
         $(document).ready(function () {
             $('#bootstrap-data-table-export').DataTable();
+            function connect(){
+                try{
+            
+                var socket;
+                var host = window.origin.replace("http","ws") + "/ws?device=all&family={{.Family}}";
+                var socket = new WebSocket(host);
+            
+                    socket.onopen = function(){
+                        console.log("opened websocket");
+                    }
+            
+                    socket.onmessage = function(msg){
+                        console.log(msg);
+                        data = JSON.parse(msg.data);
+                        console.log(data);
+                        idName = sha256.sha256(data.sensors.d);
+                        console.log(idName);
+                        $("#location-"+idName).text(data.guesses[0].location);
+                        $("#probability-"+idName).text(Math.round(100*data.guesses[0].probability)+"%");
+                        var date = new Date(0);
+                        date.setUTCMilliseconds(data.sensors.t);
+                        console.log(date);
+                        $("#lastseen-"+idName).text(date.toUTCString().replace(" GMT",""));
+                    }
+            
+                    socket.onclose = function(){
+                        console.log("websocket status: " + socket.readyState);
+                    }			
+            
+                } catch(exception){
+                    console.log("websocket problem: "+exception);
+                }
+            }
+            connect();
         });
     </script>
 
