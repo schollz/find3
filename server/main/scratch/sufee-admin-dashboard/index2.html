@@ -9,24 +9,26 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Sufee Admin - HTML5 Admin Template</title>
-    <meta name="description" content="Sufee Admin - HTML5 Admin Template">
+    <title>FIND3 - dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="apple-touch-icon" href="apple-icon.png">
-    <link rel="shortcut icon" href="favicon.ico">
-
-    <link rel="stylesheet" href="assets/css/normalize.css">
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
-    <link rel="stylesheet" href="assets/css/themify-icons.css">
-    <link rel="stylesheet" href="assets/css/flag-icon.min.css">
-    <link rel="stylesheet" href="assets/css/cs-skin-elastic.css">
-    <!-- <link rel="stylesheet" href="assets/css/bootstrap-select.less"> -->
-    <link rel="stylesheet" href="assets/scss/style.css">
-    <link href="assets/css/lib/vector-map/jqvmap.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="static/img/favicon-32x32.png" sizes="32x32">
+    <link rel="stylesheet" href="static/css/normalize.css">
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/font-awesome.min.css">
+    <link rel="stylesheet" href="static/css/themify-icons.css">
+    <link rel="stylesheet" href="static/css/flag-icon.min.css">
+    <link rel="stylesheet" href="static/css/cs-skin-elastic.css">
+    <!-- <link rel="stylesheet" href="static/css/bootstrap-select.less"> -->
+    <link rel="stylesheet" href="static/scss/widgets.css">
+    <link rel="stylesheet" href="static/scss/style.css">
+    <link href="static/css/lib/vector-map/jqvmap.min.css" rel="stylesheet">
 
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
 
     <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/html5shiv/3.7.3/html5shiv.min.js"></script> -->
 
@@ -46,10 +48,10 @@
                     <i class="fa fa-bars"></i>
                 </button>
                 <a class="navbar-brand" href="./">
-                    <img src="images/logo.png" alt="Logo">
+                    <img src="static/img/find3-promo.png" alt="Logo">
                 </a>
                 <a class="navbar-brand hidden" href="./">
-                    <img src="images/logo2.png" alt="Logo">
+                    <img src="static/img/find_logo.png" alt="Logo">
                 </a>
             </div>
 
@@ -58,6 +60,10 @@
                     <li class="active">
                         <a href="/view/dashboard/{{.Family}}">
                             <i class="menu-icon fa fa-dashboard"></i>Dashboard </a>
+                    </li>
+                    <li >
+                        <a href="https://www.internalpositioning.com/doc/" target="_blank">
+                            <i class="menu-icon fa fa-book"></i>Docs </a>
                     </li>
                 </ul>
             </div>
@@ -103,50 +109,69 @@
             </div>
 
 
-
-            <div class="col-xl-12">
+            <div class="col-sm-12">
                 <div class="card">
                     <div class="card-body">
-                        Location statistics
-                    </div>
-                    <div class="card-footer">
-                        <ul>
-                            <li>
-                                <strong>Bathroom</strong>
-                                <div class="text-muted">123 (80%)</div>
-                                <div class="progress progress-xs mt-2" style="height: 5px;">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <h4 class="card-title mb-0">Accuracy</h4>
+                                <div class="small text-muted">Last calibrated March 12th, 2018</div>
+                            </div>
+                        </div>
+            <div class="content mt-3">
+                <div class="animated fadeIn">
+                    <div class="row">
+
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="stat-widget-four">
+                                        <div class="stat-icon dib">
+                                            <p class="data-attributes">
+                                                <span data-peity='{ "fill": ["#6164C1", "#eeeeee"], "innerRadius": 10, "radius": 20 }'>98/100</span>
+                                                98% </p>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="text-left dib">
+                                                <div class="stat-heading">Overall</div>
+                                                <div class="stat-text">5,000 data</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </li>
-                            <li>
-                                <strong>Bathroom</strong>
-                                <div class="text-muted">123 (40%)</div>
-                                <div class="progress progress-xs mt-2" style="height: 5px;">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="stat-widget-four">
+                                        <div class="stat-icon dib">
+                                            <p class="data-attributes">
+                                                <span data-peity='{ "fill": ["#6164C1", "#eeeeee"], "innerRadius": 10, "radius": 20 }'>98/100</span>
+                                                98% </p>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="text-left dib">
+                                                <div class="stat-heading">Bathroom</div>
+                                                <div class="stat-text">128 data</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </li>
-                            <li>
-                                <strong>Bathroom</strong>
-                                <div class="text-muted">123 (40%)</div>
-                                <div class="progress progress-xs mt-2" style="height: 5px;">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </li>
-                            <li>
-                                <strong>Bathroom</strong>
-                                <div class="text-muted">123 (40%)</div>
-                                <div class="progress progress-xs mt-2" style="height: 5px;">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </li>
-                        </ul>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
 
+            </div>
+            </div>
+            </div>
 
-
-            <div class="col-lg-6">
+<!-- 
+            <div class="col-lg-12">
                 <div class="card">
                     <div class="card-header">
                         <strong>Passive tracking</strong> Elements
@@ -174,6 +199,15 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="row form-group">
+                                <div class="col col-md-3">
+                                    <label for="text-input" class="form-control-label">Location</label>
+                                </div>
+                                <div class="col-12 col-md-9">
+                                    <input type="text" id="locationInput" name="locationInput" placeholder="" class="form-control">
+                                    <small class="form-text text-muted">Optional</small>
+                                </div>
+                            </div>
                         </form>
                     </div>
                     <div class="card-footer">
@@ -185,7 +219,7 @@
                         </button>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
         </div>
         <!-- .content -->
@@ -194,38 +228,47 @@
 
     <!-- Right Panel -->
 
-    <script src="assets/js/vendor/jquery-2.1.4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
-    <script src="assets/js/plugins.js"></script>
-    <script src="assets/js/main.js"></script>
+    <script src="static/js/vendor/jquery-2.1.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="static/js/popper.min.js"></script>
+    <script src="static/js/plugins.js"></script>
+    <script src="static/js/main.js"></script>
 
+    <script src="static/js/lib/peitychart/jquery.peity.min.js"></script>
+    <!-- scripit init-->
+    <script src="static/js/lib/peitychart/peitychart.init.js"></script>
 
-    <script src="assets/js/lib/chart-js/Chart.bundle.js"></script>
-    <script src="assets/js/dashboard.js"></script>
-    <script src="assets/js/widgets.js"></script>
-    <script src="assets/js/lib/vector-map/jquery.vmap.js"></script>
-    <script src="assets/js/lib/vector-map/jquery.vmap.min.js"></script>
-    <script src="assets/js/lib/vector-map/jquery.vmap.sampledata.js"></script>
-    <script src="assets/js/lib/vector-map/country/jquery.vmap.world.js"></script>
     <script>
         (function ($) {
-            "use strict";
-
-            jQuery('#vmap').vectorMap({
-                map: 'world_en',
-                backgroundColor: null,
-                color: '#ffffff',
-                hoverOpacity: 0.7,
-                selectedColor: '#1de9b6',
-                enableZoom: true,
-                showTooltip: true,
-                values: sample_data,
-                scaleColors: ['#1de9b6', '#03a9f5'],
-                normalizeFunction: 'polynomial'
+            var availableTags = [
+                "ActionScript",
+                "AppleScript",
+                "Asp",
+                "BASIC",
+                "C",
+                "C++",
+                "Clojure",
+                "COBOL",
+                "ColdFusion",
+                "Erlang",
+                "Fortran",
+                "Groovy",
+                "Haskell",
+                "Java",
+                "JavaScript",
+                "Lisp",
+                "Perl",
+                "PHP",
+                "Python",
+                "Ruby",
+                "Scala",
+                "Scheme"
+            ];
+            $("#locationInput").autocomplete({
+                source: availableTags
             });
         })(jQuery);
     </script>
-
 </body>
 
 </html>
