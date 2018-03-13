@@ -49,6 +49,7 @@ func (self *SeelogWrapper) init() (err error) {
 	</seelog>
 	`
 
+	self.Log.Close()
 	self.Log, err = seelog.LoggerFromConfigAsBytes([]byte(appConfig))
 	return
 }

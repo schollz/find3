@@ -375,7 +375,7 @@ func (d *Database) GetSensorFromGreaterTime(timeBlockInMilliseconds int64) (sens
 		return
 	}
 	minimumTimestamp := latestTime - timeBlockInMilliseconds
-	logger.Log.Debugf("%d = %d - %d", minimumTimestamp, latestTime, timeBlockInMilliseconds)
+	d.logger.Log.Debugf("%d = %d - %d", minimumTimestamp, latestTime, timeBlockInMilliseconds)
 	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM (SELECT * FROM sensors WHERE timestamp > ? GROUP BY deviceid ORDER BY timestamp DESC)", minimumTimestamp)
 	return
 }
@@ -773,7 +773,6 @@ func (d *Database) Close() (err error) {
 		d.logger.Log.Error(err)
 	} else {
 		os.Remove(d.name + ".lock")
-		// d.logger.Log.Debug("removed filelock")
 	}
 
 	// close database
@@ -781,10 +780,11 @@ func (d *Database) Close() (err error) {
 	if err2 != nil {
 		err = err2
 		d.logger.Log.Error(err)
-	} else {
-		// d.logger.Log.Debug("closed database")
 	}
 	d.isClosed = true
+	d.logger.Log.Flush()
+	d.logger.Log.Close()
+	fmt.Println(d.logger.Log.Closed())
 	return
 }
 

@@ -2,8 +2,12 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
 	"path"
+	"runtime"
+	"runtime/pprof"
+	"time"
 
 	"fmt"
 
@@ -21,7 +25,7 @@ func main() {
 	mqttAdmin := flag.String("mqtt-admin", "admin", "name for mqtt admin")
 	mqttPass := flag.String("mqtt-pass", "1234", "password for mqtt admin")
 	dump := flag.String("dump", "", "family database to dump")
-
+	memprofile := flag.Bool("memprofile", false, "whether to profile memory")
 	var dataFolder string
 	flag.StringVar(&dataFolder, "data", "", "location to store data")
 
@@ -63,6 +67,26 @@ func main() {
 	server.Port = *port
 	server.UseMQTT = mqtt.Server != ""
 
+	if *memprofile {
+		memprofilePath := path.Join(dataFolder, "memprofile")
+		os.MkdirAll(memprofilePath, 0755)
+		go func() {
+			for {
+				time.Sleep(1 * time.Second)
+				log.Println("profiling memory")
+				f, err := os.Create(path.Join(memprofilePath, fmt.Sprintf("%d.memprofile", time.Now().UnixNano()/int64(time.Millisecond))))
+				if err != nil {
+					log.Fatal("could not create memory profile: ", err)
+				}
+				runtime.GC() // get up-to-date statistics
+				if err := pprof.WriteHeapProfile(f); err != nil {
+					log.Fatal("could not write memory profile: ", err)
+				}
+				f.Close()
+				time.Sleep(60 * time.Second)
+			}
+		}()
+	}
 	var err error
 	if *dump != "" {
 		err = api.Dump(*dump)

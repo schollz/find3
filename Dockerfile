@@ -22,7 +22,7 @@ ENV GOPATH /usr/local/work
 RUN go get -v github.com/mattn/go-sqlite3
 RUN go install -v github.com/mattn/go-sqlite3
 
-RUN echo "v3.0.4"
+RUN echo "v3.0.5"
 RUN go get -v github.com/schollz/find3/...
 
 RUN mkdir /data

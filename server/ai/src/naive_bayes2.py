@@ -24,7 +24,7 @@ class ExtendedNaiveBayes2:
     
     def __init__(self,family,path_to_data="."):
         self.family = family 
-        self.db_name = os.path.join(path_to_data,family+".nb.db")
+        self.db_name = os.path.join(path_to_data,family+".nb2.db")
 
     def fit(self,csv_file):
         db = sqlite3.connect(":memory:")
@@ -110,9 +110,9 @@ class ExtendedNaiveBayes2:
         db = sqlite3.connect(self.db_name)
         c = db.cursor()
         if positive:
-            c.execute('''SELECT 10000*(SELECT SUM(count) FROM data WHERE loc = ? AND mac = ?)/(SELECT SUM(count) FROM data WHERE mac = ?)''',(loc,mac))
+            c.execute('''SELECT 10000*(SELECT SUM(count) FROM data WHERE loc = ? AND mac = ?)/(SELECT SUM(count) FROM data WHERE mac = ?)''',(loc,mac,mac))
         else:
-            c.execute('''SELECT 10000*(SELECT SUM(count) FROM data WHERE loc != ? AND mac = ?)/(SELECT SUM(count) FROM data WHERE mac = ?)''',(loc,mac))
+            c.execute('''SELECT 10000*(SELECT SUM(count) FROM data WHERE loc != ? AND mac = ?)/(SELECT SUM(count) FROM data WHERE mac = ?)''',(loc,mac,mac))
         Pvalue_times_10000 = c.fetchone()[0]
         db.close()
         P = float(Pvalue_times_10000) / float(10000)
