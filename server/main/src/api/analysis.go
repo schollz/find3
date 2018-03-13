@@ -11,6 +11,7 @@ import (
 	cache "github.com/robfig/go-cache"
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/models"
+	"github.com/schollz/find3/server/main/src/utils"
 )
 
 // AIPort designates the port for the AI processing
@@ -172,3 +173,117 @@ type PairList []Pair
 func (p PairList) Len() int           { return len(p) }
 func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
 func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+func GetByLocation(family string, minutesAgoInt int, showRandomized bool, activeMinsThreshold int, minScanners int, minProbability float64) (byLocations []models.ByLocation, err error) {
+	logger.Log.Debugf("[%s] getting by location", family)
+	millisecondsAgo := int64(minutesAgoInt * 60 * 1000)
+
+	d, err := database.Open(family, true)
+	if err != nil {
+		return
+	}
+	defer d.Close()
+	sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
+
+	preAnalyzed := make(map[int64][]models.LocationPrediction)
+	for _, sensor := range sensors {
+		a, errGet := d.GetPrediction(sensor.Timestamp)
+		if errGet != nil {
+			continue
+		}
+		preAnalyzed[sensor.Timestamp] = a
+	}
+	deviceCounts, err := d.GetDeviceCounts()
+	if err != nil {
+		err = errors.Wrap(err, "problem getting device counts")
+		return
+	}
+	deviceFirstTime, err := d.GetDeviceFirstTime()
+	if err != nil {
+		err = errors.Wrap(err, "problem getting device first time")
+		return
+	}
+
+	var rollingData models.ReverseRollingData
+	errGotRollingData := d.Get("ReverseRollingData", &rollingData)
+
+	d.Close()
+
+	locations := make(map[string][]models.ByLocationDevice)
+	for _, s := range sensors {
+		isRandomized := utils.IsMacRandomized(s.Device)
+		if !showRandomized && isRandomized {
+			continue
+		}
+		if _, ok := deviceCounts[s.Device]; !ok {
+			logger.Log.Warnf("missing device counts for %s", s.Device)
+			continue
+		}
+		if _, ok := deviceFirstTime[s.Device]; !ok {
+			logger.Log.Warnf("missing deviceFirstTime for %s", s.Device)
+			continue
+		}
+		if errGotRollingData == nil {
+			if int(deviceCounts[s.Device])*int(rollingData.TimeBlock.Seconds())/60 < activeMinsThreshold {
+				continue
+			}
+		}
+
+		var a []models.LocationPrediction
+		if _, ok := preAnalyzed[s.Timestamp]; ok {
+			a = preAnalyzed[s.Timestamp]
+		} else {
+			var aidata models.LocationAnalysis
+			aidata, err = AnalyzeSensorData(s)
+			if err != nil {
+				return
+			}
+			a = aidata.Guesses
+		}
+
+		// filter on probability
+		if a[0].Probability < minProbability {
+			continue
+		}
+
+		if _, ok := locations[a[0].Location]; !ok {
+			locations[a[0].Location] = []models.ByLocationDevice{}
+		}
+		numScanners := 0
+		for sensorType := range s.Sensors {
+			numScanners += len(s.Sensors[sensorType])
+		}
+		if numScanners < minScanners {
+			continue
+		}
+
+		dL := models.ByLocationDevice{
+			Device:      s.Device,
+			Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
+			Probability: a[0].Probability,
+			Randomized:  isRandomized,
+			NumScanners: numScanners,
+			FirstSeen:   deviceFirstTime[s.Device],
+		}
+		if errGotRollingData == nil {
+			dL.ActiveMins = int(deviceCounts[s.Device]) * int(rollingData.TimeBlock.Seconds()) / 60
+		} else {
+			dL.ActiveMins = int(deviceCounts[s.Device]*30) / 60
+		}
+		vendor, vendorErr := utils.GetVendorFromOUI(s.Device)
+		if vendorErr == nil {
+			dL.Vendor = vendor
+		}
+		locations[a[0].Location] = append(locations[a[0].Location], dL)
+	}
+
+	byLocations = make([]models.ByLocation, len(locations))
+	i := 0
+	for location := range locations {
+		byLocations[i].Location = location
+		byLocations[i].Devices = locations[location]
+		byLocations[i].Total = len(locations[location])
+		i++
+	}
+	return
+}

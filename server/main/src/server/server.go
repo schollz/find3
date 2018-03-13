@@ -14,7 +14,6 @@ import (
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/find3/server/main/src/mqtt"
-	"github.com/schollz/find3/server/main/src/utils"
 )
 
 // Port defines the public port
@@ -121,16 +120,41 @@ func Run() (err error) {
 				efficacy.AccuracyBreakdown[i] = l
 				i++
 			}
+			d.Close()
+			byLocations, err := api.GetByLocation(family, 10000000, true, 0, 0, 0)
+			if err != nil {
+				logger.Log.Warn(err)
+			}
+			type DeviceTable struct {
+				Name         string
+				LastLocation string
+				LastSeen     time.Time
+				Probability  int64
+				ActiveTime   int64
+			}
+			table := []DeviceTable{}
+			for _, byLocation := range byLocations {
+				for _, device := range byLocation.Devices {
+					table = append(table, DeviceTable{
+						Name:         device.Device,
+						LastLocation: byLocation.Location,
+						LastSeen:     device.Timestamp,
+						Probability:  int64(device.Probability * 100),
+						ActiveTime:   int64(device.ActiveMins),
+					})
+				}
+			}
 
-			logger.Log.Debug(efficacy)
+			logger.Log.Debug(table)
 			c.HTML(http.StatusOK, "dashboard.html", gin.H{
 				"Family":   family,
 				"Efficacy": efficacy,
+				"Devices":  table,
 			})
 			return
 		}(family)
 		if err != nil {
-			c.String(200, family+" not found")
+			c.String(200, err.Error())
 		}
 	})
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
@@ -294,116 +318,12 @@ func handlerApiV1ByLocation(c *gin.Context) {
 		if err != nil {
 			return
 		}
-
 		minutesAgoInt, err := strconv.Atoi(minutesAgo)
 		if err != nil {
 			return
 		}
-		millisecondsAgo := int64(minutesAgoInt * 60 * 1000)
 
-		d, err := database.Open(family, true)
-		if err != nil {
-			return
-		}
-		defer d.Close()
-		sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
-
-		preAnalyzed := make(map[int64][]models.LocationPrediction)
-		for _, sensor := range sensors {
-			a, errGet := d.GetPrediction(sensor.Timestamp)
-			if errGet != nil {
-				continue
-			}
-			preAnalyzed[sensor.Timestamp] = a
-		}
-		deviceCounts, err := d.GetDeviceCounts()
-		if err != nil {
-			return
-		}
-		deviceFirstTime, err := d.GetDeviceFirstTime()
-		if err != nil {
-			return
-		}
-
-		var rollingData models.ReverseRollingData
-		err = d.Get("ReverseRollingData", &rollingData)
-		if err != nil {
-			return
-		}
-
-		d.Close()
-
-		locations := make(map[string][]models.ByLocationDevice)
-		for _, s := range sensors {
-			isRandomized := utils.IsMacRandomized(s.Device)
-			if !showRandomized && isRandomized {
-				continue
-			}
-			if _, ok := deviceCounts[s.Device]; !ok {
-				logger.Log.Warnf("missing device counts for %s", s.Device)
-				continue
-			}
-			if _, ok := deviceFirstTime[s.Device]; !ok {
-				logger.Log.Warnf("missing deviceFirstTime for %s", s.Device)
-				continue
-			}
-			if int(deviceCounts[s.Device])*int(rollingData.TimeBlock.Seconds())/60 < activeMinsThreshold {
-				continue
-			}
-
-			var a []models.LocationPrediction
-			if _, ok := preAnalyzed[s.Timestamp]; ok {
-				a = preAnalyzed[s.Timestamp]
-			} else {
-				var aidata models.LocationAnalysis
-				aidata, err = api.AnalyzeSensorData(s)
-				if err != nil {
-					return
-				}
-				a = aidata.Guesses
-			}
-
-			// filter on probability
-			logger.Log.Debug(a[0].Probability, minProbability)
-			if a[0].Probability < minProbability {
-				continue
-			}
-
-			if _, ok := locations[a[0].Location]; !ok {
-				locations[a[0].Location] = []models.ByLocationDevice{}
-			}
-			numScanners := 0
-			for sensorType := range s.Sensors {
-				numScanners += len(s.Sensors[sensorType])
-			}
-			if numScanners < minScanners {
-				continue
-			}
-
-			dL := models.ByLocationDevice{
-				Device:      s.Device,
-				Timestamp:   time.Unix(0, s.Timestamp*1000000).UTC(),
-				Probability: a[0].Probability,
-				Randomized:  isRandomized,
-				NumScanners: numScanners,
-				ActiveMins:  int(deviceCounts[s.Device]) * int(rollingData.TimeBlock.Seconds()) / 60,
-				FirstSeen:   deviceFirstTime[s.Device],
-			}
-			vendor, vendorErr := utils.GetVendorFromOUI(s.Device)
-			if vendorErr == nil {
-				dL.Vendor = vendor
-			}
-			locations[a[0].Location] = append(locations[a[0].Location], dL)
-		}
-
-		byLocations = make([]models.ByLocation, len(locations))
-		i := 0
-		for location := range locations {
-			byLocations[i].Location = location
-			byLocations[i].Devices = locations[location]
-			byLocations[i].Total = len(locations[location])
-			i++
-		}
+		byLocations, err = api.GetByLocation(family, minutesAgoInt, showRandomized, activeMinsThreshold, minScanners, minProbability)
 		return
 	}(c)
 	if err != nil {

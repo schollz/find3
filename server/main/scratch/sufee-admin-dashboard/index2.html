@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="static/scss/widgets.css">
     <link rel="stylesheet" href="static/scss/style.css">
     <link href="static/css/lib/vector-map/jqvmap.min.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="static/css/lib/datatable/dataTables.bootstrap.min.css">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css'>
 
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -170,6 +170,53 @@
                 </div>
             </div>
 
+
+
+            <div class="content mt-3">
+                <div class="animated fadeIn">
+                    <div class="row">
+    
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong class="card-title">Devices</strong>
+                            </div>
+                            <div class="card-body">
+                                <p>Click on a device name to track it in realtime.</p>
+                      <table id="bootstrap-data-table" class="table table-striped table-bordered">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Last location</th>
+                            <th>Last seen</th>
+                            <th>Active time</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Tiger Nixon</td>
+                                <td>System Architect</td>
+                                <td>Edinburgh</td>
+                                <td>$320,800</td>
+                              </tr>
+                              <tr>
+                                <td>Tiger Nixon</td>
+                                <td>System Architect</td>
+                                <td>Edinburgh</td>
+                                <td>$320,800</td>
+                              </tr>
+                                 
+                        </tbody>
+                      </table>
+                            </div>
+                        </div>
+                    </div>
+    
+    
+                    </div>
+                </div><!-- .animated -->
+            </div><!-- .content -->
+
             <!-- 
             <div class="col-lg-12">
                 <div class="card">
@@ -238,37 +285,29 @@
     <!-- scripit init-->
     <script src="static/js/lib/peitychart/peitychart.init.js"></script>
 
-    <script>
-        (function ($) {
-            var availableTags = [
-                "ActionScript",
-                "AppleScript",
-                "Asp",
-                "BASIC",
-                "C",
-                "C++",
-                "Clojure",
-                "COBOL",
-                "ColdFusion",
-                "Erlang",
-                "Fortran",
-                "Groovy",
-                "Haskell",
-                "Java",
-                "JavaScript",
-                "Lisp",
-                "Perl",
-                "PHP",
-                "Python",
-                "Ruby",
-                "Scala",
-                "Scheme"
-            ];
-            $("#locationInput").autocomplete({
-                source: availableTags
-            });
-        })(jQuery);
+    <script src="static/js/lib/data-table/datatables.min.js"></script>
+    <script src="static/js/lib/data-table/dataTables.bootstrap.min.js"></script>
+    <script src="static/js/lib/data-table/dataTables.buttons.min.js"></script>
+    <script src="static/js/lib/data-table/buttons.bootstrap.min.js"></script>
+    <script src="static/js/lib/data-table/jszip.min.js"></script>
+    <script src="static/js/lib/data-table/pdfmake.min.js"></script>
+    <script src="static/js/lib/data-table/vfs_fonts.js"></script>
+    <script src="static/js/lib/data-table/buttons.html5.min.js"></script>
+    <script src="static/js/lib/data-table/buttons.print.min.js"></script>
+    <script src="static/js/lib/data-table/buttons.colVis.min.js"></script>
+    <script src="static/js/lib/data-table/datatables-init.js"></script>
+
+
+
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+          $('#bootstrap-data-table-export').DataTable();
+        } );
     </script>
+
 </body>
 
 </html>
