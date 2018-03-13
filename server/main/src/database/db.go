@@ -478,6 +478,39 @@ func (d *Database) GetDeviceCounts() (counts map[string]int, err error) {
 	return
 }
 
+func (d *Database) GetLocationCounts() (counts map[string]int, err error) {
+	counts = make(map[string]int)
+	query := "SELECT locations.name,count(sensors.timestamp) as num from sensors inner join locations on sensors.locationid=locations.id group by sensors.locationid"
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		var count int
+		err = rows.Scan(&name, &count)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+		counts[name] = count
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
 // GetAnalysisFromGreaterTime will return the analysis for a given timeframe
 // func (d *Database) GetAnalysisFromGreaterTime(timestamp interface{}) {
 // 	select sensors.timestamp, devices.name, location_predictions.prediction from sensors inner join location_predictions on location_predictions.timestamp=sensors.timestamp inner join devices on sensors.deviceid=devices.id WHERE sensors.timestamp > 0 GROUP BY devices.name ORDER BY sensors.timestamp DESC;

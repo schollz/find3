@@ -111,13 +111,17 @@ func Run() (err error) {
 				err = errors.Wrap(err, "could not get AlgorithmEfficacy")
 				return
 			}
+			locationCounts, err := d.GetLocationCounts()
+			if err != nil {
+				return
+			}
 
 			efficacy.AccuracyBreakdown = make([]LocEff, len(accuracyBreakdown))
 			i := 0
 			for key := range accuracyBreakdown {
 				l := LocEff{Name: strings.Title(key)}
 				l.PercentCorrect = int64(100 * accuracyBreakdown[key])
-				l.Total = int64(confusionMetrics["AdaBoost"][key].FalseNegatives+confusionMetrics["AdaBoost"][key].TruePositives)*10/3 + 1
+				l.Total = int64(locationCounts[key])
 				efficacy.AccuracyBreakdown[i] = l
 				i++
 			}
