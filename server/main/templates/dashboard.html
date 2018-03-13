@@ -36,6 +36,7 @@
 
 <body>
 
+    
 
     <!-- Left Panel -->
 
@@ -78,6 +79,8 @@
 
     <div id="right-panel" class="right-panel">
 
+
+        
         <div class="breadcrumbs">
             <div class="col-sm-4">
                 <div class="page-header float-left">
@@ -97,16 +100,34 @@
             </div>
         </div>
 
+
+
+        
+
+
+
+
         <div class="content mt-3">
 
+            {{ with .Message }}
             <div class="col-sm-12">
                 <div class="alert  alert-success alert-dismissible fade show" role="alert">
-                    You successfully read this important alert message.
+                    {{.}}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
             </div>
+            {{ end }} {{ with .ErrorMessage }}
+            <div class="col-sm-12">
+                <div class="alert  alert-danger alert-dismissible fade show" role="alert">
+                    {{.}}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+            {{ end }}
 
 
             <div class="col-sm-12">
@@ -223,6 +244,27 @@
             </div> -->
 
             <div class="content mt-3">
+
+                
+                    <div class="modal fade" id="largeModal" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="largeModalLabel"></h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body" id="largeModalBody">
+                                        
+                                    </div>
+                                    <div class="modal-footer">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+        
+                
                 <div class="animated fadeIn">
                     <div class="row">
 
@@ -249,7 +291,9 @@
                                             <tbody>
                                                 {{ range .Devices }}
                                                 <tr>
-                                                    <td>{{ .Name }}</td>
+                                                    <td>
+                                                        <a href="/api/v1/location/{{$.Family}}/{{.Name}}" target="_blank">{{ .Name }}</a>
+                                                    </td>
                                                     <td id="lastseen-{{.ID}}">{{ .LastSeen.Format "Mon, 2 Jan 2006 15:04:05" }}</td>
                                                     <td id="location-{{.ID}}">{{ .LastLocation }}</td>
                                                     <td id="probability-{{.ID}}">{{ .Probability }}%</td>
@@ -302,42 +346,60 @@
     <script src="https://rawgit.com/emn178/js-sha256/master/build/sha256.min.js"></script>
 
 
-
-
     <script type="text/javascript">
         $(document).ready(function () {
             $('#bootstrap-data-table-export').DataTable();
-            function connect(){
-                try{
-            
-                var socket;
-                var host = window.origin.replace("http","ws") + "/ws?device=all&family={{.Family}}";
-                var socket = new WebSocket(host);
-            
-                    socket.onopen = function(){
+            $("#getLocation").click(function(e){
+                console.log("HI");
+                var name = $(e.target).text();
+                console.log(name);
+                $("#largeModalLabel").text(name);
+                $.get( "/api/v1/location/{{.Family}}/"+name, function( data ) {
+                    console.log(data);
+                    html = "<p><strong>Guesses:</strong></p><ul>";
+                    for (i = 0; i< data.analysis.guesses.length; i++) {
+                        html += "<li>" + data.analysis.guesses[i].location + ": " + Math.round(100*data.analysis.guesses[i].probability) + "%</li>"
+                    }
+                    html += "</ul>";
+                    html += JSON.stringify(data.analysis.aguesses);
+                    html += "<hr><p><strong>Sensor data:</strong></p><code>";
+                    html += JSON.stringify(data.sensors.s);
+                    html += "</code>";
+                    $("#largeModalBody").html(html);
+                  });
+             }); 
+            function connect() {
+                try {
+
+                    var socket;
+                    var host = window.origin.replace("http", "ws") + "/ws?device=all&family={{.Family}}";
+                    var socket = new WebSocket(host);
+
+                    socket.onopen = function () {
                         console.log("opened websocket");
                     }
-            
-                    socket.onmessage = function(msg){
+
+                    socket.onmessage = function (msg) {
                         console.log(msg);
                         data = JSON.parse(msg.data);
                         console.log(data);
                         idName = sha256.sha256(data.sensors.d);
                         console.log(idName);
-                        $("#location-"+idName).text(data.guesses[0].location);
-                        $("#probability-"+idName).text(Math.round(100*data.guesses[0].probability)+"%");
+                        $("#location-" + idName).text(data.guesses[0].location);
+                        $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
+                            "%");
                         var date = new Date(0);
                         date.setUTCMilliseconds(data.sensors.t);
                         console.log(date);
-                        $("#lastseen-"+idName).text(date.toUTCString().replace(" GMT",""));
+                        $("#lastseen-" + idName).text(date.toUTCString().replace(" GMT", ""));
                     }
-            
-                    socket.onclose = function(){
+
+                    socket.onclose = function () {
                         console.log("websocket status: " + socket.readyState);
-                    }			
-            
-                } catch(exception){
-                    console.log("websocket problem: "+exception);
+                    }
+
+                } catch (exception) {
+                    console.log("websocket problem: " + exception);
                 }
             }
             connect();

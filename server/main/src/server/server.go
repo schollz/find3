@@ -157,7 +157,10 @@ func Run() (err error) {
 			return
 		}(family)
 		if err != nil {
-			c.String(200, err.Error())
+			c.HTML(http.StatusOK, "dashboard.html", gin.H{
+				"Family":       family,
+				"ErrorMessage": err.Error(),
+			})
 		}
 	})
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
