@@ -7,7 +7,7 @@ LDFLAGS=-ldflags "-s -w -X main.Version=${TAG}-${HASH}"
 
 
 basicbuild:
-	rerun -p "**/*.{go,tmpl,css,js}" --ignore 'bindata.go' make server1
+	rerun -p "**/*.{go,tmpl,css,js,html}" --ignore 'bindata.go' make server1
 
 update:
 	dep ensure -v
