@@ -92,7 +92,7 @@ $$ P(location_y | mac_x)  = \frac{P(mac_x | location_y) P(location_y)}{P(mac_x |
 
 The implementation is found in [`naive_bayes2.py`](https://github.com/schollz/find3/blob/master/server/ai/src/naive_bayes2.py#L124-L153).
 
-## Meta-learning
+## Meta-learning {#meta-learning}
 
 Random forests is arguably the best algorithm for doing this type of classification as it has the highest specificity and sensitivity of any other algorithms listed above. On one of my given datasets it scores an average of 75% accuracy across all locations (most locations have > 90% accuracy and some have less). Its fine to just use Random forests then to do the classification.
 
