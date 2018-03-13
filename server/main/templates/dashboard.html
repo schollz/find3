@@ -1,0 +1,275 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>FIND3 - dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="apple-icon.png">
+    <link rel="icon" type="image/png" href="/static/img/favicon-32x32.png" sizes="32x32">
+    <link rel="stylesheet" href="/static/css/normalize.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/themify-icons.css">
+    <link rel="stylesheet" href="/static/css/flag-icon.min.css">
+    <link rel="stylesheet" href="/static/css/cs-skin-elastic.css">
+    <!-- <link rel="stylesheet" href="/static/css/bootstrap-select.less"> -->
+    <link rel="stylesheet" href="/static/scss/widgets.css">
+    <link rel="stylesheet" href="/static/scss/style.css">
+    <link href="/static/css/lib/vector-map/jqvmap.min.css" rel="stylesheet">
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+
+    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/html5shiv/3.7.3/html5shiv.min.js"></script> -->
+
+</head>
+
+<body>
+
+
+    <!-- Left Panel -->
+
+    <aside id="left-panel" class="left-panel">
+        <nav class="navbar navbar-expand-sm navbar-default">
+
+            <div class="navbar-header">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main-menu" aria-controls="main-menu" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="./">
+                    <img src="/static/img/find3-promo.png" alt="Logo">
+                </a>
+                <a class="navbar-brand hidden" href="./">
+                    <img src="/static/img/find_logo.png" alt="Logo">
+                </a>
+            </div>
+
+            <div id="main-menu" class="main-menu collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active">
+                        <a href="/view/dashboard/{{.Family}}">
+                            <i class="menu-icon fa fa-dashboard"></i>Dashboard </a>
+                    </li>
+                    <li >
+                        <a href="https://www.internalpositioning.com/doc/" target="_blank">
+                            <i class="menu-icon fa fa-book"></i>Docs </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+    </aside>
+    <!-- /#left-panel -->
+
+    <!-- Left Panel -->
+
+    <!-- Right Panel -->
+
+    <div id="right-panel" class="right-panel">
+
+        <div class="breadcrumbs">
+            <div class="col-sm-4">
+                <div class="page-header float-left">
+                    <div class="page-title">
+                        <h1>FIND dashboard</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="page-header float-right">
+                    <div class="page-title">
+                        <ol class="breadcrumb text-right">
+                            <li class="active">Admin</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content mt-3">
+
+            <div class="col-sm-12">
+                <div class="alert  alert-success alert-dismissible fade show" role="alert">
+                    You successfully read this important alert message.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+
+
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <h4 class="card-title mb-0">Accuracy</h4>
+                                <div class="small text-muted">Last calibrated {{.Efficacy.LastCalibrationTime}}</div>
+                            </div>
+                        </div>
+            <div class="content mt-3">
+                <div class="animated fadeIn">
+                    <div class="row">
+
+                        <div class="col-lg-4 col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="stat-widget-four">
+                                        <div class="stat-icon dib">
+                                            <p class="data-attributes">
+                                                <span data-peity='{ "fill": ["#6164C1", "#eeeeee"], "innerRadius": 10, "radius": 20 }'>{{ .Efficacy.PercentCorrect}}/100 </span>
+                                                {{ .Efficacy.PercentCorrect}}% </p>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="text-left dib">
+                                                <div class="stat-heading">Overall</div>
+                                                <div class="stat-text">{{ .Efficacy.TotalCount}} data</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+{{ range .Efficacy.AccuracyBreakdown }}
+                        <div class="col-lg-4 col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="stat-widget-four">
+                                        <div class="stat-icon dib">
+                                            <p class="data-attributes">
+                                                <span data-peity='{ "fill": ["#6164C1", "#eeeeee"], "innerRadius": 10, "radius": 20 }'>{{.PercentCorrect}}/100</span>
+                                                {{ .PercentCorrect}}% </p>
+                                        </div>
+                                        <div class="stat-content">
+                                            <div class="text-left dib">
+                                                <div class="stat-heading">{{ .Name }}</div>
+                                                <div class="stat-text">{{ .Total }} data</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{ end }}
+
+                    </div>
+                </div>
+            </div>
+
+            </div>
+            </div>
+            </div>
+
+<!-- 
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <strong>Passive tracking</strong> Elements
+                    </div>
+                    <div class="card-body card-block">
+                        <form action="" method="post" enctype="multipart/form-data" class="form-horizontal">
+                            <div class="row form-group">
+                                <div class="col col-md-3">
+                                    <label class=" form-control-label">Family name</label>
+                                </div>
+                                <div class="col-12 col-md-9">
+                                    <p class="form-control-static">FAMILY</p>
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                <div class="col col-md-3">
+                                    <label for="select" class=" form-control-label">Device</label>
+                                </div>
+                                <div class="col-12 col-md-9">
+                                    <select name="select" id="select" class="form-control">
+                                        <option value="0">Select device</option>
+                                        <option value="1">Option #1</option>
+                                        <option value="2">Option #2</option>
+                                        <option value="3">Option #3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                <div class="col col-md-3">
+                                    <label for="text-input" class="form-control-label">Location</label>
+                                </div>
+                                <div class="col-12 col-md-9">
+                                    <input type="text" id="locationInput" name="locationInput" placeholder="" class="form-control">
+                                    <small class="form-text text-muted">Optional</small>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fa fa-dot-circle-o"></i> Submit
+                        </button>
+                        <button type="reset" class="btn btn-danger btn-sm">
+                            <i class="fa fa-ban"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div> -->
+
+        </div>
+        <!-- .content -->
+    </div>
+    <!-- /#right-panel -->
+
+    <!-- Right Panel -->
+
+    <script src="/static/js/vendor/jquery-2.1.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="/static/js/popper.min.js"></script>
+    <script src="/static/js/plugins.js"></script>
+    <script src="/static/js/main.js"></script>
+
+    <script src="/static/js/lib/peitychart/jquery.peity.min.js"></script>
+    <!-- scripit init-->
+    <script src="/static/js/lib/peitychart/peitychart.init.js"></script>
+
+    <script>
+        (function ($) {
+            var availableTags = [
+                "ActionScript",
+                "AppleScript",
+                "Asp",
+                "BASIC",
+                "C",
+                "C++",
+                "Clojure",
+                "COBOL",
+                "ColdFusion",
+                "Erlang",
+                "Fortran",
+                "Groovy",
+                "Haskell",
+                "Java",
+                "JavaScript",
+                "Lisp",
+                "Perl",
+                "PHP",
+                "Python",
+                "Ruby",
+                "Scala",
+                "Scheme"
+            ];
+            $("#locationInput").autocomplete({
+                source: availableTags
+            });
+        })(jQuery);
+    </script>
+</body>
+
+</html>

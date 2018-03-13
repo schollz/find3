@@ -371,6 +371,21 @@ func (d *Database) GetLastSensorTimestamp() (timestamp int64, err error) {
 	return
 }
 
+// Get will retrieve the value associated with a key.
+func (d *Database) TotalLearnedCount() (count int64, err error) {
+	stmt, err := d.db.Prepare("SELECT count(timestamp) FROM sensors WHERE locationid != ''")
+	if err != nil {
+		err = errors.Wrap(err, "problem preparing SQL")
+		return
+	}
+	defer stmt.Close()
+	err = stmt.QueryRow().Scan(&count)
+	if err != nil {
+		err = errors.Wrap(err, "problem getting key")
+	}
+	return
+}
+
 // GetSensorFromGreaterTime will return a sensor data for a given timeframe
 func (d *Database) GetSensorFromGreaterTime(timeBlockInMilliseconds int64) (sensors []models.SensorData, err error) {
 	latestTime, err := d.GetLastSensorTimestamp()

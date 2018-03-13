@@ -60,6 +60,79 @@ func Run() (err error) {
 			"SSL":    UseSSL,
 		})
 	})
+	r.GET("/view/dashboard/:family", func(c *gin.Context) {
+		family := c.Param("family")
+		err := func(family string) (err error) {
+			type LocEff struct {
+				Name           string
+				Total          int64
+				PercentCorrect int64
+			}
+			type Efficacy struct {
+				AccuracyBreakdown   []LocEff
+				LastCalibrationTime time.Time
+				TotalCount          int64
+				PercentCorrect      int64
+			}
+
+			d, err := database.Open(family, true)
+			if err != nil {
+				return
+			}
+			defer d.Close()
+			var efficacy Efficacy
+
+			efficacy.TotalCount, err = d.TotalLearnedCount()
+			if err != nil {
+				err = errors.Wrap(err, "could not get TotalLearnedCount")
+				return
+			}
+			var percentFloat64 float64
+			err = d.Get("PercentCorrect", &percentFloat64)
+			if err != nil {
+				err = errors.Wrap(err, "could not get PercentCorrect")
+				return
+			}
+			efficacy.PercentCorrect = int64(100 * percentFloat64)
+			err = d.Get("LastCalibrationTime", &efficacy.LastCalibrationTime)
+			if err != nil {
+				err = errors.Wrap(err, "could not get LastCalibrationTime")
+				return
+			}
+			var accuracyBreakdown map[string]float64
+			err = d.Get("AccuracyBreakdown", &accuracyBreakdown)
+			if err != nil {
+				err = errors.Wrap(err, "could not get AccuracyBreakdown")
+				return
+			}
+			var confusionMetrics map[string]map[string]models.BinaryStats
+			err = d.Get("AlgorithmEfficacy", &confusionMetrics)
+			if err != nil {
+				err = errors.Wrap(err, "could not get AlgorithmEfficacy")
+				return
+			}
+
+			efficacy.AccuracyBreakdown = make([]LocEff, len(accuracyBreakdown))
+			i := 0
+			for key := range accuracyBreakdown {
+				l := LocEff{Name: strings.Title(key)}
+				l.PercentCorrect = int64(100 * accuracyBreakdown[key])
+				l.Total = int64(confusionMetrics["AdaBoost"][key].FalseNegatives+confusionMetrics["AdaBoost"][key].TruePositives) * 10 / 3
+				efficacy.AccuracyBreakdown[i] = l
+				i++
+			}
+
+			logger.Log.Debug(efficacy)
+			c.HTML(http.StatusOK, "dashboard.html", gin.H{
+				"Family":   family,
+				"Efficacy": efficacy,
+			})
+			return
+		}(family)
+		if err != nil {
+			c.String(200, family+" not found")
+		}
+	})
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
 	r.GET("/api/v1/location/:family/*device", handlerApiV1Location)
 	r.GET("/api/v1/locations/:family", handlerApiV1Locations)
