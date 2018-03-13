@@ -15,7 +15,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mr-tron/base58/base58"
 	"github.com/pkg/errors"
-	"github.com/schollz/find3/server/main/src/logging"
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/stringsizer"
 	flock "github.com/theckman/go-flock"
@@ -37,42 +36,42 @@ func (d *Database) MakeTables() (err error) {
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Log.Error(err)
+		logger.Log.Error(err)
 		return
 	}
 	sqlStmt = `create index keystore_idx on keystore(key);`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Log.Error(err)
+		logger.Log.Error(err)
 		return
 	}
 	sqlStmt = `create table sensors (timestamp integer not null primary key, deviceid text, locationid text, unique(timestamp));`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Log.Error(err)
+		logger.Log.Error(err)
 		return
 	}
 	sqlStmt = `CREATE TABLE location_predictions (timestamp integer NOT NULL PRIMARY KEY, prediction TEXT, UNIQUE(timestamp));`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Log.Error(err)
+		logger.Log.Error(err)
 		return
 	}
 	sqlStmt = `CREATE TABLE devices (id TEXT PRIMARY KEY, name TEXT);`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Log.Error(err)
+		logger.Log.Error(err)
 		return
 	}
 	sqlStmt = `CREATE TABLE locations (id TEXT PRIMARY KEY, name TEXT);`
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Log.Error(err)
+		logger.Log.Error(err)
 		return
 	}
 
@@ -80,7 +79,7 @@ func (d *Database) MakeTables() (err error) {
 	_, err = d.db.Exec(sqlStmt)
 	if err != nil {
 		err = errors.Wrap(err, "MakeTables")
-		d.logger.Log.Error(err)
+		logger.Log.Error(err)
 		return
 	}
 
@@ -125,7 +124,7 @@ func (d *Database) Get(key string, v interface{}) (err error) {
 	if err != nil {
 		return
 	}
-	// d.logger.Log.Debugf("got %s from '%s'", string(result), key)
+	// logger.Log.Debugf("got %s from '%s'", string(result), key)
 	return
 }
 
@@ -156,14 +155,14 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 		return errors.Wrap(err, "Set")
 	}
 
-	// d.logger.Log.Debugf("set '%s' to '%s'", key, string(b))
+	// logger.Log.Debugf("set '%s' to '%s'", key, string(b))
 	return
 }
 
 // Set will set a value in the database, when using it like a keystore.
 func (d *Database) Dump() (err error) {
 	command := fmt.Sprintf("sqlite3 d.name .dump")
-	d.logger.Log.Debug(command)
+	logger.Log.Debug(command)
 	out, err := exec.Command(command).Output()
 	fmt.Println(out)
 	return
@@ -222,7 +221,7 @@ func (d *Database) GetPrediction(timestamp int64) (aidata []models.LocationPredi
 	if err != nil {
 		return
 	}
-	// d.logger.Log.Debugf("got %s from '%s'", string(result), key)
+	// logger.Log.Debugf("got %s from '%s'", string(result), key)
 	return
 }
 
@@ -283,7 +282,7 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 			if err != nil {
 				return errors.Wrap(err, "AddSensor, adding column")
 			}
-			d.logger.Log.Debugf("adding column %s", sensor)
+			logger.Log.Debugf("adding column %s", sensor)
 			columnList = append(columnList, sensor)
 			stmt.Close()
 		}
@@ -314,8 +313,8 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 
 	sqlStatement := "insert or replace into sensors(" + strings.Join(newColumnList, ",") + ") values (" + strings.Join(argsQ, ",") + ")"
 	stmt, err := tx.Prepare(sqlStatement)
-	d.logger.Log.Debug("columns", columnList)
-	d.logger.Log.Debug("args", args)
+	logger.Log.Debug("columns", columnList)
+	logger.Log.Debug("args", args)
 	if err != nil {
 		return errors.Wrap(err, "AddSensor, prepare "+sqlStatement)
 	}
@@ -337,7 +336,7 @@ func (d *Database) AddSensor(s models.SensorData) (err error) {
 		return
 	}
 
-	d.logger.Log.Debug("inserted sensor data")
+	logger.Log.Debug("inserted sensor data")
 	return
 
 }
@@ -375,7 +374,7 @@ func (d *Database) GetSensorFromGreaterTime(timeBlockInMilliseconds int64) (sens
 		return
 	}
 	minimumTimestamp := latestTime - timeBlockInMilliseconds
-	d.logger.Log.Debugf("%d = %d - %d", minimumTimestamp, latestTime, timeBlockInMilliseconds)
+	logger.Log.Debugf("%d = %d - %d", minimumTimestamp, latestTime, timeBlockInMilliseconds)
 	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM (SELECT * FROM sensors WHERE timestamp > ? GROUP BY deviceid ORDER BY timestamp DESC)", minimumTimestamp)
 	return
 }
@@ -706,11 +705,6 @@ func Open(family string, readOnly ...bool) (d *Database, err error) {
 	} else {
 		d.name = path.Join(DataFolder, base58.FastBase58Encoding([]byte(d.family))+".sqlite3.db")
 	}
-	d.logger, err = logging.New()
-	if err != nil {
-		return
-	}
-	d.Debug(DebugMode)
 
 	// if read-only, make sure the database exists
 	if _, err = os.Stat(d.name); err != nil && len(readOnly) > 0 && readOnly[0] {
@@ -719,7 +713,7 @@ func Open(family string, readOnly ...bool) (d *Database, err error) {
 	}
 
 	// obtain a lock on the database
-	// d.logger.Log.Debugf("getting filelock on %s", d.name+".lock")
+	// logger.Log.Debugf("getting filelock on %s", d.name+".lock")
 	d.fileLock = flock.NewFlock(d.name + ".lock")
 	for {
 		locked, err := d.fileLock.TryLock()
@@ -740,7 +734,7 @@ func Open(family string, readOnly ...bool) (d *Database, err error) {
 	if err != nil {
 		return
 	}
-	// d.logger.Log.Debug("opened sqlite3 database")
+	// logger.Log.Debug("opened sqlite3 database")
 
 	// create new database tables if needed
 	if newDatabase {
@@ -748,7 +742,7 @@ func Open(family string, readOnly ...bool) (d *Database, err error) {
 		if err != nil {
 			return
 		}
-		d.logger.Log.Debug("made tables")
+		logger.Log.Debug("made tables")
 	}
 
 	return
@@ -756,9 +750,9 @@ func Open(family string, readOnly ...bool) (d *Database, err error) {
 
 func (d *Database) Debug(debugMode bool) {
 	if debugMode {
-		d.logger.SetLevel("debug")
+		logger.SetLevel("debug")
 	} else {
-		d.logger.SetLevel("info")
+		logger.SetLevel("info")
 	}
 }
 
@@ -770,7 +764,7 @@ func (d *Database) Close() (err error) {
 	// close filelock
 	err = d.fileLock.Unlock()
 	if err != nil {
-		d.logger.Log.Error(err)
+		logger.Log.Error(err)
 	} else {
 		os.Remove(d.name + ".lock")
 	}
@@ -779,17 +773,14 @@ func (d *Database) Close() (err error) {
 	err2 := d.db.Close()
 	if err2 != nil {
 		err = err2
-		d.logger.Log.Error(err)
+		logger.Log.Error(err)
 	}
 	d.isClosed = true
-	d.logger.Log.Flush()
-	d.logger.Log.Close()
-	fmt.Println(d.logger.Log.Closed())
 	return
 }
 
 func (d *Database) GetAllFromQuery(query string) (s []models.SensorData, err error) {
-	// d.logger.Log.Debug(query)
+	// logger.Log.Debug(query)
 	rows, err := d.db.Query(query)
 	if err != nil {
 		err = errors.Wrap(err, "GetAllFromQuery")
