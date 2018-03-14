@@ -171,27 +171,6 @@
             </div> -->
 
             <div class="content mt-3">
-
-                
-                    <div class="modal fade" id="largeModal" tabindex="-1" role="dialog" aria-labelledby="largeModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-lg" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="largeModalLabel"></h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body" id="largeModalBody">
-                                        
-                                    </div>
-                                    <div class="modal-footer">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-        
-                
                 <div class="animated fadeIn">
                     <div class="row">
 
@@ -271,25 +250,6 @@ toastr.options = {
   }
 
             $('#bootstrap-data-table-export').DataTable();
-            $("#getLocation").click(function(e){
-                console.log("HI");
-                var name = $(e.target).text();
-                console.log(name);
-                $("#largeModalLabel").text(name);
-                $.get( "/api/v1/location/{{.Family}}/"+name, function( data ) {
-                    console.log(data);
-                    html = "<p><strong>Guesses:</strong></p><ul>";
-                    for (i = 0; i< data.analysis.guesses.length; i++) {
-                        html += "<li>" + data.analysis.guesses[i].location + ": " + Math.round(100*data.analysis.guesses[i].probability) + "%</li>"
-                    }
-                    html += "</ul>";
-                    html += JSON.stringify(data.analysis.aguesses);
-                    html += "<hr><p><strong>Sensor data:</strong></p><code>";
-                    html += JSON.stringify(data.sensors.s);
-                    html += "</code>";
-                    $("#largeModalBody").html(html);
-                  });
-             }); 
             function connect() {
                 try {
 
@@ -335,6 +295,18 @@ toastr.options = {
         });
     </script>
 
+
+    <script src="/static/js/lib/data-table/datatables.min.js"></script>
+    <script src="/static/js/lib/data-table/dataTables.bootstrap.min.js"></script>
+    <script src="/static/js/lib/data-table/dataTables.buttons.min.js"></script>
+    <script src="/static/js/lib/data-table/buttons.bootstrap.min.js"></script>
+    <script src="/static/js/lib/data-table/jszip.min.js"></script>
+    <script src="/static/js/lib/data-table/pdfmake.min.js"></script>
+    <script src="/static/js/lib/data-table/vfs_fonts.js"></script>
+    <script src="/static/js/lib/data-table/buttons.html5.min.js"></script>
+    <script src="/static/js/lib/data-table/buttons.print.min.js"></script>
+    <script src="/static/js/lib/data-table/buttons.colVis.min.js"></script>
+    <script src="/static/js/lib/data-table/datatables-init.js"></script>
 
     {{ template "footer" . }}
 

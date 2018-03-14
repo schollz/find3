@@ -107,13 +107,14 @@ function toTitleCase(str)
 }
 var date  = new Date();
 
-        function iterateClock() {
-            $("#timesince").text(timeSince(date));
-        }
-        setInterval(iterateClock,1000);
 
 
-        $(document).ready(function () {
+       jQuery(function($) {
+            function iterateClock() {
+                $("#timesince").text(timeSince(date));
+            }
+            setInterval(iterateClock,1000);
+
             function connect() {
                 try {
 
@@ -160,6 +161,6 @@ var date  = new Date();
                 }
             }
             connect();
-        });
+        })(jQuery);
     </script>
     {{ template "footer" . }}
