@@ -262,48 +262,49 @@ toastr.options = {
   }
 
             $('#bootstrap-data-table-export').DataTable();
-            function connect() {
-                try {
 
-                    var socket;
-                    var host = window.origin.replace("http", "ws") + "/ws?device=all&family={{.Family}}";
-                    var socket = new WebSocket(host);
+var socket;
 
-                    socket.onopen = function () {
-                        console.log("opened websocket");
-                    }
+const socketMessageListener = (event) => {
+    console.log(event);
+    data = JSON.parse(event.data);
+    console.log(data);
+    idName = sha256.sha256(data.sensors.d);
+    console.log(idName);
+    var lastLocation = $("#location-" + idName).text();
+    $("#location-" + idName).text(data.guesses[0].location);
+    $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
+        "%");
+    var date = new Date(0);
+    date.setUTCMilliseconds(data.sensors.t);
+    console.log(date);
+    $("#lastseen-" + idName).text(date.toUTCString().replace(" GMT", ""));
+    var entered = " entered ";
+    if (lastLocation == data.guesses[0].location) {
+        entered = " still at "
+    }
+    toastr["success"](data.sensors.d +entered + data.guesses[0].location + " (" +Math.round(100 * data.guesses[0].probability) +
+    "%)" );
+};
 
-                    socket.onmessage = function (msg) {
-                        console.log(msg);
-                        data = JSON.parse(msg.data);
-                        console.log(data);
-                        idName = sha256.sha256(data.sensors.d);
-                        console.log(idName);
-                        var lastLocation = $("#location-" + idName).text();
-                        $("#location-" + idName).text(data.guesses[0].location);
-                        $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
-                            "%");
-                        var date = new Date(0);
-                        date.setUTCMilliseconds(data.sensors.t);
-                        console.log(date);
-                        $("#lastseen-" + idName).text(date.toUTCString().replace(" GMT", ""));
-                        var entered = " entered ";
-                        if (lastLocation == data.guesses[0].location) {
-                            entered = " still at "
-                        }
-                        toastr["success"](data.sensors.d +entered + data.guesses[0].location + " (" +Math.round(100 * data.guesses[0].probability) +
-                        "%)" );
-                    }
+const socketOpenListener = (event) => {
+  console.log('Connected');
+  socket.send('hello');
+};
 
-                    socket.onclose = function () {
-                        console.log("websocket status: " + socket.readyState);
-                    }
+const socketCloseListener = (event) => {
+  if (socket) {
+    console.error('Disconnected.');
+  }
+  var url = window.origin.replace("http", "ws") + '/ws?device=all&family={{.FamilyJS}}';
+  socket = new WebSocket(url);
+  socket.addEventListener('open', socketOpenListener);
+  socket.addEventListener('message', socketMessageListener);
+  socket.addEventListener('close', socketCloseListener);
+};
 
-                } catch (exception) {
-                    console.log("websocket problem: " + exception);
-                }
-            }
-            connect();
+socketCloseListener();
+
         })(jQuery);
     </script>
 

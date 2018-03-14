@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
@@ -55,8 +56,11 @@ func Run() (err error) {
 		family := c.Param("family")
 		device := c.Param("device")
 		c.HTML(http.StatusOK, "location.tmpl", gin.H{
-			"Family": family,
-			"Device": device})
+			"Family":   family,
+			"Device":   device,
+			"FamilyJS": template.JS(family),
+			"DeviceJS": template.JS(device),
+		})
 	})
 	r.GET("/view/dashboard/:family", func(c *gin.Context) {
 		family := c.Param("family")
@@ -153,6 +157,7 @@ func Run() (err error) {
 			logger.Log.Debug(table)
 			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
 				"Family":   family,
+				"FamilyJS": template.JS(family),
 				"Efficacy": efficacy,
 				"Devices":  table,
 			})
@@ -161,6 +166,7 @@ func Run() (err error) {
 		if err != nil {
 			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
 				"Family":       family,
+				"FamilyJS":     template.JS(family),
 				"ErrorMessage": err.Error(),
 			})
 		}

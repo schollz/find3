@@ -151,7 +151,7 @@ const socketCloseListener = (event) => {
   if (socket) {
     console.error('Disconnected.');
   }
-  var url = window.origin.replace("http", "ws") + '/ws?device={{.Device}}&family={{.Family}}'.replace('"','');
+  var url = window.origin.replace("http", "ws") + '/ws?device={{.DeviceJS}}&family={{.FamilyJS}}';
   socket = new WebSocket(url);
   socket.addEventListener('open', socketOpenListener);
   socket.addEventListener('message', socketMessageListener);
