@@ -11,6 +11,7 @@ import time
 import logging
 import math
 
+
 # create logger with 'spam_application'
 logger = logging.getLogger('learn')
 logger.setLevel(logging.DEBUG)
@@ -25,6 +26,7 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
+import timeout_decorator
 import numpy
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import DictVectorizer
@@ -75,7 +77,8 @@ class AI(object):
             try:
                 prediction = self.algorithms[
                     name].predict_proba(csv_data.reshape(1, -1))
-            except:
+            except Exception as e:
+                logger.error(str(e))
                 continue
             predict = {}
             for i, pred in enumerate(prediction[0]):
@@ -127,6 +130,10 @@ class AI(object):
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
         return payload
 
+    @timeout_decorator.timeout(10, use_signals=False)
+    def train(self, clf, x, y):
+        return clf.fit(x, y)
+
     def learn(self, fname):
         t = time.time()
         # load CSV file
@@ -168,7 +175,7 @@ class AI(object):
             "Nearest Neighbors",
             "Linear SVM",
             "RBF SVM",
-            # "Gaussian Process",
+            "Gaussian Process",
             "Decision Tree",
             "Random Forest",
             "Neural Net",
@@ -179,8 +186,7 @@ class AI(object):
             KNeighborsClassifier(3),
             SVC(kernel="linear", C=0.025, probability=True),
             SVC(gamma=2, C=1, probability=True),
-            # GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
-            # GaussianProcess takes too long!
+            GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
             DecisionTreeClassifier(max_depth=5),
             RandomForestClassifier(
                 max_depth=5, n_estimators=10, max_features=1),
@@ -192,18 +198,15 @@ class AI(object):
         # split_for_learning = int(0.70 * len(y))
         for name, clf in zip(names, classifiers):
             t2 = time.time()
-            self.algorithms[name] = clf
+            self.logger.debug("learning {}".format(name))
             try:
-                self.algorithms[name].fit(x, y)
-                # self.algorithms[name].fit(x[:split_for_learning],
-                #                           y[:split_for_learning])
-                # score = self.algorithms[name].score(x[split_for_learning:], y[
-                #     split_for_learning:])
-                # print(name, score)
-            except:
-                pass
-            self.logger.debug("learned {}, {:d} ms".format(
-                name, int(1000 * (t2 - time.time()))))
+                self.algorithms[name] = self.train(clf, x, y)
+                # score = self.algorithms[name].score(x,y)
+                # logger.debug(name, score)
+                self.logger.debug("learned {}, {:d} ms".format(
+                    name, int(1000 * (t2 - time.time()))))
+            except Exception as e:
+                self.logger.error("{} {}".format(name,str(e)))
 
         # t2 = time.time()
         # name = "Extended Naive Bayes"
@@ -224,7 +227,6 @@ class AI(object):
         #         name, int(1000 * (t2 - time.time()))))
         # except Exception as e:
         #     self.logger.error(str(e))
-
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
 
     def save(self, save_file):
