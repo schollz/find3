@@ -50,7 +50,22 @@ func Run() (err error) {
 		c.String(http.StatusOK, "OK")
 	})
 	r.GET("/", func(c *gin.Context) { // handler for the uptime robot
-		c.String(http.StatusOK, "see www.internalpositioning.com/doc/api.md")
+		c.HTML(http.StatusOK, "login.tmpl", gin.H{
+			"Message": "",
+		})
+	})
+	r.POST("/", func(c *gin.Context) {
+		family := c.PostForm("inputFamily")
+		db, err := database.Open(family, true)
+		if err == nil {
+			db.Close()
+			c.Redirect(http.StatusMovedPermanently, "/view/dashboard/"+family)
+		} else {
+			c.HTML(http.StatusOK, "login.tmpl", gin.H{
+				"Message": template.HTML(fmt.Sprintf(`Family '%s' does not exist. Follow <a href="https://www.internalpositioning.com/doc/tracking_your_phone.md" target="_blank">these instructions</a> to get started.`, family)),
+			})
+		}
+
 	})
 	r.GET("/view/location/:family/:device", func(c *gin.Context) {
 		family := c.Param("family")
