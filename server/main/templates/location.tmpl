@@ -115,52 +115,51 @@ var date  = new Date();
             }
             setInterval(iterateClock,1000);
 
-            function connect() {
-                try {
+var socket;
 
-                    var socket;
-                    var host = window.origin.replace("http", "ws") + "/ws?device={{.Device}}&family={{.Family}}";
-                    var socket = new WebSocket(host);
+const socketMessageListener = (event) => {
+    data = JSON.parse(event.data);
+    console.log(data);
+    idName = sha256.sha256(data.sensors.d);
+    console.log(idName);
+    // var lastLocation = $("#location-" + idName).text();
+    // $("#location-" + idName).text(data.guesses[0].location);
+    // $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
+    //     "%");
+    var newHTML = "";
+    for (var i=0;i<data.guesses.length;i++) {
+        var location = toTitleCase(data.guesses[i].location);
+        var prob = Math.round(100 * data.guesses[i].probability);
+        newHTML += `<li class="list-group-item">
+        ${location} <span class="badge badge-primary pull-right">${prob}%</span></a>
+    </li>`;
+    }
+    $("#sensordata").html(newHTML);
+    date = new Date(0);
+    date.setUTCMilliseconds(data.sensors.t);
+    console.log(date);
+    $("#timesince").text(timeSince(date));
+    $("#rawdata").text(JSON.stringify(data.sensors.s));
+};
 
-                    socket.onopen = function () {
-                        console.log("opened websocket");
-                    }
+const socketOpenListener = (event) => {
+  console.log('Connected');
+  socket.send('hello');
+};
 
-                    socket.onmessage = function (msg) {
-                        console.log(msg);
-                        data = JSON.parse(msg.data);
-                        console.log(data);
-                        idName = sha256.sha256(data.sensors.d);
-                        console.log(idName);
-                        // var lastLocation = $("#location-" + idName).text();
-                        // $("#location-" + idName).text(data.guesses[0].location);
-                        // $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
-                        //     "%");
-                        var newHTML = "";
-                        for (var i=0;i<data.guesses.length;i++) {
-                            var location = toTitleCase(data.guesses[i].location);
-                            var prob = Math.round(100 * data.guesses[i].probability);
-                            newHTML += `<li class="list-group-item">
-                            ${location} <span class="badge badge-primary pull-right">${prob}%</span></a>
-                        </li>`;
-                        }
-                        $("#sensordata").html(newHTML);
-                        date = new Date(0);
-                        date.setUTCMilliseconds(data.sensors.t);
-                        console.log(date);
-                        $("#timesince").text(timeSince(date));
-                        $("#rawdata").text(JSON.stringify(data.sensors.s));
-                    }
+const socketCloseListener = (event) => {
+  if (socket) {
+    console.error('Disconnected.');
+  }
+  var url = window.origin.replace("http", "ws") + '/ws?device={{.Device}}&family={{.Family}}'.replace('"','');
+  socket = new WebSocket(url);
+  socket.addEventListener('open', socketOpenListener);
+  socket.addEventListener('message', socketMessageListener);
+  socket.addEventListener('close', socketCloseListener);
+};
 
-                    socket.onclose = function () {
-                        console.log("websocket status: " + socket.readyState);
-                    }
+socketCloseListener();
 
-                } catch (exception) {
-                    console.log("websocket problem: " + exception);
-                }
-            }
-            connect();
         })(jQuery);
     </script>
     {{ template "footer" . }}
