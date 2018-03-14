@@ -74,7 +74,10 @@
 <!-- Right Panel -->
 
     <script type="text/javascript">
-
+function toTitleCase(str)
+{
+    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
         function timeSince(date) {
 
   var seconds = Math.floor((new Date() - date) / 1000);
@@ -134,7 +137,7 @@ var date  = new Date();
                         //     "%");
                         var newHTML = "";
                         for (var i=0;i<data.guesses.length;i++) {
-                            var location = data.guesses[i].location;
+                            var location = toTitleCase(data.guesses[i].location);
                             var prob = Math.round(100 * data.guesses[i].probability);
                             newHTML += `<li class="list-group-item">
                             ${location} <span class="badge badge-primary pull-right">${prob}%</span></a>
