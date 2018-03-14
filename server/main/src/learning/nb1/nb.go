@@ -168,7 +168,7 @@ func (a *Algorithm) probMacGivenLocation(mac string, val int, loc string, positi
 	}
 	for _, v := range valToCount {
 		for _, x := range gaussRange {
-			addend := int(math.Round(normPDF(0, float64(x), float64(width))))
+			addend := int(round(normPDF(0, float64(x), float64(width))))
 			if addend <= 0 {
 				continue
 			}
@@ -203,4 +203,21 @@ func normPDF(mean, x, sd float64) float64 {
 	m := sd * math.Sqrt(2*math.Pi)
 	e := math.Exp(-math.Pow(x-mean, 2) / (2 * math.Pow(sd, 2)))
 	return e / m
+}
+
+// https://play.golang.org/p/BkdofAFOJRh
+func round(val float64) (newVal float64) {
+	roundOn := 0.5
+	places := 0
+	var round float64
+	pow := math.Pow(10, float64(places))
+	digit := pow * val
+	_, div := math.Modf(digit)
+	if div >= roundOn {
+		round = math.Ceil(digit)
+	} else {
+		round = math.Floor(digit)
+	}
+	newVal = round / pow
+	return
 }
