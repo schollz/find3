@@ -40,6 +40,10 @@ This command will start a scanner that submits to the main server (https://cloud
 
 For your tracking scans to work, you must go to each room and run the learning command for about 10 minutes. 
 
+
+#### *Read the [FAQ](/doc/faq.md#training-time) for more information about how long to do learning in a location.*
+
+
 Once you have finished learning each room, do a calibration to update the machine learning algorithms.
 
 ```

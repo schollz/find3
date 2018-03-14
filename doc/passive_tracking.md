@@ -119,6 +119,10 @@ $ http POST https://cloud.internalpositioning.com/api/v1/settings/passive \
    family=FAMILY device=wifi-60:57:18:3d:b8:14
 ```
 
+
+#### *Read the [FAQ](/doc/faq.md#training-time) for more information about how long to do learning in a location.*
+
+
 ## Tracking
 
 When scanner computers are running the `find3-cli-scanner` tool, then all devices are always being tracked. The tracking information has no value until you are finished learning. Once you have finished learning, then you can gather information about the devices using data gathering specified in the [API](/doc/api.md#tracking) document.

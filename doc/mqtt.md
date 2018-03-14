@@ -2,7 +2,7 @@
 
 ## Introduction
 
-MQTT makes it very easy to recieve push notifications of new data generated from FIND. The MQTT protocl is very useful for integrating for embedded electronics or home automation software like [OpenHAB](https://www.openhab.org/) or [HomeAssistant](https://home-assistant.io/).
+MQTT makes it very easy to recieve push notifications of new data generated from FIND. The MQTT protocl is very useful for integrating for embedded electronics or home automation software like [OpenHAB](https://www.openhab.org/) or [Home Assistant](https://home-assistant.io/). See the [Home automation](/doc/automation.md) document for information.
 
 ## Getting started 
 
@@ -67,5 +67,4 @@ The corresponding response when new sensor data is to show the raw sensor data (
 }
 ```
 
-
-
+See the [Home automation](/doc/automation.md) document for information about how to use MQTT to track devices.

@@ -39,6 +39,8 @@ The first thing you need to do after entering data is to **learn the locations f
 
 Go to a location, like your *kitchen*, *bathroom* or *living room* and enter the name of the location where it says **location (optional)**. Then hit **TRACKING** so it turns to **LEARNING**.  Then hit **START SCAN** and wait about 5 minutes. Then press **STOP SCAN** and repeat this process in each room, for every room you want to learn.
 
+#### *Read the [FAQ](/doc/faq.md#training-time) for more information about how long to do learning in a location.*
+
 ## Track yourself
 
 Once you are done learning, simply hit the **LEARNING** button so it toggles back to **TRACKING** and then do **START SCAN**.

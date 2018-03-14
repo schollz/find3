@@ -65,7 +65,26 @@ It depends. This system harnesses the available WiFi routers and Bluetooth devic
 
 Yes, because floors tend to attenuate the signal, so there is a noticeable difference when you are in the same position, but on different floors. 
 
-### What is a good amount of time to train a location?
+### How long does it take to learn a location? {#training-time}
 
-Optimally you should do about 10 minutes per location.
+At a minimum you you should do learning in each location for about 5 minutes. After that, you can go to the dashboard to see the results of your training. To see the dashboard, goto `https://cloud.internalpositioning.com/view/dashboard/FAMILY`. At the dashboard you will the results from the last calibration, which may look like:
 
+<center>
+<img src="/images/accuracy2.png">
+</center>
+
+The **Overall** gives the average accuracy, while the accuracy for other locations are also shown. These accuracies are determined by cross-validation, so they their representation of reality will correlate with the amount of data available.
+
+If you see that one of the locations has low accuracy, then you should do more learning. For example, when starting learning I noticed I had low accuracy for the "Bathroom" location.
+
+<center>
+<img src="/images/accuracy50_ss.png" width="70%">
+</center>
+
+To amend this I did more learning at that location and then I reloaded the browser with the dashboard again to see the results.
+
+<center>
+<img src="/images/accuracy87.png" width="70%">
+</center>
+
+At this point, the accuracy had improved enough for me to move on to learn other locations. *Note:* as you learn new locations, they might end up being too similar to previous locations which could decrease the accuracy of previously learned locations. This is dependent on the number of available sensor points in the vicinity.
