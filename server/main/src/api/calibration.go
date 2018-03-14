@@ -372,7 +372,7 @@ func findBestAlgorithm(datas []models.SensorData) (algorithmEfficacy map[string]
 	if err != nil {
 		logger.Log.Error(err)
 	}
-	err = db.Set("LastCalibrationTime", time.Now())
+	err = db.Set("LastCalibrationTime", time.Now().UTC())
 	if err != nil {
 		logger.Log.Error(err)
 	}
