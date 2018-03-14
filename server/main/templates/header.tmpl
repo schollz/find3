@@ -17,7 +17,6 @@
     <link rel="icon" type="image/png" href="/static/img/favicon-32x32.png" sizes="32x32">
     <link rel="stylesheet" href="/static/css/normalize.css">
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
     <link rel="stylesheet" href="/static/css/themify-icons.css">
     <link rel="stylesheet" href="/static/css/flag-icon.min.css">
     <link rel="stylesheet" href="/static/css/cs-skin-elastic.css">
@@ -32,6 +31,7 @@
     <link rel="stylesheet" href="/static/css/toastr.css">
 
     <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/html5shiv/3.7.3/html5shiv.min.js"></script> -->
+    <script defer src="/static/js/fonta.js"></script>
 
 </head>
 
@@ -63,10 +63,10 @@
                     <i class="fa fa-bars"></i>
                 </button>
                 <a class="navbar-brand pt-2 pb-2" href="./">
-                    <img src="/static/img/find3-promo.png" alt="Logo">
+                    <img src="/static/img/find3-promo-bg.png" alt="Logo">
                 </a>
                 <a class="navbar-brand hidden" href="./">
-                    <img src="/static/img/find_logo.png" alt="Logo">
+                    <img src="/static/img/find3-promo-black.png" alt="Logo">
                 </a>
             </div>
 
@@ -74,11 +74,31 @@
                 <ul class="nav navbar-nav">
                     <li class="active">
                         <a href="/view/dashboard/{{.Family}}">
-                            <i class="menu-icon fa fa-dashboard"></i>Dashboard </a>
+                            <i class="menu-icon fas fa-tachometer-alt fa-lg"></i>Dashboard </a>
                     </li>
                     <li>
-                        <a href="https://www.internalpositioning.com/doc/" target="_blank">
-                            <i class="menu-icon fa fa-book"></i>Docs </a>
+                        <a href="https://www.internalpositioning.com/doc/tracking_your_phone.md" target="_blank">
+                            <i class="menu-icon fa fa-book fa-lg"></i>Getting started </a>
+                    </li>
+                    <li>
+                        <a href="https://play.google.com/store/apps/details?id=com.internalpositioning.find3.find3app" target="_blank">
+                            <i class="menu-icon fab fa-google-play fa-lg"></i>Get the app </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/schollz/find3" target="_blank">
+                            <i class="menu-icon fab fa-github fa-lg"></i>Source </a>
+                    </li>
+                    <li>
+                        <a href="https://join.slack.com/t/find3/shared_invite/enQtMzI0MjkwMjc3MDYzLWJiZWEzZjU5NTljM2JlYmE1MDY0NThiYmY2NDYwNGYxNTNmNTJjZjFmNjMwNGMwY2UyNzczNzZhZTIxZWY3ODQ" target="_blank">
+                            <i class="menu-icon fab fa-slack fa-lg"></i>Get help </a>
+                    </li>
+                    <li>
+                        <a href="http://eepurl.com/bhfFI1" target="_blank">
+                            <i class="menu-icon fas fa-envelope fa-lg"></i>Join mailing list </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/schollz/find3/issues" target="_blank">
+                            <i class="menu-icon fas fa-bug fa-lg"></i>Report a bug </a>
                     </li>
                 </ul>
             </div>
