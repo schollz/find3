@@ -130,9 +130,11 @@ const socketMessageListener = (event) => {
     for (var i=0;i<data.guesses.length;i++) {
         var location = toTitleCase(data.guesses[i].location);
         var prob = Math.round(100 * data.guesses[i].probability);
+        if (prob > 0) {
         newHTML += `<li class="list-group-item">
         ${location} <span class="badge badge-primary pull-right">${prob}%</span></a>
-    </li>`;
+    </li>`;            
+        }
     }
     $("#sensordata").html(newHTML);
     date = new Date(0);
