@@ -1,18 +1,22 @@
 package mqtt
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"strings"
 
-	"github.com/schollz/find3/server/main/src/database"
-	"github.com/schollz/find3/server/main/src/logging"
-	"github.com/schollz/find3/server/main/src/utils"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pkg/errors"
+	"github.com/schollz/find3/server/main/src/api"
+	"github.com/schollz/find3/server/main/src/database"
+	"github.com/schollz/find3/server/main/src/logging"
+	"github.com/schollz/find3/server/main/src/models"
+	"github.com/schollz/find3/server/main/src/utils"
 )
 
 var (
@@ -53,6 +57,13 @@ func Setup() (err error) {
 			return
 		}
 		opts.AddBroker(server).SetClientID(utils.RandomString(5)).SetUsername(AdminUser).SetPassword(AdminPassword).SetCleanSession(true)
+	}
+	// subscribe
+	opts.OnConnect = func(c MQTT.Client) {
+		if token := c.Subscribe("#", 1, messageReceived); token.Wait() && token.Error() != nil {
+			err = token.Error()
+			return
+		}
 	}
 
 	adminClient = MQTT.NewClient(opts)
@@ -188,5 +199,86 @@ func Publish(family, device, message string) (err error) {
 	if token := adminClient.Publish(pubTopic, 1, false, message); token.Wait() && token.Error() != nil {
 		err = fmt.Errorf("Failed to send message")
 	}
+	return
+}
+
+func messageReceived(client MQTT.Client, msg MQTT.Message) {
+	jsonFingerprint, route, err := mqttBuildFingerprint(msg.Topic(), msg.Payload())
+	if err != nil {
+		logger.Log.Error(err)
+		return
+	}
+	logger.Log.Debug("Got valid MQTT request for group " + jsonFingerprint.Group + ", user " + jsonFingerprint.Username)
+	if route == "track" {
+		jsonFingerprint.Location = ""
+	}
+	d := jsonFingerprint.Convert()
+	err = api.SaveSensorData(d)
+	if err != nil {
+		logger.Log.Error(err)
+		return
+	}
+	_, err = sendOutData(d)
+	if err != nil {
+		logger.Log.Error(err)
+		return
+	}
+}
+
+func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err error) {
+	analysis, _ = api.AnalyzeSensorData(p)
+	type Payload struct {
+		Sensors models.SensorData           `json:"sensors"`
+		Guesses []models.LocationPrediction `json:"guesses"`
+	}
+	payload := Payload{
+		Sensors: p,
+		Guesses: analysis.Guesses,
+	}
+	bTarget, err := json.Marshal(payload)
+	if err != nil {
+		return
+	}
+	logger.Log.Debugf("[%s] sending data over mqtt (%s)", p.Family, p.Device)
+	Publish(p.Family, p.Device, string(bTarget))
+	return
+}
+
+// backwards compatible with FIND
+func mqttBuildFingerprint(topic string, message []byte) (jsonFingerprint models.FINDFingerprint, route string, err error) {
+	err = nil
+	route = "track"
+	topics := strings.Split(strings.ToLower(topic), "/")
+	jsonFingerprint.Location = ""
+	if len(topics) < 3 || (topics[1] != "track" && topics[1] != "learn") {
+		err = fmt.Errorf("Must define track or learn")
+		return
+	}
+	route = topics[1]
+	if route == "track" && len(topics) != 3 {
+		err = fmt.Errorf("Track needs a user name")
+		return
+	}
+	if route == "learn" {
+		if len(topics) != 4 {
+			err = fmt.Errorf("Track needs a user name and location")
+			return
+		} else {
+			jsonFingerprint.Location = topics[3]
+		}
+	}
+	jsonFingerprint.Group = topics[0]
+	jsonFingerprint.Username = topics[2]
+	routers := []models.Router{}
+	for i := 0; i < len(message); i += 14 {
+		if (i + 14) > len(message) {
+			break
+		}
+		mac := string(message[i:i+2]) + ":" + string(message[i+2:i+4]) + ":" + string(message[i+4:i+6]) + ":" + string(message[i+6:i+8]) + ":" + string(message[i+8:i+10]) + ":" + string(message[i+10:i+12])
+		val, _ := strconv.Atoi(string(message[i+12 : i+14]))
+		rssi := -1 * val
+		routers = append(routers, models.Router{Mac: mac, Rssi: rssi})
+	}
+	jsonFingerprint.WifiFingerprint = routers
 	return
 }

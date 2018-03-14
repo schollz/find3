@@ -764,13 +764,21 @@ func processSensorData(p models.SensorData) (err error) {
 
 func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err error) {
 	analysis, _ = api.AnalyzeSensorData(p)
+	if len(analysis.Guesses) == 0 {
+		err = errors.New("no guesses")
+		return
+	}
 	type Payload struct {
-		Sensors models.SensorData           `json:"sensors"`
-		Guesses []models.LocationPrediction `json:"guesses"`
+		Sensors  models.SensorData           `json:"sensors"`
+		Guesses  []models.LocationPrediction `json:"guesses"`
+		Location string                      `json:"location"` // FIND backwards-compatability
+		Time     int64                       `json:"time"`     // FIND backwards-compatability
 	}
 	payload := Payload{
-		Sensors: p,
-		Guesses: analysis.Guesses,
+		Sensors:  p,
+		Guesses:  analysis.Guesses,
+		Location: analysis.Guesses[0].Location,
+		Time:     p.Timestamp,
 	}
 	bTarget, err := json.Marshal(payload)
 	if err != nil {
