@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/schollz/find3/server/main/src/database"
+	"github.com/schollz/find3/server/main/src/learning/nb1"
+	"github.com/schollz/find3/server/main/src/learning/nb2"
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/find3/server/main/src/utils"
 )
@@ -36,6 +38,23 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 		return
 	}
 
+	// do the Golang naive bayes fitting
+	nb := nb1.New()
+	logger.Log.Debugf("naive bayes1 fitting")
+	errFit := nb.Fit(datasLearn)
+	if errFit != nil {
+		logger.Log.Error(errFit)
+	}
+
+	// do the Golang naive bayes2 fitting
+	nbFit2 := nb2.New()
+	logger.Log.Debugf("naive bayes2 fitting")
+	errFit = nbFit2.Fit(datasLearn)
+	if errFit != nil {
+		logger.Log.Error(errFit)
+	}
+
+	// do the python learning
 	err = learnFromData(family, datasLearn)
 	if err != nil {
 		return
@@ -58,6 +77,9 @@ func splitDataForLearning(datas []models.SensorData, crossValidation ...bool) (d
 		for i := range datas {
 			j := rand.Intn(i + 1)
 			datas[i], datas[j] = datas[j], datas[i]
+		}
+		if len(datas) > 1000 {
+			datas = datas[:1000]
 		}
 
 		// triage into different locations
@@ -99,7 +121,7 @@ func splitDataForLearning(datas []models.SensorData, crossValidation ...bool) (d
 
 		datasLearn = datasLearn[:datasLearnI]
 		datasTest = datasTest[:datasTestI]
-		logger.Log.Debugf("learning: %d, testing: %d", len(datas), len(datasTest))
+		logger.Log.Debugf("[%s]  learning: %d, testing: %d", datas[0].Family, len(datas), len(datasTest))
 	}
 	return
 }
@@ -228,27 +250,36 @@ func findBestAlgorithm(datas []models.SensorData) (algorithmEfficacy map[string]
 		}
 		locationTotals[data.Location]++
 	}
+	logger.Log.Debugf("locationTotals: %+v", locationTotals)
 	algorithmEfficacy = make(map[string]map[string]models.BinaryStats)
 	for alg := range predictionAnalysis {
 		if _, ok := algorithmEfficacy[alg]; !ok {
 			algorithmEfficacy[alg] = make(map[string]models.BinaryStats)
 		}
-		// calculate true/false positives/negatives
-		tp := 0
-		fp := 0
-		tn := 0
-		fn := 0
 		for correctLocation := range predictionAnalysis[alg] {
-			for l1 := range predictionAnalysis[alg] {
-				for l2 := range predictionAnalysis[alg] {
-					if correctLocation == l1 && correctLocation == l2 {
-						tp = predictionAnalysis[alg][l1][l2]
-					} else if correctLocation == l1 && correctLocation != l2 {
-						fp += predictionAnalysis[alg][l1][l2]
-					} else if correctLocation != l1 && correctLocation == l2 {
-						fn += predictionAnalysis[alg][l1][l2]
-					} else if correctLocation != l1 && correctLocation != l2 {
-						tn += predictionAnalysis[alg][l1][l2]
+			// calculate true/false positives/negatives
+			tp := 0
+			fp := 0
+			tn := 0
+			fn := 0
+			for guessedLocation := range predictionAnalysis[alg][correctLocation] {
+				count := predictionAnalysis[alg][correctLocation][guessedLocation]
+				if guessedLocation == correctLocation {
+					tp += count
+				} else if guessedLocation != correctLocation {
+					fn += count
+				}
+			}
+			for otherCorrectLocation := range predictionAnalysis[alg] {
+				if otherCorrectLocation == correctLocation {
+					continue
+				}
+				for guessedLocation := range predictionAnalysis[alg] {
+					count := predictionAnalysis[alg][otherCorrectLocation][guessedLocation]
+					if guessedLocation == correctLocation {
+						fp += count
+					} else if guessedLocation != correctLocation {
+						tn += count
 					}
 				}
 			}
