@@ -1,0 +1,162 @@
+{{ template "header" . }}
+<!-- Left Panel -->
+<!-- Right Panel -->
+<div id="right-panel" class="right-panel">
+    
+    <div class="breadcrumbs">
+        <div class="col-sm-4">
+            <div class="page-header float-left">
+                <div class="page-title">
+                    <h1>FIND dashboard</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            <div class="page-header float-right">
+                <div class="page-title">
+                    <ol class="breadcrumb text-right">
+                        <li class="active">View / Location </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="content mt-3">
+        {{ with .Message }}
+        <div class="col-sm-12">
+            <div class="alert  alert-success alert-dismissible fade show" role="alert">
+                {{.}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        {{ end }} {{ with .ErrorMessage }}
+        <div class="col-sm-12">
+            <div class="alert  alert-danger alert-dismissible fade show" role="alert">
+                {{.}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        {{ end }}
+        <div class="col-md-12">
+            <aside class="profile-nav alt">
+                <section class="card">
+                    <div class="card-header user-header alt bg-dark">
+                        <div class="media">
+                            <div class="media-body">
+                                <h2 class="text-light display-6">{{.Device}}</h2>
+                                <p>Last seen <span id="timesince">?</span> ago</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Location guesses</strong></p>
+                    <ul class="list-group list-group-flush" id="sensordata">
+                    </ul>
+                </div>
+                    <div class="card-footer">
+                        <p><strong>Raw data</strong></p>
+                        <code id="rawdata">
+                       
+                        </code>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </div>
+    <!-- .content -->
+</div>
+<!-- /#right-panel -->
+<!-- Right Panel -->
+
+    <script type="text/javascript">
+
+        function timeSince(date) {
+
+  var seconds = Math.floor((new Date() - date) / 1000);
+
+  var interval = Math.floor(seconds / 31536000);
+
+  if (interval > 1) {
+    return interval + " years";
+  }
+  interval = Math.floor(seconds / 2592000);
+  if (interval > 1) {
+    return interval + " months";
+  }
+  interval = Math.floor(seconds / 86400);
+  if (interval > 1) {
+    return interval + " days";
+  }
+  interval = Math.floor(seconds / 3600);
+  if (interval > 1) {
+    return interval + " hours";
+  }
+  interval = Math.floor(seconds / 60);
+  if (interval > 1) {
+    return interval + " minutes";
+  }
+  return Math.floor(seconds) + " seconds";
+}
+var date  = new Date();
+
+        function iterateClock() {
+            $("#timesince").text(timeSince(date));
+        }
+        setInterval(iterateClock,1000);
+
+
+        $(document).ready(function () {
+            function connect() {
+                try {
+
+                    var socket;
+                    var host = window.origin.replace("http", "ws") + "/ws?device={{.Device}}&family={{.Family}}";
+                    var socket = new WebSocket(host);
+
+                    socket.onopen = function () {
+                        console.log("opened websocket");
+                    }
+
+                    socket.onmessage = function (msg) {
+                        console.log(msg);
+                        data = JSON.parse(msg.data);
+                        console.log(data);
+                        idName = sha256.sha256(data.sensors.d);
+                        console.log(idName);
+                        // var lastLocation = $("#location-" + idName).text();
+                        // $("#location-" + idName).text(data.guesses[0].location);
+                        // $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
+                        //     "%");
+                        var newHTML = "";
+                        for (var i=0;i<data.guesses.length;i++) {
+                            var location = data.guesses[i].location;
+                            var prob = Math.round(100 * data.guesses[i].probability);
+                            newHTML += `<li class="list-group-item">
+                            ${location} <span class="badge badge-primary pull-right">${prob}%</span></a>
+                        </li>`;
+                        }
+                        $("#sensordata").html(newHTML);
+                        date = new Date(0);
+                        date.setUTCMilliseconds(data.sensors.t);
+                        console.log(date);
+                        $("#timesince").text(timeSince(date));
+                        $("#rawdata").text(JSON.stringify(data.sensors.s));
+                    }
+
+                    socket.onclose = function () {
+                        console.log("websocket status: " + socket.readyState);
+                    }
+
+                } catch (exception) {
+                    console.log("websocket problem: " + exception);
+                }
+            }
+            connect();
+        });
+    </script>
+    {{ template "footer" . }}

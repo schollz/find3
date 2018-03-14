@@ -1,0 +1,102 @@
+{{ define "header" }}
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>FIND3 - dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="apple-icon.png">
+    <link rel="icon" type="image/png" href="/static/img/favicon-32x32.png" sizes="32x32">
+    <link rel="stylesheet" href="/static/css/normalize.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/themify-icons.css">
+    <link rel="stylesheet" href="/static/css/flag-icon.min.css">
+    <link rel="stylesheet" href="/static/css/cs-skin-elastic.css">
+    <!-- <link rel="stylesheet" href="/static/css/bootstrap-select.less"> -->
+    <link rel="stylesheet" href="/static/scss/widgets.css">
+    <link rel="stylesheet" href="/static/scss/style.css">
+    <link href="/static/css/lib/vector-map/jqvmap.min.css" rel="stylesheet">
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="/static/css/jquery-ui.css">
+
+
+    <link rel="stylesheet" href="/static/css/toastr.css">
+
+    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/html5shiv/3.7.3/html5shiv.min.js"></script> -->
+
+</head>
+
+<body>
+
+    
+    <script src="/static/js/vendor/jquery-2.1.4.min.js"></script>
+    <script src="/static/js/jquery-ui.js"></script>
+    <script src="/static/js/popper.min.js"></script>
+    <script src="/static/js/plugins.js"></script>
+    <script src="/static/js/main.js"></script>
+
+    <script src="/static/js/lib/peitychart/jquery.peity.min.js"></script>
+    <!-- scripit init-->
+    <script src="/static/js/lib/peitychart/peitychart.init.js"></script>
+
+    <script src="/static/js/lib/data-table/datatables.min.js"></script>
+    <script src="/static/js/lib/data-table/dataTables.bootstrap.min.js"></script>
+    <script src="/static/js/lib/data-table/dataTables.buttons.min.js"></script>
+    <script src="/static/js/lib/data-table/buttons.bootstrap.min.js"></script>
+    <script src="/static/js/lib/data-table/jszip.min.js"></script>
+    <script src="/static/js/lib/data-table/pdfmake.min.js"></script>
+    <script src="/static/js/lib/data-table/vfs_fonts.js"></script>
+    <script src="/static/js/lib/data-table/buttons.html5.min.js"></script>
+    <script src="/static/js/lib/data-table/buttons.print.min.js"></script>
+    <script src="/static/js/lib/data-table/buttons.colVis.min.js"></script>
+    <script src="/static/js/lib/data-table/datatables-init.js"></script>
+    <script src="/static/js/sha256.min.js"></script>
+    <script src="/static/js/toastr.min.js"></script>
+
+
+    <!-- Left Panel -->
+
+    <aside id="left-panel" class="left-panel">
+        <nav class="navbar navbar-expand-sm navbar-default">
+
+            <div class="navbar-header">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#main-menu" aria-controls="main-menu" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand pt-2 pb-2" href="./">
+                    <img src="/static/img/find3-promo.png" alt="Logo">
+                </a>
+                <a class="navbar-brand hidden" href="./">
+                    <img src="/static/img/find_logo.png" alt="Logo">
+                </a>
+            </div>
+
+            <div id="main-menu" class="main-menu collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active">
+                        <a href="/view/dashboard/{{.Family}}">
+                            <i class="menu-icon fa fa-dashboard"></i>Dashboard </a>
+                    </li>
+                    <li>
+                        <a href="https://www.internalpositioning.com/doc/" target="_blank">
+                            <i class="menu-icon fa fa-book"></i>Docs </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+    </aside>
+    <!-- /#left-panel -->
+{{ end }}

@@ -54,11 +54,9 @@ func Run() (err error) {
 	r.GET("/view/location/:family/:device", func(c *gin.Context) {
 		family := c.Param("family")
 		device := c.Param("device")
-		c.HTML(http.StatusOK, "view_location.tmpl", gin.H{
+		c.HTML(http.StatusOK, "location.tmpl", gin.H{
 			"Family": family,
-			"Device": device,
-			"SSL":    UseSSL,
-		})
+			"Device": device})
 	})
 	r.GET("/view/dashboard/:family", func(c *gin.Context) {
 		family := c.Param("family")
@@ -153,7 +151,7 @@ func Run() (err error) {
 			}
 
 			logger.Log.Debug(table)
-			c.HTML(http.StatusOK, "dashboard.html", gin.H{
+			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
 				"Family":   family,
 				"Efficacy": efficacy,
 				"Devices":  table,
@@ -161,7 +159,7 @@ func Run() (err error) {
 			return
 		}(family)
 		if err != nil {
-			c.HTML(http.StatusOK, "dashboard.html", gin.H{
+			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
 				"Family":       family,
 				"ErrorMessage": err.Error(),
 			})
