@@ -20,7 +20,7 @@
                 <div class="page-header float-right">
                     <div class="page-title">
                         <ol class="breadcrumb text-right">
-                            <li class="active">{{ .Family }}</li>
+                            <li class="active" style="text-transform:none;">{{ .Family }}</li>
                         </ol>
                     </div>
                 </div>
@@ -35,6 +35,7 @@
 
 
         <div class="content mt-3">
+
 
             {{ with .Message }}
             <div class="col-sm-12">
@@ -56,6 +57,37 @@
             </div>
             {{ end }}
 
+             <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <h4 class="card-title mb-0">Settings</h4>
+                            </div>
+                        </div>
+                        <div class="content mt-3">
+                            <div class="animated fadeIn">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div class="stat-widget-four">
+                                                    <button type="button" class="btn btn-primary btn-lg btn-block" id="recalibration">Calibrate machine learning</button>
+                                                    <center id="recalibrating" style="display:none;">
+                                                    Please wait... <img src="/static/img/Blocks-1s-200px.gif" />
+                                                    </center>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
 
             <div class="col-sm-12">
                 <div class="card">
@@ -63,7 +95,7 @@
                         <div class="row">
                             <div class="col-sm-8">
                                 <h4 class="card-title mb-0">Accuracy</h4>
-                                <div class="small text-muted">Last calibrated {{.Efficacy.LastCalibrationTime}}</div>
+                                <div class="small text-muted">Last calibrated on {{.Efficacy.LastCalibrationTime.Format "Mon, 2 Jan 2006 15:04:05"}}.</div>
                             </div>
                         </div>
                         <div class="content mt-3">
@@ -263,6 +295,15 @@ toastr.options = {
 
             $('#bootstrap-data-table-export').DataTable();
 
+$( "#recalibration" ).click(function() {
+    $("#recalibrating").fadeIn( "slow" );
+    $.get( "/api/v1/calibrate/{{.Family}}", function( data ) {
+      console.log(data);
+      setTimeout(function(){
+           window.location.reload(1);
+        }, 30000);
+    });
+});
 var socket;
 
 const socketMessageListener = (event) => {
