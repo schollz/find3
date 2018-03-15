@@ -78,23 +78,25 @@ func Run() (err error) {
 		})
 	})
 	r.GET("/view/dashboard/:family", func(c *gin.Context) {
+		type LocEff struct {
+			Name           string
+			Total          int64
+			PercentCorrect int64
+		}
+		type Efficacy struct {
+			AccuracyBreakdown   []LocEff
+			LastCalibrationTime time.Time
+			TotalCount          int64
+			PercentCorrect      int64
+		}
+
 		family := c.Param("family")
 		err := func(family string) (err error) {
 			var errorMessage string
-			type LocEff struct {
-				Name           string
-				Total          int64
-				PercentCorrect int64
-			}
-			type Efficacy struct {
-				AccuracyBreakdown   []LocEff
-				LastCalibrationTime time.Time
-				TotalCount          int64
-				PercentCorrect      int64
-			}
 
 			d, err := database.Open(family, true)
 			if err != nil {
+				err = errors.Wrap(err, "You need to add learning data first")
 				return
 			}
 			defer d.Close()
@@ -108,7 +110,7 @@ func Run() (err error) {
 			var percentFloat64 float64
 			err = d.Get("PercentCorrect", &percentFloat64)
 			if err != nil {
-				err = errors.Wrap(err, "could not get PercentCorrect")
+				err = errors.New("no learning data available")
 				return
 			}
 			efficacy.PercentCorrect = int64(100 * percentFloat64)
@@ -189,6 +191,7 @@ func Run() (err error) {
 				"Family":       family,
 				"FamilyJS":     template.JS(family),
 				"ErrorMessage": err.Error(),
+				"Efficacy":     Efficacy{},
 			})
 		}
 	})
