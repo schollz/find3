@@ -170,12 +170,14 @@ func Run() (err error) {
 			}
 
 			logger.Log.Debug(table)
-			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-				"Family":   family,
-				"FamilyJS": template.JS(family),
-				"Efficacy": efficacy,
-				"Devices":  table,
-			})
+			if err == nil {
+				c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+					"Family":   family,
+					"FamilyJS": template.JS(family),
+					"Efficacy": efficacy,
+					"Devices":  table,
+				})
+			}
 			return
 		}(family)
 		if err != nil {
