@@ -21,4 +21,3 @@ print(fname)
 with open(fname, 'r') as f:
     for line in tqdm(f, total=get_num_lines(fname)):
         r = requests.post(server + "/data", data=line.strip())
-        break

@@ -205,7 +205,6 @@ func Publish(family, device, message string) (err error) {
 func messageReceived(client MQTT.Client, msg MQTT.Message) {
 	jsonFingerprint, route, err := mqttBuildFingerprint(msg.Topic(), msg.Payload())
 	if err != nil {
-		logger.Log.Error(err)
 		return
 	}
 	logger.Log.Debug("Got valid MQTT request for group " + jsonFingerprint.Group + ", user " + jsonFingerprint.Username)
