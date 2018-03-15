@@ -28,8 +28,7 @@ Then enter in a **device** name. The **device** name is used to distinguish this
 
 The **server** is already specified as https://cloud.internalpositioning.com,
 the public server. If you are hosting your own server, you can change this
-to the address of your self-hosted server. [See here if you want to setup
-your own server](/docs/server_setup/).
+to the address of your self-hosted server, `http://YOURADDRESS` (make sure to keep the http/https in the address). See the [Server setup](/doc/server_setup.md) document to learn how to setup your own server.
 
 ## Learn some locations
 
@@ -48,19 +47,18 @@ Once you are done learning, simply hit the **LEARNING** button so it toggles bac
 <center><img src="/images/3.PNG" width="30%" height="30%"></center>
 
 
-Tracking will continue in the background and will show a notification that you can use to toggle the tracking off.
+Tracking will continue in the background and will show a notification that you can use to toggle the tracking off. There is an option that says "**Allow GPS**". If activated, the phone will send GPS coordinates if requested by the server. 
 
 <center><img src="/images/backgroundscanning.png" width=70%></center>
 
-The scans will take place approximately 10-30 seconds apart, forever, until you turn off the app. The battery usage is minimal since it is doing only a short WiFi scan and Bluetooth scan.
+The scans will take place approximately 10-30 seconds apart, forever, until you turn off the app. You can turn the app off by clicking the back button. The battery usage is minimal since it is doing only a short WiFi scan and Bluetooth scan.
 
-## Other options
 
-There is an option that says "**Allow GPS**". If activated, the phone will send GPS coordinates if requested by the server. The server only requests GPS coordinates when it has no GPS coordinates for *any* of the recently added scan points. A given location will only generally ever ask for GPS coordinates *once* so it doesn't use any extra battery. In the future these GPS coordinates will be used to do positioning on a map.
+## Visualize
 
-## Get data
+You can visualize your data on the cloud server, [cloud.internalpositioning.com](https://cloud.internalpositioning.com). You can sign in using your family name.
 
-Once you have learned several locations and are tracking with the computers, you can get data from FIND3 by consulting the [API](/doc/api.md) document.
+You can also get raw data from FIND3 by using the REST commands outlined in the [API](/doc/api.md) document.
 
 ## Issues?
 

@@ -95,14 +95,14 @@
                         <div class="row">
                             <div class="col-sm-8">
                                 <h4 class="card-title mb-0">Accuracy</h4>
-                                <div class="small text-muted">Last calibrated on {{.Efficacy.LastCalibrationTime.Format "Mon, 2 Jan 2006 15:04:05"}}.</div>
+                                <div class="small text-muted">Last calibrated on {{.Efficacy.LastCalibrationTime.Format "Mon, 2 Jan 2006 3:04:05 PM"}}.</div>
                             </div>
                         </div>
                         <div class="content mt-3">
                             <div class="animated fadeIn">
                                 <div class="row">
 
-                                    <div class="col-lg-4 col-md-12">
+                                    <div class="col-xl-4 col-lg-6 col-md-12">
                                         <div class="card">
                                             <div class="card-body">
                                                 <div class="stat-widget-four">
@@ -122,7 +122,7 @@
                                         </div>
                                     </div>
                                     {{ range .Efficacy.AccuracyBreakdown }}
-                                    <div class="col-lg-4 col-md-12">
+                                    <div class="col-xl-4 col-lg-6 col-md-12">
                                         <div class="card">
                                             <div class="card-body">
                                                 <div class="stat-widget-four">
@@ -232,7 +232,7 @@
                                                     <td>
                                                         <a href="/view/location/{{$.Family}}/{{.Name}}">{{ .Name }}</a>
                                                     </td>
-                                                    <td id="lastseen-{{.ID}}">{{ .LastSeen.Format "Mon, 2 Jan 2006 15:04:05" }}</td>
+                                                    <td id="lastseen-{{.ID}}">{{ .LastSeen.Format "Mon, 2 Jan 2006 3:04:05 PM" }}</td>
                                                     <td id="location-{{.ID}}">{{ .LastLocation }}</td>
                                                     <td id="probability-{{.ID}}">{{ .Probability }}%</td>
                                                     <td>{{ .ActiveTime }}</td>
