@@ -9,4 +9,3 @@ flask
 base58
 tqdm
 expiringdict
-timeout_decorator

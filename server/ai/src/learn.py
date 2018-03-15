@@ -10,7 +10,8 @@ import operator
 import time
 import logging
 import math
-
+from threading import Thread
+import functools
 
 # create logger with 'spam_application'
 logger = logging.getLogger('learn')
@@ -26,7 +27,6 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-import timeout_decorator
 import numpy
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import DictVectorizer
@@ -45,6 +45,30 @@ from sklearn.neighbors import kneighbors_graph
 from naive_bayes import ExtendedNaiveBayes
 from naive_bayes2 import ExtendedNaiveBayes2
 
+
+def timeout(timeout):
+    def deco(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, timeout))]
+            def newFunc():
+                try:
+                    res[0] = func(*args, **kwargs)
+                except Exception as e:
+                    res[0] = e
+            t = Thread(target=newFunc)
+            t.daemon = True
+            try:
+                t.start()
+                t.join(timeout)
+            except Exception as je:
+                raise je
+            ret = res[0]
+            if isinstance(ret, BaseException):
+                raise ret
+            return ret
+        return wrapper
+    return deco
 
 class AI(object):
 
@@ -130,7 +154,7 @@ class AI(object):
         self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
         return payload
 
-    @timeout_decorator.timeout(10, use_signals=False)
+    @timeout(10)
     def train(self, clf, x, y):
         return clf.fit(x, y)
 
