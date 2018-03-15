@@ -80,7 +80,6 @@ class AI(object):
 
     def classify(self, sensor_data):
         header = self.header[1:]
-        logger.debug(header)
         is_unknown = True
         csv_data = numpy.zeros(len(header))
         for sensorType in sensor_data['s']:
