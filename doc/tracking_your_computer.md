@@ -3,11 +3,11 @@
 
 ## Introduction
 
-In this tutorial you will learn how to do internal positioning on a computer using FIND3.
+In this tutorial you will learn how to do internal positioning on a computer using FIND3. That is, your computer can detect its location by merely observing nearby Bluetooth and WiFi signal sources.
 
 ## Pre-requisites
 
-First you will need the FIND3 command-line scanner. You can install this the easy way, using Docker, or the hard way by compiling from source. Follow the instructions in the [Command-line scanner](/doc/cli-scanner.md) document to install the scanner.
+First you will need the [FIND3 command-line scanner](https://github.com/schollz/find3-cli-scanner). You can install this using Docker, by compiling from source. Follow the instructions in the [Command-line scanner](/doc/cli-scanner.md) document to install the scanner.
 
 ## Learning
 
@@ -63,15 +63,16 @@ $ find3-cli-scanner -i wlan0 -device DEVICE -family FAMILY \
 
 The command for tracking is the same as for learning, but without the `-location` flag.
 
-## Get data
+## Collect data
 
 Once you have learned several locations and are tracking with the computers, you can get data from FIND3 by consulting the [API](/doc/api.md) document.
 
 
-## Issues?
 
-If you have issues, please file one on Github at https://github.com/schollz/find3-cli-scanner/issues.
+## Issues
+
+If you have issues, please [file a bug report](https://github.com/schollz/find3-cli-scanner/issues/new?template=bugs.md&title=Bug:%20).
 
 ## Source
 
-If you are interested, the app is completely open-source and available at  https://github.com/schollz/find3-cli-scanner.
+If you are programming inclined, the app is completely open-source and available on [Github](https://github.com/schollz/find3-cli-scanner).

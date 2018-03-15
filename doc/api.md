@@ -454,5 +454,5 @@ GET /api/v1/by_location/FAMILY
 
 ## API requests?
 
-If you have API requests, please file an idea on Github at https://github.com/schollz/find3/issues.
+If you have API requests, please [file an idea on Github](https://github.com/schollz/find3/issues/new?title=Feature:%20).
 

@@ -162,7 +162,7 @@ $ nohup find3-cli-scanner -i YOURINTERFACE \
 
 ## Issues?
 
-If you have issues, please file one on Github at https://github.com/schollz/find3-cli-scanner/issues.
+If you have issues, please [file a bug report on Github](https://github.com/schollz/find3-cli-scanner/issues/new?template=bugs.md&title=Bug:%20).
 
 ## Source
 

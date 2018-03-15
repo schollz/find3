@@ -72,10 +72,12 @@ The learning data is fed into a machine learning algorithm that can do classific
 7. [AdaBoost classifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
 8. [Gaussian naive bayes](http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html)
 9. [Quadratic discriminant analysis](http://scikit-learn.org/stable/modules/lda_qda.html).
-10. [Extended naive bayes without signal](#extended-naive-bayes2)
-11. ~~Extended naive bayes with signal~~, disabled because of memory consumption
+10. [Extended naive bayes](#extended-naive-bayes2)
 
-### Extended Naive Bayes without signal {#extended-naive-bayes2}
+
+### Extended Naive Bayes{#extended-naive-bayes2}
+
+*In progress*
 
 The basic question we want to answer is what is $P(location_y)$ for each of the $N$ possible locations that have been learned? In each location there are $M$ sensor data that is specified by $mac_x$. Assuming each device is independent, the probability of the location can be given by the product.
 
@@ -90,7 +92,6 @@ In pratice though, its easier to take the log and compute the sum of logs. We ju
 $$ P(location_y | mac_x)  = \frac{P(mac_x | location_y) P(location_y)}{P(mac_x | location_y) P(location_y) + P(mac_x | \neg location_y) P(\neg location_y)}$$
 </div>
 
-The implementation is found in [`naive_bayes2.py`](https://github.com/schollz/find3/blob/master/server/ai/src/naive_bayes2.py#L124-L153).
 
 ## Meta-learning {#meta-learning}
 
@@ -100,14 +101,16 @@ However, using 10 different machine learning algorithms will eek out a little mo
 
 ### Calculations
 
-After the learning I use the test suite to generate another metric - the [**informedness**](https://en.wikipedia.org/wiki/Youden%27s_J_statistic) (also called the Youden's J statistic). This metric combines the true positives (tp), false negatives (fn), true negatives (tn) and false positives (fp) into a single value. This metric can be determined for each of $y$ location.
+After the learning I use the test suite to generate another metric - the [**informedness**](https://en.wikipedia.org/wiki/Youden%27s_J_statistic) (also called the Youden's J statistic). This metric combines the true positives (tp), false negatives (fn), true negatives (tn) and false positives (fp) into a single value. This metric can be determined for each machine learning algorithm, $w$, on each location, $y$.
 
 <div>
-$$ J_y = \frac{tp}{tp + fn} + \frac{tn}{tn + fp} - 1$$
+$$ J_{w,y} = \frac{tp}{tp + fn} + \frac{tn}{tn + fp} - 1$$
 </div>
 
+The data to compute $J_{w,y}$ comes from the cross-validation learning, where the test data is used to calculate the confusion matrix of true/false positive/negatives.
+
 <div>
-Each of the $N$ machine learning algorithms provides a probability for each location $P_w(location_y)$. This probability can then be weighted by the informedness statistic to return a weighted probability metric, $Q_{w,y}$ for each algorithm $w$ and location $y$.
+New sensor data enters the server and needs to be classifered to determine the location. The location is determined by each of the $N$ machine learning algorithms which each provide a probability for each location $y$, $P_w(y)$. This probability can then be weighted by the informedness statistic for that particular machine learning algorithm and location to return a weighted probability metric, $Q_{w,y}$ for each algorithm $w$ and location $y$.
 </div>
 
 <div>
@@ -123,7 +126,7 @@ $$\sum_{i=1}^{N} Q_{w,y}(location_y) = Q_{y}$$
 </div>
 
 <div>
-The server then returns an ordered set of normalized values of $Q_{y}$, where the highest value is likely the best answer. TODO: See whether the highest value of $Q_{y}$ indicates whether or not it is a good guess.
+The server then returns an ordered set of normalized values of $Q_{y}$, where the highest value is likely the best answer.
 </div>
 
 

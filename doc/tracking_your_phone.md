@@ -66,4 +66,4 @@ If you have issues, please file one on Github at https://github.com/schollz/find
 
 ## Source
 
-If you are interested, the app is completely open-source and available at  https://github.com/schollz/find3-android-scanner.
+If you are interested, the app is completely open-source and available on [Github](https://github.com/schollz/find3-android-scanner).
