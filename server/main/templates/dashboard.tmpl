@@ -275,6 +275,8 @@ const socketMessageListener = (event) => {
     $("#location-" + idName).text(data.guesses[0].location);
     $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
         "%");
+
+
     var date = new Date(0);
     date.setUTCMilliseconds(data.sensors.t);
     console.log(date);

@@ -80,6 +80,7 @@ func Run() (err error) {
 	r.GET("/view/dashboard/:family", func(c *gin.Context) {
 		family := c.Param("family")
 		err := func(family string) (err error) {
+			var errorMessage string
 			type LocEff struct {
 				Name           string
 				Total          int64
@@ -130,6 +131,7 @@ func Run() (err error) {
 			}
 			locationCounts, err := d.GetLocationCounts()
 			if err != nil {
+				err = errors.Wrap(err, "could not get location counts")
 				return
 			}
 
@@ -168,19 +170,21 @@ func Run() (err error) {
 					})
 				}
 			}
-
-			logger.Log.Debug(table)
-			if err == nil {
-				c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-					"Family":   family,
-					"FamilyJS": template.JS(family),
-					"Efficacy": efficacy,
-					"Devices":  table,
-				})
+			if err != nil {
+				errorMessage = err.Error()
 			}
+			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+				"Family":       family,
+				"FamilyJS":     template.JS(family),
+				"Efficacy":     efficacy,
+				"Devices":      table,
+				"ErrorMessage": errorMessage,
+			})
+			err = nil
 			return
 		}(family)
 		if err != nil {
+			logger.Log.Warn(err)
 			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
 				"Family":       family,
 				"FamilyJS":     template.JS(family),
@@ -387,9 +391,9 @@ func handlerApiV1Location(c *gin.Context) {
 		if err != nil {
 			err = api.Calibrate(family, true)
 			if err != nil {
+				logger.Log.Warn(err)
 				return
 			}
-			analysis, err = api.AnalyzeSensorData(s)
 		}
 		return
 	}(c)

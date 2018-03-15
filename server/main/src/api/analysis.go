@@ -143,6 +143,15 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	d.Get("AlgorithmEfficacy", &algorithmEfficacy)
 	aidata.Guesses = determineBestGuess(aidata, algorithmEfficacy)
 
+	if aidata.IsUnknown {
+		aidata.Guesses = []models.LocationPrediction{
+			models.LocationPrediction{
+				Location:    "?",
+				Probability: 1,
+			},
+		}
+	}
+
 	// add prediction to the database
 	// adding predictions uses up a lot of space
 	err = d.AddPrediction(s.Timestamp, aidata.Guesses)

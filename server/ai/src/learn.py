@@ -80,14 +80,19 @@ class AI(object):
 
     def classify(self, sensor_data):
         header = self.header[1:]
+        logger.debug(header)
+        is_unknown = True
         csv_data = numpy.zeros(len(header))
         for sensorType in sensor_data['s']:
             for sensor in sensor_data['s'][sensorType]:
                 sensorName = sensorType + "-" + sensor
                 if sensorName in header:
+                    is_unknown = False
                     csv_data[header.index(sensorName)] = sensor_data[
                         's'][sensorType][sensor]
-        return self.do_classification(header, csv_data)
+        payload = self.do_classification(header, csv_data)
+        payload['is_unknown'] = is_unknown
+        return payload
 
     def do_classification(self, header, csv_data):
         """
