@@ -1,13 +1,11 @@
 [![](https://raw.githubusercontent.com/schollz/find/master/static/splash.gif)](https://www.internalpositioning.com/)
 
-[![Version 3.0](https://img.shields.io/badge/join-slack-blue.svg?style=for-the-badge)](https://join.slack.com/t/find3/shared_invite/enQtMzI0MjkwMjc3MDYzLWJiZWEzZjU5NTljM2JlYmE1MDY0NThiYmY2NDYwNGYxNTNmNTJjZjFmNjMwNGMwY2UyNzczNzZhZTIxZWY3ODQ) 
-[![Version 3.0](https://img.shields.io/badge/version-3.0.0-brightgreen.svg?style=for-the-badge)](https://www.internalpositioning.com/guide/development/) 
+[![Version 3.0](https://img.shields.io/badge/read-docs-blue.svg?style=for-the-badge)](https://www.internalpositioning.com/doc) 
+[![Version 3.0](https://img.shields.io/badge/join-slack-orange.svg?style=for-the-badge)](https://join.slack.com/t/find3/shared_invite/enQtMzI0MjkwMjc3MDYzLWJiZWEzZjU5NTljM2JlYmE1MDY0NThiYmY2NDYwNGYxNTNmNTJjZjFmNjMwNGMwY2UyNzczNzZhZTIxZWY3ODQ) 
+[![Version 3.0](https://img.shields.io/badge/version-3.0.0-brightgreen.svg?style=for-the-badge)](https://github.com/schollz/find3/releases/latest) 
 [![Donate](https://img.shields.io/badge/beerpay-$5-brown.svg?style=for-the-badge)](https://www.buymeacoffee.com/schollz)
 
 **The Framework for Internal Navigation and Discovery** (_FIND_) is like indoor GPS for your house or business, using only a simple smartphone or laptop.
-
-Documentation:
-[www.internalpositioning.com/doc](https://www.internalpositioning.com/doc)
 
 > This version, 3.X, is a complete re-write of the [previous versions 2.x](https://github.com/schollz/find).
 
