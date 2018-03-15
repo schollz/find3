@@ -108,7 +108,7 @@
                                                 <div class="stat-widget-four">
                                                     <div class="stat-icon dib">
                                                         <p class="data-attributes">
-                                                            <span data-peity='{ "fill": ["#6164C1", "#eeeeee"], "innerRadius": 10, "radius": 20 }'>{{ .Efficacy.PercentCorrect}}/100 </span>
+                                                            <span data-peity='{ "fill": ["{{ if ge  .Efficacy.PercentCorrect 85 }}#0392cf{{else}}{{ if ge  .Efficacy.PercentCorrect 70 }}#7bc043{{else}}{{ if ge  .Efficacy.PercentCorrect 50 }}#f37736{{else}}#ee4035{{end}}{{ end }}{{ end }}", "#eeeeee"], "innerRadius": 10, "radius": 20 }'>{{ .Efficacy.PercentCorrect}}/100 </span>
                                                             {{ .Efficacy.PercentCorrect}}% </p>
                                                     </div>
                                                     <div class="stat-content">
@@ -128,7 +128,7 @@
                                                 <div class="stat-widget-four">
                                                     <div class="stat-icon dib">
                                                         <p class="data-attributes">
-                                                            <span data-peity='{ "fill": ["#6164C1", "#eeeeee"], "innerRadius": 10, "radius": 20 }'>{{.PercentCorrect}}/100</span>
+                                                            <span data-peity='{ "fill": ["{{ if ge  .PercentCorrect 85 }}#0392cf{{else}}{{ if ge  .PercentCorrect 70 }}#7bc043{{else}}{{ if ge  .PercentCorrect 50 }}#f37736{{else}}#ee4035{{end}}{{ end }}{{ end }}", "{{ if eq  .PercentCorrect 0 }}#ee4035{{else}}#eeeeee{{end}}"], "innerRadius": 10, "radius": 20 }'>{{.PercentCorrect}}/100</span>
                                                             {{ .PercentCorrect}}% </p>
                                                     </div>
                                                     <div class="stat-content">
