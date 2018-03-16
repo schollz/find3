@@ -182,6 +182,7 @@ func Run() (err error) {
 			var rollingData models.ReverseRollingData
 			errRolling := d.Get("ReverseRollingData", &rollingData)
 			passiveTable := []DeviceTable{}
+			scannerList := []string{}
 			if errRolling == nil {
 				passiveTable = make([]DeviceTable, len(rollingData.DeviceLocation))
 				i := 0
@@ -194,6 +195,23 @@ func Run() (err error) {
 					passiveTable[i].LastLocation = rollingData.DeviceLocation[device]
 					passiveTable[i].LastSeen = time.Unix(0, s.Timestamp*1000000).UTC()
 					i++
+				}
+				sensors, errGet := d.GetSensorFromGreaterTime(60000 * 15)
+				if errGet == nil {
+					allScanners := make(map[string]struct{})
+					for _, s := range sensors {
+						for sensorType := range s.Sensors {
+							for scanner := range s.Sensors[sensorType] {
+								allScanners[scanner] = struct{}{}
+							}
+						}
+					}
+					scannerList = make([]string, len(allScanners))
+					i = 0
+					for scanner := range allScanners {
+						scannerList[i] = scanner
+						i++
+					}
 				}
 			}
 
@@ -231,6 +249,7 @@ func Run() (err error) {
 				"PassiveDevices": passiveTable,
 				"DeviceList":     template.JS(jsonDeviceList),
 				"LocationList":   template.JS(jsonLocationList),
+				"Scanners":       scannerList,
 			})
 			err = nil
 			return

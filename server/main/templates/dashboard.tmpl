@@ -1,260 +1,255 @@
 {{ template "header" . }}
-
-    <!-- Left Panel -->
-
-    <!-- Right Panel -->
-
-    <div id="right-panel" class="right-panel">
-
-
-        
-        <div class="breadcrumbs">
-            <div class="col-sm-4">
-                <div class="page-header float-left">
-                    <div class="page-title">
-                        <h1>FIND dashboard</h1>
-                    </div>
+<!-- Left Panel -->
+<!-- Right Panel -->
+<div id="right-panel" class="right-panel">
+    <div class="breadcrumbs">
+        <div class="col-sm-4">
+            <div class="page-header float-left">
+                <div class="page-title">
+                    <h1>FIND dashboard</h1>
                 </div>
             </div>
-            <div class="col-sm-8">
-                <div class="page-header float-right">
-                    <div class="page-title">
-                        <ol class="breadcrumb text-right">
-                            <li class="active" style="text-transform:none;">{{ .Family }}</li>
-                        </ol>
+        </div>
+        <div class="col-sm-8">
+            <div class="page-header float-right">
+                <div class="page-title">
+                    <ol class="breadcrumb text-right">
+                        <li class="active" style="text-transform:none;">{{ .Family }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content mt-3">
+        {{ with .Message }}
+        <div class="col-sm-12">
+            <div class="alert  alert-success alert-dismissible fade show" role="alert">
+                {{.}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        {{ end }} {{ with .ErrorMessage }}
+        <div class="col-sm-12">
+            <div class="alert  alert-danger alert-dismissible fade show" role="alert">
+                {{.}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        {{ end }}
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <strong>Passive scanning</strong>
+                    <small>See
+                            <a href="https://www.internalpositioning.com/doc/passive_tracking.md">the Passive tracking</a> document for information.</a>
+                        </small>
+                </div>
+                <div class="card-body card-block">
+                    {{ if .PassiveDevices }}
+                    <div class="row ">
+                        <div class="col-sm-4 mb-4">
+                            <h4 class="card-title mb-0">Current learning</h4>
+                        </div>
+                    </div>
+                    <table id="passive-table" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Device</th>
+                                <th>Location</th>
+                                <th>Last seen</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range .PassiveDevices }}
+                            <tr>
+                                <td>
+                                    {{ .Name }}
+                                </td>
+                                <td>{{ .LastLocation }}</td>
+                                <td>{{ .LastSeen.Format "Mon, 2 Jan 2006 3:04:05 PM" }}</td>
+                                <td>
+                                    <button type="reset" class="btn btn-danger btn-sm stopScan" id="{{.Name}}">
+                                        <i class="fa fa-ban"></i> Stop
+                                    </button>
+                                </td>
+                            </tr>
+                            {{ end }}
+                        </tbody>
+                    </table>
+                    <hr> {{ end }}
+
+                    {{ if .Scanners }}
+                    <div class="row ">
+                        <div class="col-sm-4 mb-4">
+                            <h4 class="card-title mb-0">Current scanners</h4>
+                            <small>(Seen in last fifteen minutes)</small>
+                        </div>
+                    </div>
+                    <section class="card">
+                        <ul class="list-group list-group-flush">
+                            {{ range .Scanners }}
+                            <li class="list-group-item">
+                                {{.}}
+                            </li>
+                            {{ end }}
+                        </ul>
+                    </section>
+                    <hr>
+                    {{ end }}
+
+
+
+                    <div class="row ">
+                        <div class="col-sm-4 mb-4">
+                            <h4 class="card-title mb-0">Toggle learning</h4>
+                        </div>
+                    </div>
+                    <div class="form-horizontal">
+                        <div class="row form-group">
+                            <div class="col col-md-3">
+                                <label for="select" class=" form-control-label">Device</label>
+                            </div>
+                            <div class="col-12 col-md-9">
+                                <input type="text" id="deviceInput" name="deviceInput" placeholder="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col col-md-3">
+                                <label for="text-input" class="form-control-label">Location</label>
+                            </div>
+                            <div class="col-12 col-md-9">
+                                <input type="text" id="locationInput" name="locationInput" placeholder="" class="form-control">
+                                <small class="form-text text-muted">Optional</small>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-12">
+                                <div class="card" style="margin-bottom:0px;">
+                                    <div class="card-body">
+                                        <div class="stat-widget-four">
+                                            <button type="button" class="btn btn-primary btn-lg btn-block" id="startLearning2">
+                                                <i class="fas fa-graduation-cap"></i> Start learning
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-12">
+                                <div class="alert  alert-danger alert-dismissible fade show" role="alert" style="display:none;" id="passiveBannerBad">
+                                    <span id="passiveMessageBad">
+                                        You successfully read this important alert message.
+                                    </span>
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="alert  alert-success alert-dismissible fade show" role="alert" style="display:none;" id="passiveBanner">
+                                    <span id="passiveMessage">
+                                        You successfully read this important alert message.
+                                    </span>
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-
-
-        
-
-
-
-
-        <div class="content mt-3">
-
-
-            {{ with .Message }}
-            <div class="col-sm-12">
-                <div class="alert  alert-success alert-dismissible fade show" role="alert">
-                    {{.}}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            </div>
-            {{ end }} {{ with .ErrorMessage }}
-            <div class="col-sm-12">
-                <div class="alert  alert-danger alert-dismissible fade show" role="alert">
-                    {{.}}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            </div>
-            {{ end }}
-
-
- <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-header">
-                        <strong>Passive scanning</strong>
-                        <small>See
-                            <a href="https://www.internalpositioning.com/doc/passive_tracking.md">the Passive tracking</a> document for information.</a>
-                        </small>
-
-                    </div>
-                    <div class="card-body card-block">
-                        
-                         {{ if .PassiveDevices }}
-                        <div class="row ">
-                            <div class="col-sm-4 mb-4">
-                                <h4 class="card-title mb-0">Current learning</h4>
-                            </div>
-                        </div>
-
-                        <table id="passive-table" class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Device</th>
-                                    <th>Location</th>
-                                    <th>Last seen</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{ range .PassiveDevices }}
-                                <tr>
-                                    <td>
-                                       {{ .Name }}
-                                    </td>
-                                    <td>{{ .LastLocation }}</td>
-                                    <td>{{ .LastSeen.Format "Mon, 2 Jan 2006 3:04:05 PM" }}</td>
-                                    <td> <button type="reset" class="btn btn-danger btn-sm stopScan" id="{{.Name}}">
-                                            <i class="fa fa-ban"></i> Stop
-                                        </button></td>
-                                </tr>
-                                {{ end }}
-                            </tbody>
-                        </table>
-                        <hr>
-                        {{ end }}
-                        <div class="row ">
-                            <div class="col-sm-4 mb-4">
-                                <h4 class="card-title mb-0">Toggle learning</h4>
-                            </div>
-                        </div>
-                        <div class="form-horizontal">
-                            <div class="row form-group">
-                                <div class="col col-md-3">
-                                    <label for="select" class=" form-control-label">Device</label>
-                                </div>
-                                <div class="col-12 col-md-9">
-                                    <input type="text" id="deviceInput" name="deviceInput" placeholder="" class="form-control">
-                                </div>
-                            </div>
-                            <div class="row form-group">
-                                <div class="col col-md-3">
-                                    <label for="text-input" class="form-control-label">Location</label>
-                                </div>
-                                <div class="col-12 col-md-9">
-                                    <input type="text" id="locationInput" name="locationInput" placeholder="" class="form-control">
-                                    <small class="form-text text-muted">Optional</small>
-                                </div>
-                            </div>
-                            <div class="row form-group">
-                                <div class="col-12">
-                                    <button type="button" class="btn btn-primary btn-sm" id="startLearning2">
-                                        <i class="fas fa-graduation-cap"></i> Start learning
-                                    </button>
-
-                                </div>
-                            </div>
-                            <div class="row form-group">
-                                <div class="col-12">
-                                    <div class="alert  alert-danger alert-dismissible fade show" role="alert" style="display:none;" id="passiveBannerBad">
-                                        <span id="passiveMessageBad">
-                                        You successfully read this important alert message.
-                                    </span>
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="alert  alert-success alert-dismissible fade show" role="alert" style="display:none;" id="passiveBanner">
-                                        <span id="passiveMessage">
-                                        You successfully read this important alert message.
-                                    </span>
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <h4 class="card-title mb-0">Settings</h4>
                         </div>
                     </div>
-                </div>
-            </div>
-
-
-             <div class="col-sm-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-sm-8">
-                                <h4 class="card-title mb-0">Settings</h4>
-                            </div>
-                        </div>
-                        <div class="content mt-3">
-                            <div class="animated fadeIn">
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <div class="stat-widget-four">
-                                                    <button type="button" class="btn btn-primary btn-lg btn-block" id="recalibration">Calibrate machine learning</button>
-                                                    <center id="recalibrating" style="display:none;">
+                    <div class="content mt-3">
+                        <div class="animated fadeIn">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="stat-widget-four">
+                                                <button type="button" class="btn btn-primary btn-lg btn-block" id="recalibration"><i class="fas fa-cogs"></i> Calibrate machine learning</button>
+                                                <center id="recalibrating" style="display:none;">
                                                     Please wait... <img src="/static/img/Blocks-1s-200px.gif" />
-                                                    </center>
-                                                </div>
+                                                </center>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
-
-
-            <div class="col-sm-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-sm-8">
-                                <h4 class="card-title mb-0">Accuracy</h4>
-                                <div class="small text-muted">Last calibrated on {{.Efficacy.LastCalibrationTime.Format "Mon, 2 Jan 2006 3:04:05 PM"}}.</div>
-                            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <h4 class="card-title mb-0">Accuracy</h4>
+                            <div class="small text-muted">Last calibrated on {{.Efficacy.LastCalibrationTime.Format "Mon, 2 Jan 2006 3:04:05 PM"}}.</div>
                         </div>
-                        <div class="content mt-3">
-                            <div class="animated fadeIn">
-                                <div class="row">
-
-                                    <div class="col-xl-4 col-lg-6 col-md-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <div class="stat-widget-four">
-                                                    <div class="stat-icon dib">
-                                                        <p class="data-attributes">
-                                                            <span data-peity='{ "fill": ["{{ if ge  .Efficacy.PercentCorrect 85 }}#0392cf{{else}}{{ if ge  .Efficacy.PercentCorrect 70 }}#7bc043{{else}}{{ if ge  .Efficacy.PercentCorrect 50 }}#f37736{{else}}#ee4035{{end}}{{ end }}{{ end }}", "#eeeeee"], "innerRadius": 10, "radius": 20 }'>{{ .Efficacy.PercentCorrect}}/100 </span>
-                                                            {{ .Efficacy.PercentCorrect}}% </p>
-                                                    </div>
-                                                    <div class="stat-content">
-                                                        <div class="text-left dib">
-                                                            <div class="stat-heading">Overall</div>
-                                                            <div class="stat-text">{{ .Efficacy.TotalCount}} data</div>
-                                                        </div>
+                    </div>
+                    <div class="content mt-3">
+                        <div class="animated fadeIn">
+                            <div class="row">
+                                <div class="col-xl-4 col-lg-6 col-md-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="stat-widget-four">
+                                                <div class="stat-icon dib">
+                                                    <p class="data-attributes">
+                                                        <span data-peity='{ "fill": ["{{ if ge  .Efficacy.PercentCorrect 85 }}#0392cf{{else}}{{ if ge  .Efficacy.PercentCorrect 70 }}#7bc043{{else}}{{ if ge  .Efficacy.PercentCorrect 50 }}#f37736{{else}}#ee4035{{end}}{{ end }}{{ end }}", "#eeeeee"], "innerRadius": 10, "radius": 20 }'>{{ .Efficacy.PercentCorrect}}/100 </span> {{ .Efficacy.PercentCorrect}}% </p>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <div class="text-left dib">
+                                                        <div class="stat-heading">Overall</div>
+                                                        <div class="stat-text">{{ .Efficacy.TotalCount}} data</div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    {{ range .Efficacy.AccuracyBreakdown }}
-                                    <div class="col-xl-4 col-lg-6 col-md-12">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <div class="stat-widget-four">
-                                                    <div class="stat-icon dib">
-                                                        <p class="data-attributes">
-                                                            <span data-peity='{ "fill": ["{{ if ge  .PercentCorrect 85 }}#0392cf{{else}}{{ if ge  .PercentCorrect 70 }}#7bc043{{else}}{{ if ge  .PercentCorrect 50 }}#f37736{{else}}#ee4035{{end}}{{ end }}{{ end }}", "{{ if eq  .PercentCorrect 0 }}#ee4035{{else}}#eeeeee{{end}}"], "innerRadius": 10, "radius": 20 }'>{{.PercentCorrect}}/100</span>
-                                                            {{ .PercentCorrect}}% </p>
-                                                    </div>
-                                                    <div class="stat-content">
-                                                        <div class="text-left dib">
-                                                            <div class="stat-heading">{{ .Name }}</div>
-                                                            <div class="stat-text">{{ .Total }} data</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {{ end }}
-
                                 </div>
+                                {{ range .Efficacy.AccuracyBreakdown }}
+                                <div class="col-xl-4 col-lg-6 col-md-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="stat-widget-four">
+                                                <div class="stat-icon dib">
+                                                    <p class="data-attributes">
+                                                        <span data-peity='{ "fill": ["{{ if ge  .PercentCorrect 85 }}#0392cf{{else}}{{ if ge  .PercentCorrect 70 }}#7bc043{{else}}{{ if ge  .PercentCorrect 50 }}#f37736{{else}}#ee4035{{end}}{{ end }}{{ end }}", "{{ if eq  .PercentCorrect 0 }}#ee4035{{else}}#eeeeee{{end}}"], "innerRadius": 10, "radius": 20 }'>{{.PercentCorrect}}/100</span> {{ .PercentCorrect}}% </p>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <div class="text-left dib">
+                                                        <div class="stat-heading">{{ .Name }}</div>
+                                                        <div class="stat-text">{{ .Total }} data</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{ end }}
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
-
-            <!-- 
+        </div>
+        <!-- 
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-header">
@@ -304,189 +299,177 @@
                     </div>
                 </div>
             </div> -->
-
-            <div class="content mt-3">
-                <div class="animated fadeIn">
-                    <div class="row">
-
-                        <div class="col-md-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-sm-8">
-                                            <h4 class="card-title mb-0">Devices</h4>
-                                            <div class="small text-muted">Click on a device to track it in realtime.</div>
-                                        </div>
+        <div class="content mt-3">
+            <div class="animated fadeIn">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-8">
+                                        <h4 class="card-title mb-0">Devices</h4>
+                                        <div class="small text-muted">Click on a device to track it in realtime.</div>
                                     </div>
-                                    <div class="pt-3 container">
-                                        <table id="bootstrap-data-table" class="table table-striped table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Last seen</th>
-                                                    <th>Location</th>
-                                                    <th>Probability</th>
-                                                    <th>Active time (min)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {{ range .Devices }}
-                                                <tr>
-                                                    <td>
-                                                        <a href="/view/location/{{$.Family}}/{{.Name}}">{{ .Name }}</a>
-                                                    </td>
-                                                    <td id="lastseen-{{.ID}}">{{ .LastSeen.Format "Mon, 2 Jan 2006 3:04:05 PM" }}</td>
-                                                    <td id="location-{{.ID}}">{{ .LastLocation }}</td>
-                                                    <td id="probability-{{.ID}}">{{ .Probability }}%</td>
-                                                    <td>{{ .ActiveTime }}</td>
-                                                </tr>
-                                                {{ end }}
-
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                </div>
+                                <div class="pt-3 container">
+                                    <table id="bootstrap-data-table" class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Last seen</th>
+                                                <th>Location</th>
+                                                <th>Probability</th>
+                                                <th>Active time (min)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{ range .Devices }}
+                                            <tr>
+                                                <td>
+                                                    <a href="/view/location/{{$.Family}}/{{.Name}}">{{ .Name }}</a>
+                                                </td>
+                                                <td id="lastseen-{{.ID}}">{{ .LastSeen.Format "Mon, 2 Jan 2006 3:04:05 PM" }}</td>
+                                                <td id="location-{{.ID}}">{{ .LastLocation }}</td>
+                                                <td id="probability-{{.ID}}">{{ .Probability }}%</td>
+                                                <td>{{ .ActiveTime }}</td>
+                                            </tr>
+                                            {{ end }}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
-                <!-- .animated -->
             </div>
-            <!-- .content -->
-
+            <!-- .animated -->
         </div>
         <!-- .content -->
     </div>
-    <!-- /#right-panel -->
+    <!-- .content -->
+</div>
+<!-- /#right-panel -->
+<!-- Right Panel -->
+<script src="/static/js/lib/data-table/datatables.min.js"></script>
+<script src="/static/js/lib/data-table/dataTables.bootstrap.min.js"></script>
+<script src="/static/js/lib/data-table/dataTables.buttons.min.js"></script>
+<script src="/static/js/lib/data-table/buttons.bootstrap.min.js"></script>
+<script src="/static/js/lib/data-table/jszip.min.js"></script>
+<script src="/static/js/lib/data-table/pdfmake.min.js"></script>
+<script src="/static/js/lib/data-table/vfs_fonts.js"></script>
+<script src="/static/js/lib/data-table/buttons.html5.min.js"></script>
+<script src="/static/js/lib/data-table/buttons.print.min.js"></script>
+<script src="/static/js/lib/data-table/buttons.colVis.min.js"></script>
+<script src="/static/js/lib/data-table/datatables-init.js"></script>
+<script src="/static/js/jquery.autocomplete.js"></script>
+<script type="text/javascript">
+(function($) {
 
-    <!-- Right Panel -->
+    toastr.options = {
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
 
-    <script src="/static/js/lib/data-table/datatables.min.js"></script>
-    <script src="/static/js/lib/data-table/dataTables.bootstrap.min.js"></script>
-    <script src="/static/js/lib/data-table/dataTables.buttons.min.js"></script>
-    <script src="/static/js/lib/data-table/buttons.bootstrap.min.js"></script>
-    <script src="/static/js/lib/data-table/jszip.min.js"></script>
-    <script src="/static/js/lib/data-table/pdfmake.min.js"></script>
-    <script src="/static/js/lib/data-table/vfs_fonts.js"></script>
-    <script src="/static/js/lib/data-table/buttons.html5.min.js"></script>
-    <script src="/static/js/lib/data-table/buttons.print.min.js"></script>
-    <script src="/static/js/lib/data-table/buttons.colVis.min.js"></script>
-    <script src="/static/js/lib/data-table/datatables-init.js"></script>
-    <script src="/static/js/jquery.autocomplete.js"></script>
-
-    <script type="text/javascript">
-        (function($) {
-
-toastr.options = {
-    "closeButton": false,
-    "debug": false,
-    "newestOnTop": false,
-    "progressBar": false,
-    "positionClass": "toast-top-right",
-    "preventDuplicates": false,
-    "onclick": null,
-    "showDuration": "300",
-    "hideDuration": "1000",
-    "timeOut": "5000",
-    "extendedTimeOut": "1000",
-    "showEasing": "swing",
-    "hideEasing": "linear",
-    "showMethod": "fadeIn",
-    "hideMethod": "fadeOut"
-  }
-
-$('#bootstrap-data-table-export').DataTable();
-$('#passive-table').DataTable();
-$("#locationInput").autocomplete({
-    lookup: {{.LocationList}},
-});
-
-$("#deviceInput").autocomplete({
-    lookup: {{.DeviceList}},
-});
-$( "#recalibration" ).click(function() {
-    $("#recalibrating").fadeIn( "slow" );
-    $.get( "/api/v1/calibrate/{{.Family}}", function( data ) {
-      console.log(data);
-      setTimeout(function(){
-           window.location.reload(1);
-        }, 10000);
+    $('#bootstrap-data-table-export').DataTable();
+    $('#passive-table').DataTable();
+    $("#locationInput").autocomplete({
+        lookup: {{.LocationList }},
     });
-});
-$( ".stopScan" ).click(function(event) {
-$.post( "/api/v1/settings/passive", JSON.stringify({ family: "{{.Family}}", device: event.target.id }))
-  .done(function( data ) {
-    $("#passiveBanner").fadeIn();
-    $("#passiveMessage").text("Stopped learning on " + event.target.id);
-    console.log(data);
-  });
-});
-$( "#startLearning2" ).click(function(e) {
-    e.preventDefault();
-    console.log("pressed learning")
-    device = $("#deviceInput").val();
-    loc = $("#locationInput").val();
-    if (loc == "" || device == "") {
-        $("#passiveBannerBad").show();
-        $("#passiveMessageBad").text("Must learn with location and device.");
-    }
-    console.log(device);
-    $.post( "/api/v1/settings/passive", JSON.stringify({ family: "{{.Family}}", device: device, location: loc }))
-      .done(function( data ) {
-        $("#passiveBanner").fadeIn();
-        $("#passiveMessage").text("Learning on " + device);
+
+    $("#deviceInput").autocomplete({
+        lookup: {{.DeviceList }},
+    });
+    $("#recalibration").click(function() {
+        $("#recalibrating").fadeIn("slow");
+        $.get("/api/v1/calibrate/{{.Family}}", function(data) {
+            console.log(data);
+            setTimeout(function() {
+                window.location.reload(1);
+            }, 10000);
+        });
+    });
+    $(".stopScan").click(function(event) {
+        $.post("/api/v1/settings/passive", JSON.stringify({ family: "{{.Family}}", device: event.target.id }))
+            .done(function(data) {
+                $("#passiveBanner").fadeIn();
+                $("#passiveMessage").text("Stopped learning on " + event.target.id);
+                console.log(data);
+            });
+    });
+    $("#startLearning2").click(function(e) {
+        e.preventDefault();
+        console.log("pressed learning")
+        device = $("#deviceInput").val();
+        loc = $("#locationInput").val();
+        if (loc == "" || device == "") {
+            $("#passiveBannerBad").show();
+            $("#passiveMessageBad").text("Must learn with location and device.");
+        }
+        console.log(device);
+        $.post("/api/v1/settings/passive", JSON.stringify({ family: "{{.Family}}", device: device, location: loc }))
+            .done(function(data) {
+                $("#passiveBanner").fadeIn();
+                $("#passiveMessage").text("Learning on " + device);
+                console.log(data);
+            });
+    });
+    var socket;
+
+    const socketMessageListener = (event) => {
+        console.log(event);
+        data = JSON.parse(event.data);
         console.log(data);
-      });
-});
-var socket;
-
-const socketMessageListener = (event) => {
-    console.log(event);
-    data = JSON.parse(event.data);
-    console.log(data);
-    idName = sha256.sha256(data.sensors.d);
-    console.log(idName);
-    var lastLocation = $("#location-" + idName).text();
-    $("#location-" + idName).text(data.guesses[0].location);
-    $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
-        "%");
+        idName = sha256.sha256(data.sensors.d);
+        console.log(idName);
+        var lastLocation = $("#location-" + idName).text();
+        $("#location-" + idName).text(data.guesses[0].location);
+        $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
+            "%");
 
 
-    var date = new Date(0);
-    date.setUTCMilliseconds(data.sensors.t);
-    console.log(date);
-    $("#lastseen-" + idName).text(date.toUTCString().replace(" GMT", ""));
-    var entered = " entered ";
-    if (lastLocation == data.guesses[0].location) {
-        entered = " still at "
-    }
-    toastr["success"](data.sensors.d +entered + data.guesses[0].location + " (" +Math.round(100 * data.guesses[0].probability) +
-    "%)" );
-};
+        var date = new Date(0);
+        date.setUTCMilliseconds(data.sensors.t);
+        console.log(date);
+        $("#lastseen-" + idName).text(date.toUTCString().replace(" GMT", ""));
+        var entered = " entered ";
+        if (lastLocation == data.guesses[0].location) {
+            entered = " still at "
+        }
+        toastr["success"](data.sensors.d + entered + data.guesses[0].location + " (" + Math.round(100 * data.guesses[0].probability) +
+            "%)");
+    };
 
-const socketOpenListener = (event) => {
-  console.log('Connected');
-  socket.send('hello');
-};
+    const socketOpenListener = (event) => {
+        console.log('Connected');
+        socket.send('hello');
+    };
 
-const socketCloseListener = (event) => {
-  if (socket) {
-    console.error('Disconnected.');
-  }
-  var url = window.origin.replace("http", "ws") + '/ws?device=all&family={{.FamilyJS}}';
-  socket = new WebSocket(url);
-  socket.addEventListener('open', socketOpenListener);
-  socket.addEventListener('message', socketMessageListener);
-  socket.addEventListener('close', socketCloseListener);
-};
+    const socketCloseListener = (event) => {
+        if (socket) {
+            console.error('Disconnected.');
+        }
+        var url = window.origin.replace("http", "ws") + '/ws?device=all&family={{.FamilyJS}}';
+        socket = new WebSocket(url);
+        socket.addEventListener('open', socketOpenListener);
+        socket.addEventListener('message', socketMessageListener);
+        socket.addEventListener('close', socketCloseListener);
+    };
 
-socketCloseListener();
+    socketCloseListener();
 
-        })(jQuery);
-    </script>
-
-
-    {{ template "footer" . }}
-
+})(jQuery);
+</script>
+{{ template "footer" . }}
