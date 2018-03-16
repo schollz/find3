@@ -115,3 +115,40 @@ $ http GET localhost:8005/api/v1/location/testdb/zack
 ```
 
 You can also see the data, in realtime, by going to `localhost:8005/view/location/testdb/zack`.If you run the test suite again you should see the values change (albeit very quickly).
+
+## Setup SSL
+
+To get FIND working using SSL/HTTPS you need to setup a DNS, install a reverse proxy, and install certificates. This process is simplified by using a free DNS provided, like [duckdns](https://www.duckdns.org) and a reverse proxy that automates the certificate handling, like [caddy](https://caddyserver.com/).
+
+### Get a DNS
+
+Goto [www.duckdns.org](https://www.duckdns.org) and sign in to get a duckdns.org domain. The DNS can be setup with whatever IP you are using as your public server.
+
+### Install reverse proxy
+
+The reverse proxy I suggest is [caddy](https://caddyserver.com/). You can easily download and install the latest version with bash.
+
+```
+$ curl https://getcaddy.com | bash
+```
+
+To configure, create a file named `Caddyfile` with the following configuration,
+
+```
+YOURDOMAIN.duckdns.org {
+	proxy / 127.0.0.1:8005 {
+		transparent
+		websocket
+	}
+}
+```
+
+Before starting your reverse proxy, make sure that you have forwarded ports 80 and 443 to your local IP address.
+
+Then you can start `caddy` which will automatically register your domain with certificates linked to your email. These certificates are temporary, but will automatically be renewed by `caddy`.
+
+```
+$ sudo caddy -conf Caddyfile
+```
+
+For `init` or service scripts, see [`github.com/mholt/caddy/tree/master/dist/init`](https://github.com/mholt/caddy/tree/master/dist/init).
