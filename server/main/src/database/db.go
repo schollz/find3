@@ -609,6 +609,38 @@ func (d *Database) GetDevices() (devices []string, err error) {
 	return
 }
 
+func (d *Database) GetLocations() (locations []string, err error) {
+	query := "SELECT name FROM locations"
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	locations = []string{}
+	for rows.Next() {
+		var name string
+		err = rows.Scan(&name)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+		locations = append(locations, name)
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
 func (d *Database) GetIDToName(table string) (idToName map[string]string, err error) {
 	idToName = make(map[string]string)
 	query := "SELECT id,name FROM " + table

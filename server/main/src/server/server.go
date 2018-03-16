@@ -89,6 +89,14 @@ func Run() (err error) {
 			TotalCount          int64
 			PercentCorrect      int64
 		}
+		type DeviceTable struct {
+			ID           string
+			Name         string
+			LastLocation string
+			LastSeen     time.Time
+			Probability  int64
+			ActiveTime   int64
+		}
 
 		family := c.Param("family")
 		err := func(family string) (err error) {
@@ -101,6 +109,31 @@ func Run() (err error) {
 			}
 			defer d.Close()
 			var efficacy Efficacy
+
+			deviceCounts, err := d.GetDeviceCounts()
+			if err != nil {
+				err = errors.Wrap(err, "could not get devices")
+				return
+			}
+			deviceList := make([]string, len(deviceCounts))
+			i := 0
+			for device := range deviceCounts {
+				if deviceCounts[device] > 2 {
+					deviceList[i] = device
+					i++
+				}
+			}
+			deviceList = deviceList[:i]
+			jsonDeviceList, _ := json.Marshal(deviceList)
+			logger.Log.Debugf("found %d devices", len(deviceList))
+
+			locationList, err := d.GetLocations()
+			if err != nil {
+				err = errors.Wrap(err, "could not get locations")
+				return
+			}
+			jsonLocationList, _ := json.Marshal(locationList)
+			logger.Log.Debugf("found %d devices", len(locationList))
 
 			efficacy.TotalCount, err = d.TotalLearnedCount()
 			if err != nil {
@@ -138,7 +171,7 @@ func Run() (err error) {
 			}
 
 			efficacy.AccuracyBreakdown = make([]LocEff, len(accuracyBreakdown))
-			i := 0
+			i = 0
 			for key := range accuracyBreakdown {
 				l := LocEff{Name: strings.Title(key)}
 				l.PercentCorrect = int64(100 * accuracyBreakdown[key])
@@ -146,19 +179,31 @@ func Run() (err error) {
 				efficacy.AccuracyBreakdown[i] = l
 				i++
 			}
+			var rollingData models.ReverseRollingData
+			errRolling := d.Get("ReverseRollingData", &rollingData)
+			passiveTable := []DeviceTable{}
+			if errRolling == nil {
+				passiveTable = make([]DeviceTable, len(rollingData.DeviceLocation))
+				i := 0
+				for device := range rollingData.DeviceLocation {
+					s, errOpen := d.GetLatest(device)
+					if errOpen != nil {
+						continue
+					}
+					passiveTable[i].Name = device
+					passiveTable[i].LastLocation = rollingData.DeviceLocation[device]
+					passiveTable[i].LastSeen = time.Unix(0, s.Timestamp*1000000).UTC()
+					i++
+				}
+			}
+
 			d.Close()
+
 			byLocations, err := api.GetByLocation(family, 10000000, true, 0, 0, 0)
 			if err != nil {
 				logger.Log.Warn(err)
 			}
-			type DeviceTable struct {
-				ID           string
-				Name         string
-				LastLocation string
-				LastSeen     time.Time
-				Probability  int64
-				ActiveTime   int64
-			}
+
 			table := []DeviceTable{}
 			for _, byLocation := range byLocations {
 				for _, device := range byLocation.Devices {
@@ -172,15 +217,20 @@ func Run() (err error) {
 					})
 				}
 			}
+
 			if err != nil {
 				errorMessage = err.Error()
 			}
+
 			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-				"Family":       family,
-				"FamilyJS":     template.JS(family),
-				"Efficacy":     efficacy,
-				"Devices":      table,
-				"ErrorMessage": errorMessage,
+				"Family":         family,
+				"FamilyJS":       template.JS(family),
+				"Efficacy":       efficacy,
+				"Devices":        table,
+				"ErrorMessage":   errorMessage,
+				"PassiveDevices": passiveTable,
+				"DeviceList":     template.JS(jsonDeviceList),
+				"LocationList":   template.JS(jsonLocationList),
 			})
 			err = nil
 			return
