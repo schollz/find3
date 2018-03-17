@@ -4,16 +4,16 @@
 
 FROM ubuntu:17.10
 
-RUN echo "starting.."
+ENV GOLANG_VERSION 1.10
+ENV PATH="/usr/local/go/bin:/usr/local/work/bin:${PATH}"
+ENV GOPATH /usr/local/work
+
 # RUN apt-get update && apt-get -y upgrade && \
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y wget git libc6-dev make pkg-config g++ gcc mosquitto-clients mosquitto python3 python3-dev python3-pip python3-setuptools python3-scipy python3-ujson python3-flask python3-sklearn python3-numpy supervisor && \
 	python3 -m pip install base58 tqdm expiringdict && \
 	mkdir /usr/local/work && \
-	rm -rf /var/lib/apt/lists/*
-
-# Install go 
-ENV GOLANG_VERSION 1.10
-RUN set -eux; \
+	rm -rf /var/lib/apt/lists/* && \
+	set -eux; \
 	\
 # this "case" statement is generated via "update.sh"
 	dpkgArch="$(dpkg --print-architecture)"; \
@@ -43,14 +43,8 @@ RUN set -eux; \
 	fi; \
 	\
 	export PATH="/usr/local/go/bin:$PATH"; \
-	go version
-
-# Configure Go
-ENV PATH="/usr/local/go/bin:/usr/local/work/bin:${PATH}"
-ENV GOPATH /usr/local/work
-
-# Install go-sqlite3
-RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH" && \
+	go version && \
+	mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH" && \
 	go get -v github.com/mattn/go-sqlite3 && \
 	go install -v github.com/mattn/go-sqlite3 && \
 	go get -v github.com/schollz/find3/... && \
@@ -90,12 +84,9 @@ stderr_logfile_maxbytes=0\n'\
 acl_file mosquitto_config/acl\n\
 password_file mosquitto_config/passwd\n\
 pid_file mosquitto_config/pid\n'\
-> /app/mosquitto_config/mosquitto.conf
-
-# Update the latest
-WORKDIR /usr/local/work/src/github.com/schollz/find3/server/main
-RUN echo "v3.0.0.5" && git pull -v && go build -v && \
-	go install -v && \
+> /app/mosquitto_config/mosquitto.conf && \
+	echo "moving to find3" && cd /usr/local/work/src/github.com/schollz/find3/server/main && echo "v3.0.0.5" && git pull -v && go build -v && \
+	echo "installing find3" && go install -v && \
 	echo "moving main" && mv /usr/local/work/src/github.com/schollz/find3/server/main /app/main && \
 	echo "moving ai" && mv /usr/local/work/src/github.com/schollz/find3/server/ai /app/ai && \
 	echo "removing go srces" && rm -rf /usr/local/work/src && \
