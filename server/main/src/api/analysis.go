@@ -221,7 +221,6 @@ func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
 func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func GetByLocation(family string, minutesAgoInt int, showRandomized bool, activeMinsThreshold int, minScanners int, minProbability float64) (byLocations []models.ByLocation, err error) {
-	logger.Log.Debugf("[%s] getting by location", family)
 	millisecondsAgo := int64(minutesAgoInt * 60 * 1000)
 
 	d, err := database.Open(family, true)

@@ -100,6 +100,7 @@ func Run() (err error) {
 
 		family := c.Param("family")
 		err := func(family string) (err error) {
+			startTime := time.Now()
 			var errorMessage string
 
 			d, err := database.Open(family, true)
@@ -217,7 +218,7 @@ func Run() (err error) {
 
 			d.Close()
 
-			byLocations, err := api.GetByLocation(family, 10000000, true, 0, 0, 0)
+			byLocations, err := api.GetByLocation(family, 10000000, false, 3, 0, 0)
 			if err != nil {
 				logger.Log.Warn(err)
 			}
@@ -252,6 +253,7 @@ func Run() (err error) {
 				"Scanners":       scannerList,
 			})
 			err = nil
+			logger.Log.Debugf("[%s] rendered dashboard in %s", family, time.Since(startTime))
 			return
 		}(family)
 		if err != nil {
