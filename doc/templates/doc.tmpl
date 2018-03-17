@@ -19,13 +19,17 @@ td {
 .menu {
  float: right;
 }
+.findnav {
+	text-decoration:none;
+	padding-left: 0.5em;
+}
 {{end}}
 {{define "before-content"}}
 	<div class="menu">
 		{{if ne .FileName "index.md"}}
 			{{if ne .FileName "doc.md"}}
 			{{end}}
-			<a href="/doc/" style="text-decoration: none; ">
+			<a href="/doc/" class="findnav">
 
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="50px" height="24px" viewBox="0 0 50 24" enable-background="new 0 0 50 24" xml:space="preserve">
@@ -79,7 +83,7 @@ td {
 
 </a>
 
-<a href="/doc/tracking_your_phone.md" style="text-decoration: none; ">
+<a href="/doc/tracking_your_phone.md"  class="findnav">
 
 	<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
@@ -99,7 +103,7 @@ td {
 
 
 
-<a href="/doc/tracking_your_computer.md" style="text-decoration: none; ">
+<a href="/doc/tracking_your_computer.md"  class="findnav">
 	
 
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -126,7 +130,7 @@ td {
 </a>
 
 
-<a href="/doc/passive_tracking.md" style="text-decoration: none; ">
+<a href="/doc/passive_tracking.md"  class="findnav">
 	<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
 <g>
