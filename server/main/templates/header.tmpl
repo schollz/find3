@@ -92,10 +92,10 @@
                     aria-label="Toggle navigation">
                     <i class="fa fa-bars"></i>
                 </button>
-                <a class="navbar-brand pt-2 pb-2" href="/">
+                <a class="navbar-brand pt-2 pb-2" href="/view/dashboard/{{.Family}}">
                     <img src="/static/img/find3-promo-bg.png" alt="Logo">
                 </a>
-                <a class="navbar-brand hidden" href="/">
+                <a class="navbar-brand hidden" href="/view/dashboard/{{.Family}}">
                     <img src="/static/img/find3-promo-black.png" alt="Logo">
                 </a>
             </div>
@@ -129,6 +129,10 @@
                     <li>
                         <a href="https://github.com/schollz/find3/issues" target="_blank">
                             <i class="menu-icon fas fa-bug fa-lg"></i>Report a bug </a>
+                    </li>
+                    <li>
+                        <a href="/">
+                            <i class="menu-icon fas fa-sign-out-alt fa-lg"></i>Sign out </a>
                     </li>
                 </ul>
             </div>

@@ -185,7 +185,7 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-sm-8">
-                                        <h4 class="card-title mb-0">Devices</h4>
+                                        <h4 class="card-title mb-0">Tracked devices</h4>
                                         <div class="small text-muted">Click on a device to track it in realtime.</div>
                                     </div>
                                 </div>
@@ -228,7 +228,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <strong>Passive scanning</strong>
+                    <strong>Passive scanning</strong><br>
                     <small>See
                             <a href="https://www.internalpositioning.com/doc/passive_tracking.md">the Passive tracking</a> document for information.</a>
                         </small>
@@ -276,13 +276,11 @@
                         </div>
                     </div>
                     <section class="card">
-                        <ul class="list-group list-group-flush">
+                        <select multiple class="form-control" id="exampleFormControlSelect2">
                             {{ range .Scanners }}
-                            <li class="list-group-item">
-                                {{.}}
-                            </li>
+                        <option>{{.}}</option>
                             {{ end }}
-                        </ul>
+                        </select>
                     </section>
                     <hr>
                     {{ end }}
