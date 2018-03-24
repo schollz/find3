@@ -94,7 +94,7 @@ $ go install github.com/schollz/find3-cli-scanner
 Make sure to move it to a path that is available to root. The root access is needed because of the necessary access to the WiFI card. If your `$GOPATH` is not specified in root, then you can do
 
 ```
-$ mv $GOPATH/bin/find3-cli-scanner /usr/local/bin/
+$ sudo mv $GOPATH/bin/find3-cli-scanner /usr/local/bin/
 ```
 
 ## Usage
