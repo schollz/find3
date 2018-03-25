@@ -26,7 +26,7 @@ The API for sending fingerprints (`/track` and `/learn`) and MQTT endpoints are 
 
 # Status
 
-*FIND3* is in the beta stage. Its ready for use, with possible bugs.
+*FIND3* is stable and ready for use.
 
 # Contributing
 
