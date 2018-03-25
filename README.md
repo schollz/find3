@@ -30,12 +30,13 @@ The API for sending fingerprints (`/track` and `/learn`) and MQTT endpoints are 
 
 # Contributing
 
-*FIND3* is a framework with multiple components. There are three repositories that have the components, including:
+*FIND3* is a framework with multiple components. There are multiple repositories that have the components, including:
 
 - Data storage server [(this repo)](https://github.com/schollz/find3/tree/master/server/main)
 - Machine learning server [(this repo)](https://github.com/schollz/find3/tree/master/server/ai)
 - Command-line tool for gathering fingerprints [(schollz/find3-cli-scanner)](https://github.com/schollz/find3-cli-scanner)
 - Android app for gathering fingerprints [(schollz/find3-android-scanner)](https://github.com/schollz/find3-android-scanner)
+- ESP code for gathering fingerprints with ESP8266/ESP32 [(DatanoiseTV/esp-find3-client)](https://github.com/DatanoiseTV/esp-find3-client)
 
 ## Reporting issues
 
