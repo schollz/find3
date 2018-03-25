@@ -88,6 +88,26 @@ POST /data
 ```
 >
 
+
+> ### Delete all data  {#delete}
+> 
+> **Request**
+```
+DELETE /api/v1/delete/FAMILY
+```
+> 
+> The FAMILY is the name of your family used for your recordings. Making this request will delete all your data, and it is not recoverable.
+> 
+> **Response**
+> 
+```
+{
+    "message": "deleted FAMILY",
+    "success": true
+}
+```
+>
+
 ## Passive scanning 
 
 > ### Post passive sensor data  {#post-passive}

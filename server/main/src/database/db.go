@@ -776,6 +776,11 @@ func Exists(name string) (err error) {
 	return
 }
 
+func (d *Database) Delete() (err error) {
+	logger.Log.Debugf("deleting %s", d.family)
+	return os.Remove(d.name)
+}
+
 // Open will open the database for transactions by first aquiring a filelock.
 func Open(family string, readOnly ...bool) (d *Database, err error) {
 	d = new(Database)

@@ -67,6 +67,17 @@ func Run() (err error) {
 		}
 
 	})
+	r.DELETE("/api/v1/delete/:family", func(c *gin.Context) {
+		db, err := database.Open(c.Param("family"), true)
+		if err == nil {
+			db.Delete()
+			db.Close()
+			c.JSON(200, gin.H{"success": true, "message": "deleted " + c.Param("family")})
+		} else {
+			c.JSON(200, gin.H{"success": false, "message": err.Error()})
+		}
+
+	})
 	r.GET("/view/location/:family/:device", func(c *gin.Context) {
 		family := c.Param("family")
 		device := c.Param("device")
