@@ -44,6 +44,8 @@ To get started, read the documentation and take a look at the repo. The easiest 
 
 - The [`find3-server`](/doc/server_setup.md) document explains how
   to set up your own FIND3 installation on a Linux server.
+  
+- The [`esp-client`](https://github.com/DatanoiseTV/esp-find3-client) is a repo that can be used to setup a scanner using ESP8266/ESP32.
 
 ## Applications
 
