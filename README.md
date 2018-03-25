@@ -19,7 +19,8 @@ This repository is a complete re-write of the previous version of FIND ([github.
 - Meta-learning with 10 different machine learning classifiers (previously just three)
 - Client uses Websockets+React which reduces bandwidth (and coding complexity)
 - Rolling compression of MAC addresses for much smaller on-disk databases (see [stringsizer](https://github.com/schollz/stringsizer))
-- Data storage in SQLITE-database (previously it was BoltDB)
+- Data storage in SQLite-database (previously it was BoltDB)
+- Released under MIT license (more commercially compatible than AGPL)
 
 The API for sending fingerprints (`/track` and `/learn`) and MQTT endpoints are backward compatible. 
 
