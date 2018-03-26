@@ -26,7 +26,7 @@ release:
 
 
 server1:
-	go build -v ${LDFLAGS}
+	go build -v 
 	./main -debug
 
 docs:

@@ -19,7 +19,7 @@ var wsupgrader = websocket.Upgrader{
 }
 
 type Websockets struct {
-	connections map[string]*websocket.Conn
+	connections map[string]map[string]*websocket.Conn
 	sync.Mutex
 }
 
@@ -30,7 +30,7 @@ var (
 func init() {
 	ws.Lock()
 	defer ws.Unlock()
-	ws.connections = make(map[string]*websocket.Conn)
+	ws.connections = make(map[string]map[string]*websocket.Conn)
 }
 
 func wshandler(c *gin.Context) {
@@ -58,23 +58,32 @@ func wshandler(c *gin.Context) {
 		return
 	}
 	ws.Lock()
-	ws.connections[family+"-"+device] = conn
+	if _, ok := ws.connections[family+"-"+device]; !ok {
+		ws.connections[family+"-"+device] = make(map[string]*websocket.Conn)
+	}
+	ws.connections[family+"-"+device][conn.RemoteAddr().String()] = conn
 	ws.Unlock()
 	go sendOutLocation(family, device)
+	go websocketListener(family, device, conn)
 	// Listen to the websockets
-	// for {
-	// 	t, msg, err := conn.ReadMessage()
-	// 	if err != nil {
-	// 		break
-	// 	}
-	// 	fmt.Println(t, msg)
 
-	// 	newMsg, err := json.Marshal("hi")
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	conn.WriteMessage(t, newMsg)
-	// }
+}
+
+func websocketListener(family string, device string, conn *websocket.Conn) {
+	for {
+		_, _, err := conn.ReadMessage()
+		if err != nil {
+			ws.Lock()
+			if _, ok := ws.connections[family+"-"+device]; ok {
+				if _, ok2 := ws.connections[family+"-"+device][conn.RemoteAddr().String()]; ok2 {
+					delete(ws.connections[family+"-"+device], conn.RemoteAddr().String())
+				}
+				logger.Log.Debugf("removed %s/%s", family+"-"+device, conn.RemoteAddr().String())
+			}
+			ws.Unlock()
+			return
+		}
+	}
 }
 
 //  SendMessageOverWebsockets will send a message over the websockets
@@ -82,7 +91,12 @@ func SendMessageOverWebsockets(family string, device string, msg []byte) (err er
 	ws.Lock()
 	defer ws.Unlock()
 	if _, ok := ws.connections[family+"-"+device]; ok {
-		err = ws.connections[family+"-"+device].WriteMessage(1, msg)
+		for _, conn := range ws.connections[family+"-"+device] {
+			err = conn.WriteMessage(1, msg)
+			if err != nil {
+				logger.Log.Warnf("problem sending websocket: %s/%s", family+"-"+device)
+			}
+		}
 	}
 	return
 }
