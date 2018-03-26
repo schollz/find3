@@ -8,7 +8,7 @@ Have you ever wanted to...
 - track your phone or laptop *indoors* without GPS?
 - monitor the whereabouts and trajectories of cell phones?
 
-FIND stands for the **Framework for Internal Navigation and Discovery**, which is an attempt implement a solution to these questions. This version, FIND3, is v3.X of FIND (the latest version).
+FIND stands for the **Framework for Internal Navigation and Discovery**, which is an attempt to implement a solution to these questions. This version, FIND3, is v3.X of FIND (the latest version).
 
 To get started, read the documentation and take a look at the repo. The easiest way to start is to read [Tracking your phone](/doc/tracking_your_phone.md).
 
