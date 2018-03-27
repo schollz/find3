@@ -3,6 +3,8 @@ import time
 import base58
 import logging
 
+from expiringdict import ExpiringDict
+
 
 # create logger with 'spam_application'
 logger = logging.getLogger('server')
@@ -25,7 +27,7 @@ app = Flask(__name__)
 
 from learn import AI
 
-cache = {}
+ai_cache = ExpiringDict(max_len=100000,max_age_seconds=60)
 
 
 def to_base58(family):
@@ -47,12 +49,15 @@ def classify():
     fname = os.path.join(data_folder, to_base58(
         payload['sensor_data']['f']) + ".find3.ai")
 
-    ai = AI(to_base58(payload['sensor_data']['f']), data_folder)
-    logger.debug("loading {}".format(fname))
-    try:
-        ai.load(fname)
-    except FileNotFoundError:
-        return jsonify({"success": False, "message": "could not find '{p}'".format(p=fname)})
+    ai = ai_cache.get(payload['sensor_data']['f'])
+    if ai == None:
+        ai = AI(to_base58(payload['sensor_data']['f']), data_folder)
+        logger.debug("loading {}".format(fname))
+        try:
+            ai.load(fname)
+        except FileNotFoundError:
+            return jsonify({"success": False, "message": "could not find '{p}'".format(p=fname)})
+        ai_cache[payload['sensor_data']['f']] = ai
 
     classified = ai.classify(payload['sensor_data'])
 
@@ -84,6 +89,7 @@ def learn():
 
     ai.save(os.path.join(data_folder, to_base58(
         payload['family']) + ".find3.ai"))
+    ai_cache[payload['family']] = ai
     return jsonify({"success": True, "message": "calibrated data"})
 
 
