@@ -30,6 +30,27 @@ pong
 &nbsp;
 
 
+> ### Current time {#time}
+> 
+> This is useful for seeing if the server is up.
+> 
+> **Request**
+```
+GET /now
+```
+> 
+> **Response**
+> 
+> This route simply returns the current UTC epoch time in milliseconds.
+>
+```
+1522116478604
+```
+>
+
+&nbsp;
+
+
 
 > ### Delete all data  {#delete}
 > 
@@ -92,7 +113,9 @@ POST /data
 ```
 
 > 
-> When posting you must include a JSON body that specifies the family name ("`f`"),  the device name ("`d`"), and the current timestamp specified as the Epoch time in milliseconds at UTC ("`t`").
+> When posting you must include a JSON body that specifies the family name ("`f`") and the device name ("`d`").
+>
+> You can include current timestamp specified as the Epoch time in milliseconds at UTC ("`t`"), but this is optional. If it is not included, the server will assign the current time when it is received.
 > 
 > The sensor data ("`s`") is a map where the keys are the type of the data. You can insert *any* type of data, but `wifi` and `bluetooth` are most common. These types of data are keys to a map of all the devices and their signals associated with that signal type.
 >

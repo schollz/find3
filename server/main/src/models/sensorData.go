@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"strings"
+	"time"
 )
 
 // SensorData is the typical data structure for storing sensor data.
@@ -37,8 +38,11 @@ func (d *SensorData) Validate() (err error) {
 		err = errors.New("family cannot be empty")
 	} else if d.Device == "" {
 		err = errors.New("device cannot be empty")
-	} else if d.Timestamp <= 0 {
+	} else if d.Timestamp < 0 {
 		err = errors.New("timestamp is not valid")
+	}
+	if d.Timestamp == 0 {
+		d.Timestamp = time.Now().UTC().UnixNano() / int64(time.Millisecond)
 	}
 	numFingerprints := 0
 	for sensorType := range d.Sensors {

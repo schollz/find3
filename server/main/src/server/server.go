@@ -285,6 +285,7 @@ func Run() (err error) {
 	r.POST("/api/v1/settings/passive", handlerReverseSettings)
 	r.GET("/api/v1/efficacy/:family", handlerEfficacy)
 	r.GET("/ping", ping)
+	r.GET("/now", handlerNow)
 	r.GET("/test", handleTest)
 	r.GET("/ws", wshandler) // handler for the web sockets (see websockets.go)
 	if UseMQTT {
@@ -551,6 +552,10 @@ func sendOutLocation(family, device string) (s models.SensorData, analysis model
 	return
 }
 
+func handlerNow(c *gin.Context) {
+	c.String(200, strconv.Itoa(int(time.Now().UTC().UnixNano()/int64(time.Millisecond))))
+}
+
 func handlerData(c *gin.Context) {
 	message, err := func(c *gin.Context) (message string, err error) {
 		var d models.SensorData
@@ -578,6 +583,7 @@ func handlerData(c *gin.Context) {
 	}(c)
 
 	if err != nil {
+		logger.Log.Debugf("problem parsing: %s", err.Error())
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
