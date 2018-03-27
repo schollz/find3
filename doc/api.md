@@ -498,6 +498,37 @@ GET /api/v1/by_location/FAMILY
 ```
 >>
 
+
+
+&nbsp; 
+
+> ### Get simple location of a single device {location-basic}
+> **Request**
+```
+GET /api/v1/location_basic/FAMILY/DEVICE
+```
+>
+> **Response**
+> 
+> This is a much simplified response for use with embedded evices. The `data` has the latest location (`loc`) and probability (`p`) for the specified deivce.
+>
+> Additionaly it specifies how long ago the device was last seen at that location, in seaconds (`seen`).
+>
+> Example:
+>
+```
+{  
+   "data":{  
+      "loc":"zakhome floor 2 office",
+      "prob":0.97,
+      "seen":1387
+   },
+   "message":"ok",
+   "success":true
+}
+```
+>>
+
 ## API requests?
 
 If you have API requests, please [file an idea on Github](https://github.com/schollz/find3/issues/new?title=Feature:%20).

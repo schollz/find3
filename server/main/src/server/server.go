@@ -280,6 +280,7 @@ func Run() (err error) {
 	r.GET("/api/v1/devices/*family", handlerApiV1Devices)
 	r.GET("/api/v1/location/:family/*device", handlerApiV1Location)
 	r.GET("/api/v1/locations/:family", handlerApiV1Locations)
+	r.GET("/api/v1/location_basic/:family/*device", handlerApiV1LocationSimple)
 	r.GET("/api/v1/by_location/:family", handlerApiV1ByLocation)
 	r.GET("/api/v1/calibrate/*family", handlerApiV1Calibrate)
 	r.POST("/api/v1/settings/passive", handlerReverseSettings)
@@ -487,6 +488,46 @@ func handlerApiV1Location(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "got location", "success": err == nil, "sensors": s, "analysis": analysis})
+	}
+}
+
+func handlerApiV1LocationSimple(c *gin.Context) {
+	s, analysis, err := func(c *gin.Context) (s models.SensorData, analysis models.LocationAnalysis, err error) {
+		family := strings.TrimSpace(c.Param("family"))
+		device := strings.TrimSpace(c.Param("device")[1:])
+
+		d, err := database.Open(family, true)
+		if err != nil {
+			return
+		}
+		s, err = d.GetLatest(device)
+		d.Close()
+		if err != nil {
+			return
+		}
+		analysis, err = api.AnalyzeSensorData(s)
+		if err != nil {
+			err = api.Calibrate(family, true)
+			if err != nil {
+				logger.Log.Warn(err)
+				return
+			}
+		}
+		return
+	}(c)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
+	} else {
+		simpleLocation := struct {
+			Location        string  `json:"loc"`
+			Probability     float64 `json:"prob"`
+			LastSeenTimeAgo int64   `json:"seen"`
+		}{
+			Location:        analysis.Guesses[0].Location,
+			Probability:     analysis.Guesses[0].Probability,
+			LastSeenTimeAgo: time.Now().UTC().UnixNano()/int64(time.Second) - (s.Timestamp / 1000),
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "ok", "success": err == nil, "data": simpleLocation})
 	}
 }
 
