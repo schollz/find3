@@ -10,6 +10,7 @@ import operator
 import time
 import logging
 import math
+import copy
 from threading import Thread
 import functools
 
@@ -102,6 +103,7 @@ class AI(object):
         t = time.time()
         payload = {'location_names': self.naming['to'], 'predictions': []}
         for name in self.algorithms:
+            t2 = time.time()
             try:
                 prediction = self.algorithms[
                     name].predict_proba(csv_data.reshape(1, -1))
@@ -124,6 +126,7 @@ class AI(object):
             if badValue:
                 continue
             payload['predictions'].append(predict_payload)
+            self.logger.debug("{} {:d} ms".format(name,int(1000 * (t2 - time.time()))))
 
         # try:
         #     t2 = time.time()
@@ -174,19 +177,24 @@ class AI(object):
                 if i == 0:
                     self.header = row
                 else:
-                    for j, val in enumerate(row):
-                        if val == '':
-                            row[j] = 0
-                            continue
-                        try:
-                            row[j] = float(val)
-                        except:
-                            if val not in self.naming['from']:
-                                self.naming['from'][val] = naming_num
-                                self.naming['to'][naming_num] = val
-                                naming_num += 1
-                            row[j] = self.naming['from'][val]
-                    rows.append(row)
+                    for k in range(20):
+                        new_row = copy.deepcopy(row)
+                        for j, val in enumerate(row):
+                            if val == '':
+                                new_row[j] = 0
+                                continue
+                            try:
+                                new_row[j] = float(val)
+                                if 'wifi' in self.header[j] or 'bluetooth' in self.header[j]:
+                                    new_row[j] = int(numpy.random.normal(new_row[j],4,1)[0])
+                            except:
+                                if val not in self.naming['from']:
+                                    self.naming['from'][val] = naming_num
+                                    self.naming['to'][naming_num] = val
+                                    naming_num += 1
+                                new_row[j] = self.naming['from'][val]
+                        print(new_row)
+                        rows.append(new_row)
 
         # first column in row is the classification, Y
         y = numpy.zeros(len(rows))

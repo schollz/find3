@@ -197,6 +197,7 @@ func findBestAlgorithm(datas []models.SensorData) (algorithmEfficacy map[string]
 	for w := 0; w < workers; w++ {
 		go func(id int, jobs <-chan Job, results chan<- Result) {
 			for job := range jobs {
+				logger.Log.Debugf("%d analyzing %d", id, job.i)
 				aidata, err := AnalyzeSensorData(job.data)
 				if err != nil {
 					logger.Log.Warnf("%s: %+v", err.Error(), job.data)
