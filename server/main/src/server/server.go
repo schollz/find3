@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/schollz/find3/server/main/src/api"
@@ -45,7 +46,8 @@ func Run() (err error) {
 	// Standardize logs
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/static", "./static")
-	r.Use(middleWareHandler(), gin.Recovery())
+	r.Use(middleWareHandler(), gin.Recovery(), gzip.Gzip(gzip.DefaultCompression))
+	// r.Use(middleWareHandler(), gin.Recovery())
 	r.HEAD("/", func(c *gin.Context) { // handler for the uptime robot
 		c.String(http.StatusOK, "OK")
 	})
@@ -99,6 +101,19 @@ func Run() (err error) {
 			"FamilyJS": template.JS(family),
 			"DeviceJS": template.JS(device),
 		})
+	})
+	r.GET("/api/v1/database/:family", func(c *gin.Context) {
+		db, err := database.Open(c.Param("family"), true)
+		if err == nil {
+			var dumped string
+			dumped, err = db.Dump()
+			db.Close()
+			if err == nil {
+				c.String(200, dumped)
+				return
+			}
+		}
+		c.JSON(200, gin.H{"success": false, "message": err.Error()})
 	})
 	r.GET("/view/dashboard/:family", func(c *gin.Context) {
 		type LocEff struct {
@@ -323,12 +338,6 @@ func ping(c *gin.Context) {
 }
 
 func handleTest(c *gin.Context) {
-	d, _ := database.Open("testdb", true)
-	err := d.Dump()
-	if err != nil {
-		fmt.Println(err)
-	}
-	d.Close()
 	c.String(http.StatusOK, "ok")
 }
 

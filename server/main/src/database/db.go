@@ -1,13 +1,14 @@
 package database
 
 import (
+	"bufio"
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ import (
 	"github.com/mr-tron/base58/base58"
 	"github.com/pkg/errors"
 	"github.com/schollz/find3/server/main/src/models"
+	"github.com/schollz/sqlite3dump"
 	"github.com/schollz/stringsizer"
 	flock "github.com/theckman/go-flock"
 )
@@ -159,12 +161,16 @@ func (d *Database) Set(key string, value interface{}) (err error) {
 	return
 }
 
-// Set will set a value in the database, when using it like a keystore.
-func (d *Database) Dump() (err error) {
-	command := fmt.Sprintf("sqlite3 d.name .dump")
-	logger.Log.Debug(command)
-	out, err := exec.Command(command).Output()
-	fmt.Println(out)
+// Dump will output the string version of the database
+func (d *Database) Dump() (dumped string, err error) {
+	var b bytes.Buffer
+	out := bufio.NewWriter(&b)
+	err = sqlite3dump.Dump(d.name, out)
+	if err != nil {
+		return
+	}
+	out.Flush()
+	dumped = string(b.Bytes())
 	return
 }
 
