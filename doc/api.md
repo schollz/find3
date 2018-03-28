@@ -48,6 +48,31 @@ GET /now
 ```
 >
 
+
+
+&nbsp;
+
+
+> ### Dump database {#dump-database}
+> 
+> This will return the SQL data for the database which can be used to backup the current state of the entire database.
+> 
+> **Request**
+```
+GET /api/v1/database/FAMILY
+```
+> 
+> **Response**
+> 
+> If successful it returns the SQL for the current database. It will return an error message if unsuccesful.
+>
+```
+BEGIN TRANSACTION;
+CREATE TABLE devices (id TEXT PRIMARY KEY, name TEXT);
+...
+```
+>
+
 &nbsp;
 
 
