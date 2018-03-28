@@ -551,7 +551,7 @@ GET /api/v1/by_location/FAMILY
 
 &nbsp; 
 
-> ### Get simple location of a single device {location-basic}
+> ### Get simple location of a single device {#location-basic}
 > **Request**
 ```
 GET /api/v1/location_basic/FAMILY/DEVICE
