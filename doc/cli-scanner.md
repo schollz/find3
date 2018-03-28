@@ -46,8 +46,8 @@ where "`...`" are the flags. Use `-help` to see which flags are available.
 You can start/stop the image using
 
 ```
-$ docker start scanning
-$ docker stop scanning
+$ docker start scanner
+$ docker stop scanner
 ```
 
 > Note, you can jump inside the image and play if you are curious of trying new things.
