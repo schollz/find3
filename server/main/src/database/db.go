@@ -699,6 +699,22 @@ func GetFamilies() (families []string) {
 	return
 }
 
+func (d *Database) DeleteLocation(locationName string) (err error) {
+	id, err := d.GetID("locations", locationName)
+	if err != nil {
+		return
+	}
+	stmt, err := d.db.Prepare("DELETE FROM sensors WHERE locationid = ?")
+	if err != nil {
+		err = errors.Wrap(err, "problem preparing SQL")
+		return
+
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(id)
+	return
+}
+
 // GetID will get the ID of an element in a table (devices/locations) and return an error if it doesn't exist
 func (d *Database) GetID(table string, name string) (id string, err error) {
 	// first check to see if it has already been added

@@ -56,7 +56,7 @@ GET /now
 > 
 > **Request**
 ```
-DELETE /api/v1/delete/FAMILY
+DELETE /api/v1/database/FAMILY
 ```
 > 
 > The FAMILY is the name of your family used for your recordings. Making this request will delete all your data, and it is not recoverable.
@@ -70,6 +70,30 @@ DELETE /api/v1/delete/FAMILY
 }
 ```
 >
+
+&nbsp;
+
+
+
+> ### Delete location  {#delete-location}
+> 
+> **Request**
+```
+DELETE /api/v1/location/FAMILY/LOCATION
+```
+> 
+> The FAMILY is the name of your family used for your recordings. Making this request will delete all your data learned for LOCATION, and it is not recoverable.
+> 
+> **Response**
+> 
+```
+{
+    "message": "deleted location 'LOCATION' for FAMILY",
+    "success": true
+}
+```
+>
+
 
 ## General scanning
 

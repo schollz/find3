@@ -67,7 +67,7 @@ func Run() (err error) {
 		}
 
 	})
-	r.DELETE("/api/v1/delete/:family", func(c *gin.Context) {
+	r.DELETE("/api/v1/database/:family", func(c *gin.Context) {
 		db, err := database.Open(c.Param("family"), true)
 		if err == nil {
 			db.Delete()
@@ -77,6 +77,18 @@ func Run() (err error) {
 			c.JSON(200, gin.H{"success": false, "message": err.Error()})
 		}
 
+	})
+	r.DELETE("/api/v1/location/:family/:location", func(c *gin.Context) {
+		db, err := database.Open(c.Param("family"), true)
+		if err == nil {
+			err = db.DeleteLocation(c.Param("location"))
+			db.Close()
+			if err == nil {
+				c.JSON(200, gin.H{"success": true, "message": "deleted location '" + c.Param("location") + "' for " + c.Param("family")})
+				return
+			}
+		}
+		c.JSON(200, gin.H{"success": false, "message": err.Error()})
 	})
 	r.GET("/view/location/:family/:device", func(c *gin.Context) {
 		family := c.Param("family")
