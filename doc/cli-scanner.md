@@ -25,7 +25,7 @@ $ docker pull schollz/find3-cli-scanner
 If you are using a Raspberry Pi (`armf` arch), you need to build the image yourself.
 
 ```
-$ wget https://raw.githubusercontent.com/schollz/find3/master/scanner/Dockerfile
+$ wget https://raw.githubusercontent.com/schollz/find3-cli-scanner/master/Dockerfile
 $ docker build -t schollz/find3-cli-scanner .
 ```
 
