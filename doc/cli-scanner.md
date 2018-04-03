@@ -6,7 +6,7 @@ The command-line scanner provides a means for your laptop your computer to monit
 
 ## Install
 
-There are two ways to install - with Docker, or natively on Linux. If you are using OS X / Windows, I suggest to use Docker. Some of the instructions (namely getting WiFi RSSI values) are specific to the Ubuntu OS.
+There are two ways to install - with Docker, or natively on Linux. If you are using OS X / Windows, I suggest to use Docker. If you are using a Raspberry Pi, I suggest to [install natively](#install-natively). Some of the instructions (namely getting WiFi RSSI values) are specific to the Ubuntu OS.
 
 ### Install with Docker
 
@@ -57,7 +57,7 @@ $ docker run --net="host" --privileged --name scanning -i -t scanner /bin/bash
 > 
 
 
-### Install natively
+### Install natively {#install-natively}
 
 Install the dependencies.
 
@@ -69,6 +69,7 @@ $ sudo apt-get install wireless-tools iw net-tools
 
 ```
 $ sudo apt-get install bluetooth
+$ sudo apt-get install pi-bluetooth (raspberry pi only)
 ```
 
 (Optional) If you want to do Passive scanning, then do:
