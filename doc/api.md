@@ -160,7 +160,6 @@ POST /data
    }
 }
 ```
-
 > 
 > When posting you must include a JSON body that specifies the family name ("`f`") and the device name ("`d`").
 >
@@ -172,6 +171,8 @@ POST /data
 >
 > The GPS coordinates are optional. If submitted, they will be saved in a database with the location (if provided) and the sensor data. 
 > 
+> Also, optionally you can add the query parameter `?justsave=1` which will prevent the server from doing any classification on the incoming data.
+>
 > **Response**
 > 
 ```
