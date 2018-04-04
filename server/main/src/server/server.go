@@ -620,6 +620,7 @@ func handlerNow(c *gin.Context) {
 
 func handlerData(c *gin.Context) {
 	message, err := func(c *gin.Context) (message string, err error) {
+		justSave := c.DefaultQuery("justsave", "0") == "1"
 		var d models.SensorData
 		err = c.BindJSON(&d)
 		if err != nil {
@@ -634,7 +635,7 @@ func handlerData(c *gin.Context) {
 		}
 
 		// process data
-		err = processSensorData(d)
+		err = processSensorData(d, justSave)
 		if err != nil {
 			return
 		}
@@ -911,12 +912,15 @@ func handlerFIND(c *gin.Context) {
 	}
 }
 
-func processSensorData(p models.SensorData) (err error) {
+func processSensorData(p models.SensorData, justSave ...bool) (err error) {
 	err = api.SaveSensorData(p)
 	if err != nil {
 		return
 	}
 
+	if len(justSave) > 0 && justSave[0] {
+		return
+	}
 	go sendOutData(p)
 	return
 }
