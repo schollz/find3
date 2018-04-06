@@ -54,10 +54,10 @@ First [get started with openHAB](https://docs.openhab.org/tutorials/beginner/).
 You need to get the [MQTT Binding](http://docs.openhab.org/addons/bindings/mqtt1/readme.html) to get data from FIND. Once installed, create a service `services/mqtt.cfg` with the following:
 
 ```
-broker.url=tcp://cloud.internalpositioning.com:1883
-broker.clientId=OpenHAB
-broker.user=FAMILY
-broker.pwd=MQTT_PASS
+find3.url=tcp://cloud.internalpositioning.com:1883
+find3.clientId=OpenHAB
+find3.user=FAMILY
+find3.pwd=MQTT_PASS
 ```
 
 The `FAMILY` is the family name you use for FIND. The `MQTT_PASS` is the password generated from FIND. The broker and port is the default server (`cloud.internalpositioning.com:1883`), but you can change those if you are hosting yourself.
@@ -65,7 +65,7 @@ The `FAMILY` is the family name you use for FIND. The `MQTT_PASS` is the passwor
 To track the information you need to add the username of the person into the `location.items` file.
 
 ```
-String	mqttfind_USER			"USER is @ [%s]"	(All)	{mqtt="<[BROKER:FAMILY/location/USER:state:JSONPATH($.gueses[0].location)]"}
+String	mqttfind_USER			"USER is @ [%s]"	(All)	{mqtt="<[find3:FAMILY/location/USER:state:JSONPATH($.guesses[0].location)]"}
 ```
 The `USER` is a given user you have for FIND. Make sure to have JSON transformations enabled (the addon can be added by putting it in the transformation line in `services/addons.cfg`).
 
