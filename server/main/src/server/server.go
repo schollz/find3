@@ -149,6 +149,7 @@ func Run() (err error) {
 			defer d.Close()
 			var efficacy Efficacy
 
+			logger.Log.Debugf("[%s] getting device counts", family)
 			deviceCounts, err := d.GetDeviceCounts()
 			if err != nil {
 				err = errors.Wrap(err, "could not get devices")
@@ -166,6 +167,7 @@ func Run() (err error) {
 			jsonDeviceList, _ := json.Marshal(deviceList)
 			logger.Log.Debugf("found %d devices", len(deviceList))
 
+			logger.Log.Debugf("[%s] getting locations", family)
 			locationList, err := d.GetLocations()
 			if err != nil {
 				err = errors.Wrap(err, "could not get locations")
@@ -174,6 +176,7 @@ func Run() (err error) {
 			jsonLocationList, _ := json.Marshal(locationList)
 			logger.Log.Debugf("found %d devices", len(locationList))
 
+			logger.Log.Debugf("[%s] total learned count", family)
 			efficacy.TotalCount, err = d.TotalLearnedCount()
 			if err != nil {
 				err = errors.Wrap(err, "could not get TotalLearnedCount")
@@ -203,6 +206,8 @@ func Run() (err error) {
 				err = errors.Wrap(err, "could not get AlgorithmEfficacy")
 				return
 			}
+
+			logger.Log.Debugf("[%s] getting location count", family)
 			locationCounts, err := d.GetLocationCounts()
 			if err != nil {
 				err = errors.Wrap(err, "could not get location counts")
@@ -256,11 +261,13 @@ func Run() (err error) {
 
 			d.Close()
 
-			byLocations, err := api.GetByLocation(family, 10000000, false, 3, 0, 0)
+			logger.Log.Debugf("[%s] getting by_locations", family)
+			byLocations, err := api.GetByLocation(family, 15, false, 3, 0, 0)
 			if err != nil {
 				logger.Log.Warn(err)
 			}
 
+			logger.Log.Debugf("[%s] creating device table", family)
 			table := []DeviceTable{}
 			for _, byLocation := range byLocations {
 				for _, device := range byLocation.Devices {
