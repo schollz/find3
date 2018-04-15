@@ -609,7 +609,7 @@ func (d *Database) GetDevices() (devices []string, err error) {
 	}
 	err = rows.Err()
 	if err != nil {
-		err = errors.Wrap(err, "rows")
+		err = errors.Wrap(err, fmt.Sprintf("problem scanning rows, only got %d devices", len(devices)))
 	}
 	return
 }
@@ -871,19 +871,19 @@ func (d *Database) Close() (err error) {
 	if d.isClosed {
 		return
 	}
+	// close database
+	err2 := d.db.Close()
+	if err2 != nil {
+		err = err2
+		logger.Log.Error(err)
+	}
+
 	// close filelock
 	err = d.fileLock.Unlock()
 	if err != nil {
 		logger.Log.Error(err)
 	} else {
 		os.Remove(d.name + ".lock")
-	}
-
-	// close database
-	err2 := d.db.Close()
-	if err2 != nil {
-		err = err2
-		logger.Log.Error(err)
 	}
 	d.isClosed = true
 	return
