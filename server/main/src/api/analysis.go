@@ -145,7 +145,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 
 	if aidata.IsUnknown {
 		aidata.Guesses = []models.LocationPrediction{
-			models.LocationPrediction{
+			{
 				Location:    "?",
 				Probability: 1,
 			},
@@ -220,7 +220,7 @@ func (p PairList) Len() int           { return len(p) }
 func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
 func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
-func GetByLocation(family string, minutesAgoInt int, showRandomized bool, activeMinsThreshold int, minScanners int, minProbability float64) (byLocations []models.ByLocation, err error) {
+func GetByLocation(family string, minutesAgoInt int, showRandomized bool, activeMinsThreshold int, minScanners int, minProbability float64, deviceCounts map[string]int) (byLocations []models.ByLocation, err error) {
 	millisecondsAgo := int64(minutesAgoInt * 60 * 1000)
 
 	d, err := database.Open(family, true)
@@ -228,6 +228,7 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 		return
 	}
 	defer d.Close()
+	logger.Log.Debugf("[%s] getting sensor from greater time", family)
 	sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
 
 	preAnalyzed := make(map[int64][]models.LocationPrediction)
@@ -238,11 +239,16 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 		}
 		preAnalyzed[sensor.Timestamp] = a
 	}
-	deviceCounts, err := d.GetDeviceCounts()
-	if err != nil {
-		err = errors.Wrap(err, "problem getting device counts")
-		return
+
+	if len(deviceCounts) == 0 {
+		deviceCounts, err = d.GetDeviceCounts()
+		if err != nil {
+			err = errors.Wrap(err, "could not get devices")
+			return
+		}
 	}
+
+	logger.Log.Debugf("[%s] getting device first-time", family)
 	deviceFirstTime, err := d.GetDeviceFirstTime()
 	if err != nil {
 		err = errors.Wrap(err, "problem getting device first time")

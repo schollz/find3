@@ -85,6 +85,14 @@ func (d *Database) MakeTables() (err error) {
 		return
 	}
 
+	sqlStmt = `create index devices_name on devices (name);`
+	_, err = d.db.Exec(sqlStmt)
+	if err != nil {
+		err = errors.Wrap(err, "MakeTables")
+		logger.Log.Error(err)
+		return
+	}
+
 	sensorDataSS, _ := stringsizer.New()
 	err = d.Set("sensorDataStringSizer", sensorDataSS.Save())
 	if err != nil {

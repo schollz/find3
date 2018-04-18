@@ -155,6 +155,7 @@ func Run() (err error) {
 				err = errors.Wrap(err, "could not get devices")
 				return
 			}
+
 			deviceList := make([]string, len(deviceCounts))
 			i := 0
 			for device := range deviceCounts {
@@ -262,7 +263,7 @@ func Run() (err error) {
 			d.Close()
 
 			logger.Log.Debugf("[%s] getting by_locations", family)
-			byLocations, err := api.GetByLocation(family, 15, false, 3, 0, 0)
+			byLocations, err := api.GetByLocation(family, 15, false, 3, 0, 0, deviceCounts)
 			if err != nil {
 				logger.Log.Warn(err)
 			}
@@ -477,7 +478,7 @@ func handlerApiV1ByLocation(c *gin.Context) {
 			return
 		}
 
-		byLocations, err = api.GetByLocation(family, minutesAgoInt, showRandomized, activeMinsThreshold, minScanners, minProbability)
+		byLocations, err = api.GetByLocation(family, minutesAgoInt, showRandomized, activeMinsThreshold, minScanners, minProbability, make(map[string]int))
 		return
 	}(c)
 	if err != nil {
