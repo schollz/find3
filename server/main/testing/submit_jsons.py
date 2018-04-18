@@ -20,4 +20,4 @@ fname = sys.argv[2]
 print(fname)
 with open(fname, 'r') as f:
     for line in tqdm(f, total=get_num_lines(fname)):
-        r = requests.post(server + "/data", data=line.strip())
+        r = requests.post(server + "/data?justsave=0", data=line.strip())
