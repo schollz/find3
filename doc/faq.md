@@ -75,3 +75,7 @@ To amend this I did more learning at that location and then I reloaded the brows
 </center>
 
 At this point, the accuracy had improved enough for me to move on to learn other locations. *Note:* as you learn new locations, they might end up being too similar to previous locations which could decrease the accuracy of previously learned locations. This is dependent on the number of available sensor points in the vicinity.
+
+### Can I run FIND3 on a Raspberry Pi?
+
+Yes. Just make sure to build the server and/or client natively from the source code. If you use Docker, make sure to [install Docker correctly](https://github.com/schollz/find3/issues/1#issuecomment-370205508) and build the Docker images yourself and note that you need at least 1GB of RAM and 1GB of Swap to build the images. 
