@@ -79,3 +79,7 @@ At this point, the accuracy had improved enough for me to move on to learn other
 ### Can I run FIND3 on a Raspberry Pi?
 
 Yes. Just make sure to build the server and/or client natively from the source code. If you use Docker, make sure to [install Docker correctly](https://github.com/schollz/find3/issues/1#issuecomment-370205508) and build the Docker images yourself and note that you need at least 1GB of RAM and 1GB of Swap to build the images. 
+
+### Why use SQLite vs BoltDB?
+
+I really wanted to have SQL to query things. I know that [Storm, the BoltDB toolkit](https://github.com/asdine/storm) can do this, but with SQLite I knew I wouldn't have to re-write a lot of things (database dumping/loading) and I knew I wouldn't face any problems in querying.
