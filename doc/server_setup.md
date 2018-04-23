@@ -95,12 +95,11 @@ $ ./main -port 8005
 To test that things are working you can submit some test data to the server. Download a test script which will make requests to the server:
 
 ```bash
-$ wget https://raw.githubusercontent.com/schollz/find3/master/server/main/testing/learn.sh
-$ chmod +x learn.sh
-$ ./learn.sh
+$ cd $GOPATH/src/github.com/schollz/find3/server/main/testing
+$ python3 submit_jsons.py http://localhost:8005 testdb.learn.1439597065993.jsons
 ```
 
-You have just submitted about 300 fingerprints for three different locations for the family `testdb` for the device `zack`.
+You have just submitted 343 fingerprints for three different locations for the family `testdb` for the device `zack`.
 
 This test data had `location` associated with it, so you can use it for learning. To do the learning just do 
 
