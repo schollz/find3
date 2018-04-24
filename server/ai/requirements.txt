@@ -9,7 +9,6 @@ Jinja2==2.10
 MarkupSafe==1.0
 more-itertools==4.1.0
 numpy==1.14.2
-pkg-resources==0.0.0
 pluggy==0.6.0
 py==1.5.3
 py-cpuinfo==4.0.0
