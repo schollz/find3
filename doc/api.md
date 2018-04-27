@@ -562,7 +562,7 @@ GET /api/v1/location_basic/FAMILY/DEVICE
 > 
 > This is a much simplified response for use with embedded evices. The `data` has the latest location (`loc`) and probability (`p`) for the specified deivce.
 >
-> Additionaly it specifies how long ago the device was last seen at that location, in seaconds (`seen`).
+> Additionaly it specifies how long ago the device was last seen at that location, in seconds (`seen`).
 >
 > Example:
 >
