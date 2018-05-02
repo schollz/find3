@@ -2,7 +2,7 @@
 
 ### Introduction
 
-This is a compilation of the most frequently asked questions. If you do not find your question here, please feel free to [ask in the Slack channel](https://join.slack.com/t/find3/shared_invite/enQtMzI0MjkwMjc3MDYzLWJiZWEzZjU5NTljM2JlYmE1MDY0NThiYmY2NDYwNGYxNTNmNTJjZjFmNjMwNGMwY2UyNzczNzZhZTIxZWY3ODQ) or [send me a message](https://www.internalpositioning.com/#cta-5).
+This is a compilation of the most frequently asked questions. If you do not find your question here, please feel free to [ask in the Slack channel](https://join.slack.com/t/find3/shared_invite/enQtMzU4MjY0NjE1NjU0LWRkY2JhNWFkM2U3Y2JhY2RlZTQ5ZTdmZTQ2M2UzMjI2MGVmMjZlOWQyZmU3MzM5YzIzOTM0YmYzYmQ3NTQzNjQ) or [send me a message](https://www.internalpositioning.com/#cta-5).
 
 ## The project
 

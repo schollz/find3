@@ -46,7 +46,7 @@ mailing lists, user forums, and so on.
 - [The FIND3 project on GitHub](https://github.com/schollz/find3)
 - [Issue tracker](https://github.com/schollz/find3/issues)
 - Official discussion forums / mailing lists:
-  - [Slack channel](https://join.slack.com/t/find3/shared_invite/enQtMzI0MjkwMjc3MDYzLWJiZWEzZjU5NTljM2JlYmE1MDY0NThiYmY2NDYwNGYxNTNmNTJjZjFmNjMwNGMwY2UyNzczNzZhZTIxZWY3ODQ),
+  - [Slack channel](https://join.slack.com/t/find3/shared_invite/enQtMzU4MjY0NjE1NjU0LWRkY2JhNWFkM2U3Y2JhY2RlZTQ5ZTdmZTQ2M2UzMjI2MGVmMjZlOWQyZmU3MzM5YzIzOTM0YmYzYmQ3NTQzNjQ),
     for discussion FIND3 users and developers.
   - [FIND mailing list](http://eepurl.com/bhfFI1),
     a low-traffic list for important announcements about the project;
