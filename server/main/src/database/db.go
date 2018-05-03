@@ -19,7 +19,6 @@ import (
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/sqlite3dump"
 	"github.com/schollz/stringsizer"
-	flock "github.com/theckman/go-flock"
 )
 
 // MakeTables creates two tables, a `keystore` table:
@@ -196,22 +195,22 @@ func (d *Database) AddPrediction(timestamp int64, aidata []models.LocationPredic
 	}
 	tx, err := d.db.Begin()
 	if err != nil {
-		return errors.Wrap(err, "AddPrediction")
+		return errors.Wrap(err, "begin AddPrediction")
 	}
 	stmt, err := tx.Prepare("insert or replace into location_predictions (timestamp,prediction) values (?, ?)")
 	if err != nil {
-		return errors.Wrap(err, "AddPrediction")
+		return errors.Wrap(err, "stmt AddPrediction")
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(timestamp, string(b))
 	if err != nil {
-		return errors.Wrap(err, "AddPrediction")
+		return errors.Wrap(err, "exec AddPrediction")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "AddPrediction")
+		return errors.Wrap(err, "commit AddPrediction")
 	}
 	return
 }
@@ -832,14 +831,19 @@ func Open(family string, readOnly ...bool) (d *Database, err error) {
 
 	// obtain a lock on the database
 	// logger.Log.Debugf("getting filelock on %s", d.name+".lock")
-	d.fileLock = flock.NewFlock(d.name + ".lock")
 	for {
-		locked, err := d.fileLock.TryLock()
-		if err == nil && locked {
+		var ok bool
+		databaseLock.Lock()
+		if _, ok = databaseLock.Locked[d.name]; !ok {
+			databaseLock.Locked[d.name] = true
+		}
+		databaseLock.Unlock()
+		if !ok {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
+	// logger.Log.Debugf("got filelock")
 
 	// check if it is a new database
 	newDatabase := false
@@ -887,12 +891,10 @@ func (d *Database) Close() (err error) {
 	}
 
 	// close filelock
-	err = d.fileLock.Unlock()
-	if err != nil {
-		logger.Log.Error(err)
-	} else {
-		os.Remove(d.name + ".lock")
-	}
+	// logger.Log.Debug("closing lock")
+	databaseLock.Lock()
+	delete(databaseLock.Locked, d.name)
+	databaseLock.Unlock()
 	d.isClosed = true
 	return
 }

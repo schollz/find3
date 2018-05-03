@@ -57,8 +57,8 @@ func (a *Algorithm) Fit(datas []models.SensorData) (err error) {
 	if err != nil {
 		return
 	}
-	defer db.Close()
 	err = db.Set("NB2", a.Data)
+	db.Close()
 	return
 }
 

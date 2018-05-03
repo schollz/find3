@@ -2,10 +2,10 @@ package database
 
 import (
 	"database/sql"
+	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/schollz/find3/server/main/src/logging"
-	flock "github.com/theckman/go-flock"
 )
 
 // DataFolder is set to where you want each Sqlite3 database to be stored
@@ -17,7 +17,20 @@ type Database struct {
 	name     string
 	family   string
 	db       *sql.DB
-	fileLock *flock.Flock
 	logger   *logging.SeelogWrapper
 	isClosed bool
+}
+
+type DatabaseLock struct {
+	Locked map[string]bool
+	sync.RWMutex
+}
+
+var databaseLock *DatabaseLock
+
+func init() {
+	databaseLock = new(DatabaseLock)
+	databaseLock.Lock()
+	defer databaseLock.Unlock()
+	databaseLock.Locked = make(map[string]bool)
 }
