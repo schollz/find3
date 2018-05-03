@@ -327,10 +327,11 @@ func Run() (err error) {
 	if UseMQTT {
 		r.GET("/api/v1/mqtt/:family", handlerMQTT) // handler for setting MQTT
 	}
-	r.POST("/data", handlerData)       // typical data handler
-	r.POST("/passive", handlerReverse) // typical data handler
-	r.POST("/learn", handlerFIND)      // backwards-compatible with FIND for learning
-	r.POST("/track", handlerFIND)      // backwards-compatible with FIND for tracking
+	r.POST("/data", handlerData)             // typical data handler
+	r.POST("/classify", handlerDataClassify) // classify a fingerprint
+	r.POST("/passive", handlerReverse)       // typical data handler
+	r.POST("/learn", handlerFIND)            // backwards-compatible with FIND for learning
+	r.POST("/track", handlerFIND)            // backwards-compatible with FIND for tracking
 	logger.Log.Infof("Running on 0.0.0.0:%s", Port)
 
 	err = r.Run(":" + Port) // listen and serve on 0.0.0.0:8080
@@ -658,6 +659,41 @@ func handlerData(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
+	}
+}
+
+func handlerDataClassify(c *gin.Context) {
+	aidata, message, err := func(c *gin.Context) (aidata models.LocationAnalysis, message string, err error) {
+		var d models.SensorData
+		err = c.BindJSON(&d)
+		if err != nil {
+			err = errors.Wrap(err, "problem binding data")
+			return
+		}
+
+		err = d.Validate()
+		if err != nil {
+			err = errors.Wrap(err, "problem validating data")
+			return
+		}
+
+		// process data
+		err = processSensorData(d, true)
+		if err != nil {
+			return
+		}
+
+		aidata, err = api.AnalyzeSensorData(d)
+		logger.Log.Debugf("[%s] /data %+v", d.Family, d)
+		message = "classified data"
+		return
+	}(c)
+
+	if err != nil {
+		logger.Log.Debugf("problem parsing: %s", err.Error())
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false, "analysis": nil})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": message, "success": true, "analysis": aidata})
 	}
 }
 
