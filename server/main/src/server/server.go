@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"bufio"
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -327,6 +328,7 @@ func Run() (err error) {
 	if UseMQTT {
 		r.GET("/api/v1/mqtt/:family", handlerMQTT) // handler for setting MQTT
 	}
+	r.POST("/import", handlerImport)   // import data from json file
 	r.POST("/data", handlerData)       // typical data handler
 	r.POST("/passive", handlerReverse) // typical data handler
 	r.POST("/learn", handlerFIND)      // backwards-compatible with FIND for learning
@@ -624,6 +626,48 @@ func sendOutLocation(family, device string) (s models.SensorData, analysis model
 
 func handlerNow(c *gin.Context) {
 	c.String(200, strconv.Itoa(int(time.Now().UTC().UnixNano()/int64(time.Millisecond))))
+}
+
+func handlerImport(c *gin.Context){
+	file, header , err := c.Request.FormFile("import_file")
+	filename := header.Filename
+	fmt.Println(filename)
+	if err != nil {
+		err = errors.Wrap(err, "problem with file loading")
+		c.Redirect(http.StatusMovedPermanently, "/")
+		c.HTML(http.StatusNoContent , "login.tmpl", gin.H{
+			"ImportMessage": "Import failed!",
+		})
+	}
+	defer file.Close()
+	justSave := true // only save - no learning
+	scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+			var d models.SensorData
+			// read each line - parse json and put into the database
+	    err := json.Unmarshal([]byte(scanner.Text()), &d)
+			if err != nil {
+				err = errors.Wrap(err, "problem with json parsing")
+				continue
+			}
+
+			err = d.Validate()
+			if err != nil {
+				err = errors.Wrap(err, "problem validating data")
+				continue
+			}
+
+			// process data
+			err = processSensorData(d, justSave)
+			if err != nil {
+				continue
+			}
+    }
+
+	c.Redirect(http.StatusMovedPermanently, "/")
+	c.HTML(http.StatusOK, "login.tmpl", gin.H{
+		"ImportMessage": "Done!",
+	})
 }
 
 func handlerData(c *gin.Context) {

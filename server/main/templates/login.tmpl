@@ -18,26 +18,58 @@
 </head>
 
 <body>
-    <form class="form-signin" method="post" action="/">
-        <div class="text-center mb-4">
-            <img class="mb-4" src="/static/img/find3-promo-black.png" alt="" width="180">
-            <h1 class="h3 mb-3 font-weight-normal">Login to dashboard</h1>
-            <p>Enter your family name to continue.</p>
-            {{ with .Message }}
-            <div class="alert alert-info">
-                {{.}}
+    <div class="form-signin">
+        <form method="post" action="/">
+            <div class="text-center mb-4">
+                <img class="mb-4" src="/static/img/find3-promo-black.png" alt="" width="180">
+                <h1 class="h3 mb-3 font-weight-normal">Login to dashboard</h1>
+                <p>Enter your family name to continue.</p>
+                {{ with .Message }}
+                <div class="alert alert-info">
+                    {{.}}
+                </div>
+                {{ end}}
             </div>
-            {{ end}}
-        </div>
 
-        <div class="form-label-group">
-            <input type="text" id="inputFamily" name="inputFamily" class="form-control" placeholder="Email address" required autofocus>
-            <label for="inputFamily">Family</label>
-        </div>
+            <div class="form-label-group">
+                <input type="text" id="inputFamily" name="inputFamily" class="form-control" placeholder="Email address" required autofocus>
+                <label for="inputFamily">Family</label>
+            </div>
 
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-        <p class="mt-5 mb-3 text-muted text-center">&copy; 2015-2018</p>
-    </form>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        </form>
+
+        <hr>
+
+        <div class="card">
+          <button class="btn btn-secondary btn-block" name="submit" id="import-box" type="submit">Database import</button>
+          {{ with .ImportMessage }}
+          <div class="alert alert-info">
+              {{.}}
+          </div>
+          {{ end}}
+          <div class="card-body" id="import-body" style="display:none;">
+            <p class="font-weight-light">Select JSON file for database import</p>
+            <form action="/import" method="post" enctype="multipart/form-data">
+              <div class="form-group">
+                  <input type="file" name="import_file" id="validatedCustomFile" required>
+              </div>
+              <button class="btn btn-primary btn-block" name="submit" type="submit">Import</button>
+            </form>
+          </div>
+        </div>
+        <p class="mt-5 mb-3 text-muted text-center">© 2015-2018</p>
+    </div>
+
+    <script src="/static/js/vendor/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript">
+        $( "#import-box" ).click(function() {
+          if ($("#import-body").is(":visible")){
+            $("#import-body").hide();
+          }else{
+            $("#import-body" ).show();
+          }
+        });
+    </script>
 </body>
-
 </html>
