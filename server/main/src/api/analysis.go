@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	cache "github.com/robfig/go-cache"
 	"github.com/schollz/find3/server/main/src/database"
-	"github.com/schollz/find3/server/main/src/learning/nb1"
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/find3/server/main/src/utils"
 )
@@ -101,21 +100,22 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 	for key, value := range aidata.LocationNames {
 		reverseLocationNames[value] = key
 	}
-	// do naive bayes1 learning
-	nb := nb1.New()
-	pl, err := nb.Classify(s)
-	if err == nil {
-		algPrediction := models.AlgorithmPrediction{Name: "Extended Naive Bayes1"}
-		algPrediction.Locations = make([]string, len(pl))
-		algPrediction.Probabilities = make([]float64, len(pl))
-		for i := range pl {
-			algPrediction.Locations[i] = reverseLocationNames[pl[i].Key]
-			algPrediction.Probabilities[i] = float64(int(pl[i].Value*100)) / 100
-		}
-		aidata.Predictions = append(aidata.Predictions, algPrediction)
-	} else {
-		logger.Log.Warnf("[%s] nb1 classify: %s", s.Family, err.Error())
-	}
+
+	// // do naive bayes1 learning
+	// nb := nb1.New()
+	// pl, err := nb.Classify(s)
+	// if err == nil {
+	// 	algPrediction := models.AlgorithmPrediction{Name: "Extended Naive Bayes1"}
+	// 	algPrediction.Locations = make([]string, len(pl))
+	// 	algPrediction.Probabilities = make([]float64, len(pl))
+	// 	for i := range pl {
+	// 		algPrediction.Locations[i] = reverseLocationNames[pl[i].Key]
+	// 		algPrediction.Probabilities[i] = float64(int(pl[i].Value*100)) / 100
+	// 	}
+	// 	aidata.Predictions = append(aidata.Predictions, algPrediction)
+	// } else {
+	// 	logger.Log.Warnf("[%s] nb1 classify: %s", s.Family, err.Error())
+	// }
 
 	// // do naive bayes2 learning
 	// nbLearned2 := nb2.New()

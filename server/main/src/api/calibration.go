@@ -14,8 +14,6 @@ import (
 	"time"
 
 	"github.com/schollz/find3/server/main/src/database"
-	"github.com/schollz/find3/server/main/src/learning/nb1"
-	"github.com/schollz/find3/server/main/src/learning/nb2"
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/find3/server/main/src/utils"
 )
@@ -38,21 +36,21 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 		return
 	}
 
-	// do the Golang naive bayes fitting
-	nb := nb1.New()
-	logger.Log.Debugf("naive bayes1 fitting")
-	errFit := nb.Fit(datasLearn)
-	if errFit != nil {
-		logger.Log.Error(errFit)
-	}
+	// // do the Golang naive bayes fitting
+	// nb := nb1.New()
+	// logger.Log.Debugf("naive bayes1 fitting")
+	// errFit := nb.Fit(datasLearn)
+	// if errFit != nil {
+	// 	logger.Log.Error(errFit)
+	// }
 
-	// do the Golang naive bayes2 fitting
-	nbFit2 := nb2.New()
-	logger.Log.Debugf("naive bayes2 fitting")
-	errFit = nbFit2.Fit(datasLearn)
-	if errFit != nil {
-		logger.Log.Error(errFit)
-	}
+	// // do the Golang naive bayes2 fitting
+	// nbFit2 := nb2.New()
+	// logger.Log.Debugf("naive bayes2 fitting")
+	// errFit = nbFit2.Fit(datasLearn)
+	// if errFit != nil {
+	// 	logger.Log.Error(errFit)
+	// }
 
 	// do the python learning
 	err = learnFromData(family, datasLearn)
