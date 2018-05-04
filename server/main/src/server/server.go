@@ -525,6 +525,7 @@ func handlerApiV1LocationSimple(c *gin.Context) {
 	s, analysis, err := func(c *gin.Context) (s models.SensorData, analysis models.LocationAnalysis, err error) {
 		family := strings.TrimSpace(c.Param("family"))
 		device := strings.TrimSpace(c.Param("device")[1:])
+		logger.Log.Debugf("[%s] getting location for %s", family, device)
 
 		d, err := database.Open(family, true)
 		if err != nil {
