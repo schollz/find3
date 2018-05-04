@@ -27,7 +27,7 @@ app = Flask(__name__)
 
 from learn import AI
 
-ai_cache = ExpiringDict(max_len=100000,max_age_seconds=60)
+ai_cache = ExpiringDict(max_len=100000, max_age_seconds=60)
 
 
 def to_base58(family):
@@ -46,7 +46,8 @@ def classify():
     if 'data_folder' in payload:
         data_folder = payload['data_folder']
 
-    fname = os.path.join(data_folder, to_base58(payload['sensor_data']['f']) + ".find3.ai")
+    fname = os.path.join(data_folder, to_base58(
+        payload['sensor_data']['f']) + ".find3.ai")
 
     ai = ai_cache.get(payload['sensor_data']['f'])
     if ai == None:
@@ -60,7 +61,8 @@ def classify():
 
     classified = ai.classify(payload['sensor_data'])
 
-    logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
+    logger.debug("classifed for {} {:d} ms".format(
+        payload['sensor_data']['f'], int(1000 * (t - time.time()))))
     return jsonify({"success": True, "message": "data analyzed", 'analysis': classified})
 
 
@@ -87,7 +89,8 @@ def learn():
         return jsonify({"success": False, "message": "could not find '{}'".format(fname)})
 
     print(payload['family'])
-    ai.save(os.path.join(data_folder, to_base58(payload['family']) + ".find3.ai"))
+    ai.save(os.path.join(data_folder, to_base58(
+        payload['family']) + ".find3.ai"))
     ai_cache[payload['family']] = ai
     return jsonify({"success": True, "message": "calibrated data"})
 
