@@ -118,6 +118,9 @@ class AI(object):
         header = ['wifi-a', 'wifi-b']
         csv_data = [-67 0]
         """
+        if name == 'Gaussian Process':
+            return
+            
         t = time.time()
         try:
             prediction = self.algorithms[
