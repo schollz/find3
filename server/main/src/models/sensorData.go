@@ -8,6 +8,8 @@ import (
 
 // SensorData is the typical data structure for storing sensor data.
 type SensorData struct {
+  // test
+  Hello string `json:"hello"`
 	// Timestamp is the unique identifier, the time in milliseconds
 	Timestamp int64 `json:"t"`
 	// Family is a group of devices
