@@ -3,7 +3,8 @@
 [![Version 3.0](https://img.shields.io/badge/read-docs-blue.svg?style=for-the-badge)](https://www.internalpositioning.com/doc) 
 [![Version 3.0](https://img.shields.io/badge/join-slack-orange.svg?style=for-the-badge)](https://join.slack.com/t/find3/shared_invite/enQtMzU4MjY0NjE1NjU0LWRkY2JhNWFkM2U3Y2JhY2RlZTQ5ZTdmZTQ2M2UzMjI2MGVmMjZlOWQyZmU3MzM5YzIzOTM0YmYzYmQ3NTQzNjQ) 
 [![Version 3.0](https://img.shields.io/badge/version-3.0.0-brightgreen.svg?style=for-the-badge)](https://github.com/schollz/find3/releases/latest) 
-[![Donate](https://img.shields.io/badge/beerpay-$5-brown.svg?style=for-the-badge)](https://www.buymeacoffee.com/schollz)
+[![Donate](https://img.shields.io/badge/donate-$-brown.svg?style=for-the-badge)](https://www.paypal.me/ZackScholl/5.00)
+[![Say Thanks](https://img.shields.io/badge/Say%20Thanks-!-yellow.svg?style=for-the-badge)](https://saythanks.io/to/schollz)
 
 **The Framework for Internal Navigation and Discovery** (_FIND_) is like indoor GPS for your house or business, using only a simple smartphone or laptop.
 
