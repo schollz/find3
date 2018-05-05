@@ -172,8 +172,8 @@ class AI(object):
         # except Exception as e:
         #     self.logger.error(str(e))
 
-        self.logger.debug("{} {:d} ms".format(
-            name, int(1000 * (t - time.time()))))
+        # self.logger.debug("{} {:d} ms".format(
+        #     name, int(1000 * (t - time.time()))))
         self.results[index] = predict_payload
 
     @timeout(10)
