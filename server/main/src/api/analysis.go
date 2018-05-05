@@ -166,7 +166,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 		}
 		aidata.Predictions = append(aidata.Predictions, algPrediction)
 	} else {
-		logger.Log.Warnf("[%s] nb1 classify: %s", s.Family, err.Error())
+		logger.Log.Warnf("[%s] nb1 classify: %s", s.Family, bResult.err.Error())
 	}
 
 	// process nb2
@@ -182,7 +182,7 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 		}
 		aidata.Predictions = append(aidata.Predictions, algPrediction)
 	} else {
-		logger.Log.Warnf("[%s] nb2 classify: %s", s.Family, err.Error())
+		logger.Log.Warnf("[%s] nb2 classify: %s", s.Family, cResult.err.Error())
 	}
 
 	d, err := database.Open(s.Family)
