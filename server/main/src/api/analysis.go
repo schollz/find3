@@ -298,18 +298,29 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 
 	startTime = time.Now()
 	preAnalyzed := make(map[int64][]models.LocationPrediction)
+	devicesToCheckMap := make(map[string]struct{})
 	for _, sensor := range sensors {
 		a, errGet := d.GetPrediction(sensor.Timestamp)
 		if errGet != nil {
 			continue
 		}
 		preAnalyzed[sensor.Timestamp] = a
+		devicesToCheckMap[sensor.Device] = struct{}{}
 	}
 	logger.Log.Debugf("[%s] got predictions in map %s", family, time.Since(startTime))
 
+	// get list of devices I care about
+	devicesToCheck := make([]string, len(devicesToCheckMap))
+	i := 0
+	for device := range devicesToCheckMap {
+		devicesToCheck[i] = device
+		i++
+	}
+	logger.Log.Debugf("[%s] found %d devices to check", family, len(devicesToCheck))
+
 	startTime = time.Now()
 	if len(deviceCounts) == 0 {
-		deviceCounts, err = d.GetDeviceCountsFromGreaterTime(millisecondsAgo)
+		deviceCounts, err = d.GetDeviceCountsFromDevices(devicesToCheck)
 		if err != nil {
 			err = errors.Wrap(err, "could not get devices")
 			return
@@ -318,7 +329,7 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 	logger.Log.Debugf("[%s] got device counts %s", family, time.Since(startTime))
 
 	startTime = time.Now()
-	deviceFirstTime, err := d.GetDeviceFirstTimeFromGreaterTime(millisecondsAgo)
+	deviceFirstTime, err := d.GetDeviceFirstTimeFromDevices(devicesToCheck)
 	if err != nil {
 		err = errors.Wrap(err, "problem getting device first time")
 		return
@@ -399,7 +410,7 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 	}
 
 	byLocations = make([]models.ByLocation, len(locations))
-	i := 0
+	i = 0
 	for location := range locations {
 		byLocations[i].Location = location
 		byLocations[i].Devices = locations[location]

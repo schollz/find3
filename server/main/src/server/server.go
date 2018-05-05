@@ -149,18 +149,32 @@ func Run() (err error) {
 			defer d.Close()
 			var efficacy Efficacy
 
-			minutesAgo := 60
-			millisecondsAgo := int64(minutesAgo * 60 * 1000)
+			minutesAgoInt := 60
+			millisecondsAgo := int64(minutesAgoInt * 60 * 1000)
+			sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
+			logger.Log.Debugf("[%s] got sensor from greater time %s", family, time.Since(startTime))
+			devicesToCheckMap := make(map[string]struct{})
+			for _, sensor := range sensors {
+				devicesToCheckMap[sensor.Device] = struct{}{}
+			}
+			// get list of devices I care about
+			devicesToCheck := make([]string, len(devicesToCheckMap))
+			i := 0
+			for device := range devicesToCheckMap {
+				devicesToCheck[i] = device
+				i++
+			}
+			logger.Log.Debugf("[%s] found %d devices to check", family, len(devicesToCheck))
 
 			logger.Log.Debugf("[%s] getting device counts", family)
-			deviceCounts, err := d.GetDeviceCountsFromGreaterTime(millisecondsAgo)
+			deviceCounts, err := d.GetDeviceCountsFromDevices(devicesToCheck)
 			if err != nil {
 				err = errors.Wrap(err, "could not get devices")
 				return
 			}
 
 			deviceList := make([]string, len(deviceCounts))
-			i := 0
+			i = 0
 			for device := range deviceCounts {
 				if deviceCounts[device] > 2 {
 					deviceList[i] = device

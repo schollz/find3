@@ -432,15 +432,9 @@ func (d *Database) NumDevices() (num int, err error) {
 	return
 }
 
-func (d *Database) GetDeviceFirstTimeFromGreaterTime(timeBlockInMilliseconds int64) (firstTime map[string]time.Time, err error) {
-	latestTime, err := d.GetLastSensorTimestamp()
-	if err != nil {
-		return
-	}
-	minimumTimestamp := latestTime - timeBlockInMilliseconds
-
+func (d *Database) GetDeviceFirstTimeFromDevices(devices []string) (firstTime map[string]time.Time, err error) {
 	firstTime = make(map[string]time.Time)
-	query := fmt.Sprintf("select n,t from (select devices.name as n,sensors.timestamp as t from sensors inner join devices on sensors.deviceid=devices.id WHERE sensors.timestamp > %d order by timestamp desc) group by n", minimumTimestamp)
+	query := fmt.Sprintf("select n,t from (select devices.name as n,sensors.timestamp as t from sensors inner join devices on sensors.deviceid=devices.id WHERE devices.name IN ('%s') order by timestamp desc) group by n", strings.Join(devices, "','"))
 
 	stmt, err := d.db.Prepare(query)
 	if err != nil {
@@ -511,15 +505,10 @@ func (d *Database) GetDeviceFirstTime() (firstTime map[string]time.Time, err err
 	return
 }
 
-func (d *Database) GetDeviceCountsFromGreaterTime(timeBlockInMilliseconds int64) (counts map[string]int, err error) {
-	latestTime, err := d.GetLastSensorTimestamp()
-	if err != nil {
-		return
-	}
-	minimumTimestamp := latestTime - timeBlockInMilliseconds
+func (d *Database) GetDeviceCountsFromDevices(devices []string) (counts map[string]int, err error) {
 
 	counts = make(map[string]int)
-	query := fmt.Sprintf("select devices.name,count(sensors.timestamp) as num from sensors inner join devices on sensors.deviceid=devices.id WHERE sensors.timestamp > %d group by sensors.deviceid", minimumTimestamp)
+	query := fmt.Sprintf("select devices.name,count(sensors.timestamp) as num from sensors inner join devices on sensors.deviceid=devices.id WHERE devices.name in ('%s') group by sensors.deviceid", strings.Join(devices, "','"))
 	stmt, err := d.db.Prepare(query)
 	if err != nil {
 		err = errors.Wrap(err, query)
