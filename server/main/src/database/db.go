@@ -92,6 +92,14 @@ func (d *Database) MakeTables() (err error) {
 		return
 	}
 
+	sqlStmt = `CREATE INDEX sensors_devices ON sensors (deviceid);`
+	_, err = d.db.Exec(sqlStmt)
+	if err != nil {
+		err = errors.Wrap(err, "MakeTables")
+		logger.Log.Error(err)
+		return
+	}
+
 	sensorDataSS, _ := stringsizer.New()
 	err = d.Set("sensorDataStringSizer", sensorDataSS.Save())
 	if err != nil {
@@ -427,6 +435,7 @@ func (d *Database) NumDevices() (num int, err error) {
 func (d *Database) GetDeviceFirstTime() (firstTime map[string]time.Time, err error) {
 	firstTime = make(map[string]time.Time)
 	query := "select n,t from (select devices.name as n,sensors.timestamp as t from sensors inner join devices on sensors.deviceid=devices.id order by timestamp desc) group by n"
+	// query := "select devices.name,sensors.timestamp from sensors inner join devices on sensors.deviceid=devices.id order by timestamp desc"
 	stmt, err := d.db.Prepare(query)
 	if err != nil {
 		err = errors.Wrap(err, query)
@@ -448,7 +457,9 @@ func (d *Database) GetDeviceFirstTime() (firstTime map[string]time.Time, err err
 			err = errors.Wrap(err, "scanning")
 			return
 		}
+		// if _, ok := firstTime[name]; !ok {
 		firstTime[name] = time.Unix(0, ts*1000000).UTC()
+		// }
 	}
 	err = rows.Err()
 	if err != nil {
@@ -919,6 +930,7 @@ func (d *Database) GetAllFromQuery(query string) (s []models.SensorData, err err
 // GetAllFromPreparedQuery
 func (d *Database) GetAllFromPreparedQuery(query string, args ...interface{}) (s []models.SensorData, err error) {
 	// prepare statement
+	// startQuery := time.Now()
 	stmt, err := d.db.Prepare(query)
 	if err != nil {
 		err = errors.Wrap(err, query)
@@ -930,11 +942,14 @@ func (d *Database) GetAllFromPreparedQuery(query string, args ...interface{}) (s
 		err = errors.Wrap(err, query)
 		return
 	}
+	// logger.Log.Debugf("%s: %s", query, time.Since(startQuery))
+	// startQuery = time.Now()
 	defer rows.Close()
 	s, err = d.getRows(rows)
 	if err != nil {
 		err = errors.Wrap(err, query)
 	}
+	// logger.Log.Debugf("getRows %s: %s", query, time.Since(startQuery))
 	return
 }
 

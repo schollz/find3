@@ -214,7 +214,7 @@ func Run() (err error) {
 				err = errors.Wrap(err, "could not get location counts")
 				return
 			}
-			logger.Log.Debug(locationCounts)
+			logger.Log.Debugf("[%s] locations: %+v", family, locationCounts)
 
 			efficacy.AccuracyBreakdown = make([]LocEff, len(accuracyBreakdown))
 			i = 0

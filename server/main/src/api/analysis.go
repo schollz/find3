@@ -291,9 +291,12 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 		return
 	}
 	defer d.Close()
-	logger.Log.Debugf("[%s] getting sensor from greater time", family)
-	sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
 
+	startTime := time.Now()
+	sensors, err := d.GetSensorFromGreaterTime(millisecondsAgo)
+	logger.Log.Debugf("[%s] got sensor from greater time %s", family, time.Since(startTime))
+
+	startTime = time.Now()
 	preAnalyzed := make(map[int64][]models.LocationPrediction)
 	for _, sensor := range sensors {
 		a, errGet := d.GetPrediction(sensor.Timestamp)
@@ -302,7 +305,9 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 		}
 		preAnalyzed[sensor.Timestamp] = a
 	}
+	logger.Log.Debugf("[%s] got predictions in map %s", family, time.Since(startTime))
 
+	startTime = time.Now()
 	if len(deviceCounts) == 0 {
 		deviceCounts, err = d.GetDeviceCounts()
 		if err != nil {
@@ -310,13 +315,15 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 			return
 		}
 	}
+	logger.Log.Debugf("[%s] got device counts %s", family, time.Since(startTime))
 
-	logger.Log.Debugf("[%s] getting device first-time", family)
+	startTime = time.Now()
 	deviceFirstTime, err := d.GetDeviceFirstTime()
 	if err != nil {
 		err = errors.Wrap(err, "problem getting device first time")
 		return
 	}
+	logger.Log.Debugf("[%s] got device first-time %s", family, time.Since(startTime))
 
 	var rollingData models.ReverseRollingData
 	errGotRollingData := d.Get("ReverseRollingData", &rollingData)
