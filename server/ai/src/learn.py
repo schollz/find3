@@ -120,7 +120,7 @@ class AI(object):
         """
         if name == 'Gaussian Process':
             return
-            
+
         t = time.time()
         try:
             prediction = self.algorithms[
@@ -175,8 +175,8 @@ class AI(object):
         # except Exception as e:
         #     self.logger.error(str(e))
 
-        self.logger.debug("{} {:d} ms".format(
-            name, int(1000 * (t - time.time()))))
+        # self.logger.debug("{} {:d} ms".format(
+        #     name, int(1000 * (t - time.time()))))
         self.results[index] = predict_payload
 
     @timeout(10)
@@ -224,7 +224,7 @@ class AI(object):
             "Nearest Neighbors",
             "Linear SVM",
             "RBF SVM",
-            "Gaussian Process",
+            # "Gaussian Process",
             "Decision Tree",
             "Random Forest",
             "Neural Net",
@@ -235,7 +235,7 @@ class AI(object):
             KNeighborsClassifier(3),
             SVC(kernel="linear", C=0.025, probability=True),
             SVC(gamma=2, C=1, probability=True),
-            GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
+            # GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
             DecisionTreeClassifier(max_depth=5),
             RandomForestClassifier(
                 max_depth=5, n_estimators=10, max_features=1),
