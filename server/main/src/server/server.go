@@ -149,8 +149,11 @@ func Run() (err error) {
 			defer d.Close()
 			var efficacy Efficacy
 
+			minutesAgo := 60
+			millisecondsAgo := int64(minutesAgo * 60 * 1000)
+
 			logger.Log.Debugf("[%s] getting device counts", family)
-			deviceCounts, err := d.GetDeviceCounts()
+			deviceCounts, err := d.GetDeviceCountsFromGreaterTime(millisecondsAgo)
 			if err != nil {
 				err = errors.Wrap(err, "could not get devices")
 				return
