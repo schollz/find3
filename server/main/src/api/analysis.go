@@ -11,7 +11,6 @@ import (
 	cache "github.com/robfig/go-cache"
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/learning/nb1"
-	"github.com/schollz/find3/server/main/src/learning/nb2"
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/find3/server/main/src/utils"
 )
@@ -127,23 +126,24 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 		bChan <- b{pl: pl, err: err}
 	}(bChan)
 
-	type c struct {
-		pl  nb2.PairList
-		err error
-	}
-	cChan := make(chan c)
-	go func(cChan chan c) {
-		// do naive bayes2 learning
-		nb2Time := time.Now()
-		nbLearned2 := nb2.New()
-		pl, err := nbLearned2.Classify(s)
-		logger.Log.Debugf("[%s] nb2 classified %s", s.Family, time.Since(nb2Time))
-		cChan <- c{pl: pl, err: err}
-	}(cChan)
+	// type c struct {
+	// 	pl  nb2.PairList
+	// 	err error
+	// }
+	// cChan := make(chan c)
+	// go func(cChan chan c) {
+	// 	// do naive bayes2 learning
+	// 	nb2Time := time.Now()
+	// 	nbLearned2 := nb2.New()
+	// 	pl, err := nbLearned2.Classify(s)
+	// 	logger.Log.Debugf("[%s] nb2 classified %s", s.Family, time.Since(nb2Time))
+	// 	cChan <- c{pl: pl, err: err}
+	// }(cChan)
 
 	aResult := <-aChan
-	if aResult.err != nil {
+	if aResult.err != nil || len(aResult.aidata.Predictions) == 0 {
 		err = errors.Wrap(aResult.err, "problem with machine learnaing")
+		logger.Log.Error(aResult.err)
 		return
 	}
 	aidata = aResult.aidata
@@ -169,21 +169,21 @@ func AnalyzeSensorData(s models.SensorData) (aidata models.LocationAnalysis, err
 		logger.Log.Warnf("[%s] nb1 classify: %s", s.Family, bResult.err.Error())
 	}
 
-	// process nb2
-	cResult := <-cChan
-	if cResult.err == nil {
-		pl2 := cResult.pl
-		algPrediction := models.AlgorithmPrediction{Name: "Extended Naive Bayes2"}
-		algPrediction.Locations = make([]string, len(pl2))
-		algPrediction.Probabilities = make([]float64, len(pl2))
-		for i := range pl2 {
-			algPrediction.Locations[i] = reverseLocationNames[pl2[i].Key]
-			algPrediction.Probabilities[i] = float64(int(pl2[i].Value*100)) / 100
-		}
-		aidata.Predictions = append(aidata.Predictions, algPrediction)
-	} else {
-		logger.Log.Warnf("[%s] nb2 classify: %s", s.Family, cResult.err.Error())
-	}
+	// // process nb2
+	// cResult := <-cChan
+	// if cResult.err == nil {
+	// 	pl2 := cResult.pl
+	// 	algPrediction := models.AlgorithmPrediction{Name: "Extended Naive Bayes2"}
+	// 	algPrediction.Locations = make([]string, len(pl2))
+	// 	algPrediction.Probabilities = make([]float64, len(pl2))
+	// 	for i := range pl2 {
+	// 		algPrediction.Locations[i] = reverseLocationNames[pl2[i].Key]
+	// 		algPrediction.Probabilities[i] = float64(int(pl2[i].Value*100)) / 100
+	// 	}
+	// 	aidata.Predictions = append(aidata.Predictions, algPrediction)
+	// } else {
+	// 	logger.Log.Warnf("[%s] nb2 classify: %s", s.Family, cResult.err.Error())
+	// }
 
 	d, err := database.Open(s.Family)
 	if err != nil {
@@ -262,7 +262,7 @@ func determineBestGuess(aidata models.LocationAnalysis, algorithmEfficacy map[st
 	b = make([]models.LocationPrediction, len(locationScores))
 	for i := range pl {
 		b[i].Location = pl[i].Key
-		b[i].Probability = pl[i].Value
+		b[i].Probability = float64(int(pl[i].Value*100000)) / 100000
 	}
 
 	if len(locationScores) == 1 {

@@ -12,6 +12,7 @@ import logging
 import math
 from threading import Thread
 import functools
+import multiprocessing
 
 # create logger with 'spam_application'
 logger = logging.getLogger('learn')
@@ -50,7 +51,9 @@ def timeout(timeout):
     def deco(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, timeout))]
+            res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (
+                func.__name__, timeout))]
+
             def newFunc():
                 try:
                     res[0] = func(*args, **kwargs)
@@ -69,6 +72,7 @@ def timeout(timeout):
             return ret
         return wrapper
     return deco
+
 
 class AI(object):
 
@@ -89,41 +93,54 @@ class AI(object):
                     is_unknown = False
                     csv_data[header.index(sensorName)] = sensor_data[
                         's'][sensorType][sensor]
-        payload = self.do_classification(header, csv_data)
+        self.headerClassify = header
+        self.csv_dataClassify = csv_data.reshape(1, -1)
+        payload = {'location_names': self.naming['to'], 'predictions': []}
+
+        threads = [None]*len(self.algorithms)
+        self.results = [None]*len(self.algorithms)
+
+        for i, alg in enumerate(self.algorithms.keys()):
+            threads[i] = Thread(target=self.do_classification, args=(i, alg))
+            threads[i].start()
+
+        for i, _ in enumerate(self.algorithms.keys()):
+            threads[i].join()
+
+        for result in self.results:
+            if result != None:
+                payload['predictions'].append(result)
         payload['is_unknown'] = is_unknown
         return payload
 
-    def do_classification(self, header, csv_data):
+    def do_classification(self, index, name):
         """
         header = ['wifi-a', 'wifi-b']
         csv_data = [-67 0]
         """
-
         t = time.time()
-        payload = {'location_names': self.naming['to'], 'predictions': []}
-        for name in self.algorithms:
-            try:
-                prediction = self.algorithms[
-                    name].predict_proba(csv_data.reshape(1, -1))
-            except Exception as e:
-                logger.error(str(e))
-                continue
-            predict = {}
-            for i, pred in enumerate(prediction[0]):
-                predict[i] = pred
-            predict_payload = {'name': name,
-                               'locations': [], 'probabilities': []}
-            badValue = False
-            for tup in sorted(predict.items(), key=operator.itemgetter(1), reverse=True):
-                predict_payload['locations'].append(str(tup[0]))
-                predict_payload['probabilities'].append(
-                    round(float(tup[1]), 2))
-                if math.isnan(tup[1]):
-                    badValue = True
-                    break
-            if badValue:
-                continue
-            payload['predictions'].append(predict_payload)
+        try:
+            prediction = self.algorithms[
+                name].predict_proba(self.csv_dataClassify)
+        except Exception as e:
+            logger.error(self.csv_dataClassify)
+            logger.error(str(e))
+            return
+        predict = {}
+        for i, pred in enumerate(prediction[0]):
+            predict[i] = pred
+        predict_payload = {'name': name,
+                           'locations': [], 'probabilities': []}
+        badValue = False
+        for tup in sorted(predict.items(), key=operator.itemgetter(1), reverse=True):
+            predict_payload['locations'].append(str(tup[0]))
+            predict_payload['probabilities'].append(
+                round(float(tup[1]), 2))
+            if math.isnan(tup[1]):
+                badValue = True
+                break
+        if badValue:
+            return
 
         # try:
         #     t2 = time.time()
@@ -155,8 +172,9 @@ class AI(object):
         # except Exception as e:
         #     self.logger.error(str(e))
 
-        self.logger.debug("{:d} ms".format(int(1000 * (t - time.time()))))
-        return payload
+        self.logger.debug("{} {:d} ms".format(
+            name, int(1000 * (t - time.time()))))
+        self.results[index] = predict_payload
 
     @timeout(10)
     def train(self, clf, x, y):
@@ -234,7 +252,7 @@ class AI(object):
                 self.logger.debug("learned {}, {:d} ms".format(
                     name, int(1000 * (t2 - time.time()))))
             except Exception as e:
-                self.logger.error("{} {}".format(name,str(e)))
+                self.logger.error("{} {}".format(name, str(e)))
 
         # t2 = time.time()
         # name = "Extended Naive Bayes"
