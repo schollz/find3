@@ -432,7 +432,50 @@ func (d *Database) NumDevices() (num int, err error) {
 	return
 }
 
+func (d *Database) GetDeviceFirstTimeFromGreaterTime(timeBlockInMilliseconds int64) (firstTime map[string]time.Time, err error) {
+	latestTime, err := d.GetLastSensorTimestamp()
+	if err != nil {
+		return
+	}
+	minimumTimestamp := latestTime - timeBlockInMilliseconds
+
+	firstTime = make(map[string]time.Time)
+	query := fmt.Sprintf("select n,t from (select devices.name as n,sensors.timestamp as t from sensors inner join devices on sensors.deviceid=devices.id WHERE sensors.timestamp > %d order by timestamp desc) group by n", minimumTimestamp)
+
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		var ts int64
+		err = rows.Scan(&name, &ts)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+		// if _, ok := firstTime[name]; !ok {
+		firstTime[name] = time.Unix(0, ts*1000000).UTC()
+		// }
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
 func (d *Database) GetDeviceFirstTime() (firstTime map[string]time.Time, err error) {
+
 	firstTime = make(map[string]time.Time)
 	query := "select n,t from (select devices.name as n,sensors.timestamp as t from sensors inner join devices on sensors.deviceid=devices.id order by timestamp desc) group by n"
 	// query := "select devices.name,sensors.timestamp from sensors inner join devices on sensors.deviceid=devices.id order by timestamp desc"
@@ -460,6 +503,45 @@ func (d *Database) GetDeviceFirstTime() (firstTime map[string]time.Time, err err
 		// if _, ok := firstTime[name]; !ok {
 		firstTime[name] = time.Unix(0, ts*1000000).UTC()
 		// }
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
+func (d *Database) GetDeviceCountsFromGreaterTime(timeBlockInMilliseconds int64) (counts map[string]int, err error) {
+	latestTime, err := d.GetLastSensorTimestamp()
+	if err != nil {
+		return
+	}
+	minimumTimestamp := latestTime - timeBlockInMilliseconds
+
+	counts = make(map[string]int)
+	query := fmt.Sprintf("select devices.name,count(sensors.timestamp) as num from sensors inner join devices on sensors.deviceid=devices.id WHERE sensors.timestamp > %d group by sensors.deviceid", minimumTimestamp)
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		var count int
+		err = rows.Scan(&name, &count)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+		counts[name] = count
 	}
 	err = rows.Err()
 	if err != nil {

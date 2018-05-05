@@ -309,7 +309,7 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 
 	startTime = time.Now()
 	if len(deviceCounts) == 0 {
-		deviceCounts, err = d.GetDeviceCounts()
+		deviceCounts, err = d.GetDeviceCountsFromGreaterTime(millisecondsAgo)
 		if err != nil {
 			err = errors.Wrap(err, "could not get devices")
 			return
@@ -318,7 +318,7 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 	logger.Log.Debugf("[%s] got device counts %s", family, time.Since(startTime))
 
 	startTime = time.Now()
-	deviceFirstTime, err := d.GetDeviceFirstTime()
+	deviceFirstTime, err := d.GetDeviceFirstTimeFromGreaterTime(millisecondsAgo)
 	if err != nil {
 		err = errors.Wrap(err, "problem getting device first time")
 		return
