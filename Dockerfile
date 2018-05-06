@@ -52,11 +52,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-instal
 	mkdir /app && \
 	echo '#!/bin/bash\n\
 pkill -9 mosquitto\n\
-if [ ! -d /app/mosquitto_config ]; then\n\
-	cp -r /app/mosquitto_config /data/\n\
-fi\n\
+cp -R -u -p /app/mosquitto_config /data\n\
 mkdir /data/logs\n\
-/usr/sbin/mosquitto -c mosquitto_config/mosquitto.conf -d\n\
+/usr/sbin/mosquitto -c/data/mosquitto_config/mosquitto.conf -d\n\
 /usr/bin/supervisord\n'\
 > /app/startup.sh && \
 	chmod +x /app/startup.sh && echo '[supervisord]\n\
@@ -81,9 +79,9 @@ stderr_logfile_maxbytes=0\n'\
 	mkdir /app/mosquitto_config && \
 	touch /app/mosquitto_config/acl  && \
 	touch /app/mosquitto_config/passwd  && echo 'allow_anonymous false\n\
-acl_file mosquitto_config/acl\n\
-password_file mosquitto_config/passwd\n\
-pid_file mosquitto_config/pid\n'\
+acl_file /data/mosquitto_config/acl\n\
+password_file /data/mosquitto_config/passwd\n\
+pid_file /data/mosquitto_config/pid\n'\
 > /app/mosquitto_config/mosquitto.conf && \
 	echo "moving to find3" && cd /usr/local/work/src/github.com/schollz/find3/server/main && echo "v3.0.0.5" && git pull -v && go build -v && \
 	echo "installing find3" && go install -v && \
