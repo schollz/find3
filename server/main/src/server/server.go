@@ -408,7 +408,9 @@ func handlerApiV1Locations(c *gin.Context) {
 			return
 		}
 		locations = make([]Location, len(devices))
+		logger.Log.Debugf("[%s] getting information for %d devices", family, len(devices))
 		for i, device := range devices {
+			logger.Log.Debugf("[%s] getting prediction for %s", family, device)
 			d, err = database.Open(family, true)
 			if err != nil {
 				return
