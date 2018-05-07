@@ -39,6 +39,9 @@ def classify():
     t = time.time()
 
     payload = request.get_json()
+    if payload is None:
+        return jsonify({'success': False, 'message': 'must provide sensor data'})
+
     if 'sensor_data' not in payload:
         return jsonify({'success': False, 'message': 'must provide sensor data'})
 
@@ -69,6 +72,8 @@ def classify():
 @app.route('/learn', methods=['POST'])
 def learn():
     payload = request.get_json()
+    if payload is None:
+        return jsonify({'success': False, 'message': 'must provide sensor data'})
     if 'family' not in payload:
         return jsonify({'success': False, 'message': 'must provide family'})
     if 'csv_file' not in payload:
