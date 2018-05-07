@@ -29,7 +29,6 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 import numpy
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.pipeline import make_pipeline
 from sklearn.neural_network import MLPClassifier
