@@ -390,9 +390,9 @@ func handlerApiV1Devices(c *gin.Context) {
 
 func handlerApiV1Locations(c *gin.Context) {
 	type Location struct {
-		Device   string                  `json:"device"`
-		Sensors  models.SensorData       `json:"sensors"`
-		Analysis models.LocationAnalysis `json:"analysis"`
+		Device     string                    `json:"device"`
+		Sensors    models.SensorData         `json:"sensors"`
+		Prediction models.LocationPrediction `json:"prediction"`
 	}
 
 	locations, err := func(c *gin.Context) (locations []Location, err error) {
@@ -415,13 +415,22 @@ func handlerApiV1Locations(c *gin.Context) {
 			}
 			locations[i] = Location{Device: device}
 			locations[i].Sensors, err = d.GetLatest(device)
-			d.Close()
 			if err != nil {
-				return
+				d.Close()
+				continue
 			}
-			locations[i].Analysis, err = api.AnalyzeSensorData(locations[i].Sensors)
-			if err != nil {
-				return
+			predictions, err := d.GetPrediction(locations[i].Sensors.Timestamp)
+			d.Close()
+			if err == nil && len(predictions) > 0 {
+				locations[i].Prediction = predictions[0]
+			} else {
+				analysis, err := api.AnalyzeSensorData(locations[i].Sensors)
+				if err != nil {
+					continue
+				}
+				if len(analysis.Guesses) > 0 {
+					locations[i].Prediction = analysis.Guesses[0]
+				}
 			}
 		}
 
