@@ -45,7 +45,7 @@ Please report issues through [this repo's issue tracker](https://github.com/scho
 
 # Community
 
-Subscribe to the [Slack channel](https://join.slack.com/t/find3/shared_invite/enQtMzI0MjkwMjc3MDYzLWJiZWEzZjU5NTljM2JlYmE1MDY0NThiYmY2NDYwNGYxNTNmNTJjZjFmNjMwNGMwY2UyNzczNzZhZTIxZWY3ODQ) to get latest information about the project and get help.
+Subscribe to the [Slack channel](https://join.slack.com/t/find3/shared_invite/enQtMzU4MjY0NjE1NjU0LWRkY2JhNWFkM2U3Y2JhY2RlZTQ5ZTdmZTQ2M2UzMjI2MGVmMjZlOWQyZmU3MzM5YzIzOTM0YmYzYmQ3NTQzNjQ) to get latest information about the project and get help.
 
 Use the [FIND mailing list](http://eepurl.com/bhfFI1) for discussion about use and development.
 
