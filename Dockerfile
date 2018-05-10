@@ -54,7 +54,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-instal
 pkill -9 mosquitto\n\
 cp -R -u -p /app/mosquitto_config /data\n\
 mkdir /data/logs\n\
-/usr/sbin/mosquitto -c/data/mosquitto_config/mosquitto.conf -d\n\
+/usr/sbin/mosquitto -c /data/mosquitto_config/mosquitto.conf -d\n\
 /usr/bin/supervisord\n'\
 > /app/startup.sh && \
 	chmod +x /app/startup.sh && echo '[supervisord]\n\
