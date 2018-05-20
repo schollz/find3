@@ -49,6 +49,28 @@ GET /now
 >
 
 
+&nbsp;
+
+
+> ### MQTT setup {#mqtt}
+> 
+> This is the command to setup MQTT on FIND3 for your family. For more information see [the MQTT document](/doc/mqtt.md)
+> 
+> **Request**
+```
+GET /api/v1/mqtt/FAMILY
+```
+> 
+> **Response**
+> 
+> This route returns the passphrase (`XXX`) that you can use to bind to MQTT.
+>
+```
+Added 'FAMILY' for mqtt. Your passphrase is 'XXX'
+```
+>
+
+
 
 &nbsp;
 
