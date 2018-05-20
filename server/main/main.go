@@ -24,6 +24,7 @@ func main() {
 	mqttServer := flag.String("mqtt-server", "", "add MQTT server")
 	mqttAdmin := flag.String("mqtt-admin", "admin", "name for mqtt admin")
 	mqttPass := flag.String("mqtt-pass", "1234", "password for mqtt admin")
+	mqttDir := flag.String("mqtt-dir", "mosquitto_config", "location for mqtt admin")
 	dump := flag.String("dump", "", "family database to dump")
 	memprofile := flag.Bool("memprofile", false, "whether to profile memory")
 	var dataFolder string
@@ -62,6 +63,7 @@ func main() {
 	} else {
 		mqtt.Server = *mqttServer
 	}
+	mqtt.MosquittoConfigDirectory = *mqttDir
 
 	api.AIPort = *aiPort
 	server.Port = *port

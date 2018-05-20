@@ -53,15 +53,14 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-instal
 	echo '#!/bin/bash\n\
 pkill -9 mosquitto\n\
 cp -R -u -p /app/mosquitto_config /data\n\
-mkdir /data/logs\n\
-/usr/sbin/mosquitto -c /data/mosquitto_config/mosquitto.conf -d\n\
+mkdir -p /data/logs\n\
 /usr/bin/supervisord\n'\
 > /app/startup.sh && \
 	chmod +x /app/startup.sh && echo '[supervisord]\n\
 nodaemon=true\n\
 [program:main]\n\
 directory=/app/main\n\
-command=main -debug -data /data/data\n\
+command=main -debug -data /data/data -mqtt-dir /data/mosquitto_config\n\
 priority=1\n\
 stdout_logfile=/data/logs/main.stdout\n\
 stdout_logfile_maxbytes=0\n\

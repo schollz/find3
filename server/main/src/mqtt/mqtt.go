@@ -150,12 +150,13 @@ func updateMosquittoConfig() (err error) {
 			err = errors.Wrap(err, "problem runnign")
 		}
 		return
-	}
-	cmd = "kill"
-	args = []string{"-HUP", string(bPID)}
-	if err = exec.Command(cmd, args...).Run(); err != nil {
-		err = errors.Wrap(err, "problem giving HUP")
-		return
+	} else {
+		cmd = "kill"
+		args = []string{"-HUP", string(bPID)}
+		if err = exec.Command(cmd, args...).Run(); err != nil {
+			err = errors.Wrap(err, "problem giving HUP")
+			return
+		}
 	}
 	logger.Log.Debug("setup mosquitto and gave HUP signal")
 	return
