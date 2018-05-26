@@ -9,6 +9,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pkg/errors"
@@ -54,14 +55,16 @@ func Setup() (err error) {
 		logger.Log.Debug("using current setup")
 		err = updateMosquittoConfig()
 		if err != nil {
+			err = errors.Wrap(err, "could not update mosquitto config")
 			return
 		}
+		time.Sleep(3 * time.Second)
 		opts.AddBroker(server).SetClientID(utils.RandomString(5)).SetUsername(AdminUser).SetPassword(AdminPassword).SetCleanSession(true)
 	}
 	// subscribe
 	opts.OnConnect = func(c MQTT.Client) {
 		if token := c.Subscribe("#", 1, messageReceived); token.Wait() && token.Error() != nil {
-			err = token.Error()
+			err = errors.Wrap(token.Error(), "could not subscribe")
 			return
 		}
 	}
@@ -122,6 +125,7 @@ func updateMosquittoConfig() (err error) {
 	}
 	err = ioutil.WriteFile(path.Join(MosquittoConfigDirectory, "passwd"), []byte(passwd), 0644)
 	if err != nil {
+		err = errors.Wrap(err, "could not modify passwd")
 		return
 	}
 	err = ioutil.WriteFile(path.Join(MosquittoConfigDirectory, "mosquitto.conf"), []byte(conf), 0644)
@@ -147,7 +151,7 @@ func updateMosquittoConfig() (err error) {
 		cmd = "mosquitto"
 		args = []string{"-c", fmt.Sprintf("%s/mosquitto.conf", MosquittoConfigDirectory), "-d"}
 		if err = exec.Command(cmd, args...).Run(); err != nil {
-			err = errors.Wrap(err, "problem runnign")
+			err = errors.Wrap(err, "problem running")
 		}
 		return
 	} else {
