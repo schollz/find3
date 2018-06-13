@@ -754,6 +754,7 @@ func handlerReverseSettings(c *gin.Context) {
 		var d ReverseSettings
 		err = c.BindJSON(&d)
 		if err != nil {
+			err = errors.Wrap(err, "could not bind json")
 			return
 		}
 		d.Family = strings.TrimSpace(strings.ToLower(d.Family))
