@@ -756,11 +756,7 @@ func handlerReverseSettings(c *gin.Context) {
 		d.Family = strings.TrimSpace(strings.ToLower(d.Family))
 		d.Device = strings.TrimSpace(strings.ToLower(d.Device))
 		d.Location = strings.TrimSpace(strings.ToLower(d.Location))
-		if d.Location != "" {
-			logger.Log.Debugf("[%s] entered passive fingerprint for %s at %s", d.Family, d.Device, d.Location)
-		} else {
-			logger.Log.Debugf("[%s] entered passive fingerprint for %s", d.Family, d.Device)
-		}
+
 		// open database
 		db, err := database.Open(d.Family)
 		if err != nil {
@@ -839,6 +835,12 @@ func handlerReverse(c *gin.Context) {
 		err = d.Validate()
 		if err != nil {
 			return
+		}
+
+		if d.Location != "" {
+			logger.Log.Debugf("[%s] entered passive fingerprint for %s at %s", d.Family, d.Device, d.Location)
+		} else {
+			logger.Log.Debugf("[%s] entered passive fingerprint for %s", d.Family, d.Device)
 		}
 
 		// open database
