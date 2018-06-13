@@ -663,12 +663,14 @@ func handlerData(c *gin.Context) {
 		var d models.SensorData
 		err = c.BindJSON(&d)
 		if err != nil {
+			message = d.Family
 			err = errors.Wrap(err, "problem binding data")
 			return
 		}
 
 		err = d.Validate()
 		if err != nil {
+			message = d.Family
 			err = errors.Wrap(err, "problem validating data")
 			return
 		}
@@ -676,6 +678,7 @@ func handlerData(c *gin.Context) {
 		// process data
 		err = processSensorData(d, justSave)
 		if err != nil {
+			message = d.Family
 			return
 		}
 		message = "inserted data"
@@ -685,7 +688,7 @@ func handlerData(c *gin.Context) {
 	}(c)
 
 	if err != nil {
-		logger.Log.Debugf("problem parsing: %s", err.Error())
+		logger.Log.Debugf("[%s] problem parsing: %s", message, err.Error())
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
