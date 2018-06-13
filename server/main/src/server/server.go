@@ -828,12 +828,14 @@ func handlerReverse(c *gin.Context) {
 		var d models.SensorData
 		err = c.BindJSON(&d)
 		if err != nil {
+			logger.Log.Warn(err)
 			return
 		}
 
 		// validate sensor data
 		err = d.Validate()
 		if err != nil {
+			logger.Log.Warn(err)
 			return
 		}
 
