@@ -188,48 +188,41 @@ func Run() (err error) {
 			logger.Log.Debugf("[%s] getting locations", family)
 			locationList, err := d.GetLocations()
 			if err != nil {
-				err = errors.Wrap(err, "could not get locations")
-				return
+				logger.Log.Warn("could not get locations")
 			}
 			jsonLocationList, _ := json.Marshal(locationList)
-			logger.Log.Debugf("found %d devices", len(locationList))
+			logger.Log.Debugf("found %d locations", len(locationList))
 
 			logger.Log.Debugf("[%s] total learned count", family)
 			efficacy.TotalCount, err = d.TotalLearnedCount()
 			if err != nil {
-				err = errors.Wrap(err, "could not get TotalLearnedCount")
-				return
+				logger.Log.Warn("could not get TotalLearnedCount")
 			}
 			var percentFloat64 float64
 			err = d.Get("PercentCorrect", &percentFloat64)
 			if err != nil {
-				err = errors.New("no learning data available")
-				return
+				logger.Log.Warn("No learning data available")
 			}
 			efficacy.PercentCorrect = int64(100 * percentFloat64)
 			err = d.Get("LastCalibrationTime", &efficacy.LastCalibrationTime)
 			if err != nil {
-				err = errors.Wrap(err, "could not get LastCalibrationTime")
-				return
+				logger.Log.Warn("could not get LastCalibrationTime")
 			}
 			var accuracyBreakdown map[string]float64
 			err = d.Get("AccuracyBreakdown", &accuracyBreakdown)
 			if err != nil {
-				err = errors.Wrap(err, "could not get AccuracyBreakdown")
-				return
+				logger.Log.Warn("could not get AccuracyBreakdown")
 			}
 			var confusionMetrics map[string]map[string]models.BinaryStats
 			err = d.Get("AlgorithmEfficacy", &confusionMetrics)
 			if err != nil {
-				err = errors.Wrap(err, "could not get AlgorithmEfficacy")
-				return
+				logger.Log.Warn("could not get AlgorithmEfficacy")
 			}
 
 			logger.Log.Debugf("[%s] getting location count", family)
 			locationCounts, err := d.GetLocationCounts()
 			if err != nil {
-				err = errors.Wrap(err, "could not get location counts")
-				return
+				logger.Log.Warn("could not get location counts")
 			}
 			logger.Log.Debugf("[%s] locations: %+v", family, locationCounts)
 
@@ -303,6 +296,11 @@ func Run() (err error) {
 
 			if err != nil {
 				errorMessage = err.Error()
+			} else if percentFloat64 == 0 {
+				errorMessage = "No learning data available, see the documentation for how to get started with learning. "
+			}
+			if efficacy.LastCalibrationTime.IsZero() {
+				errorMessage += "You need to calibrate, press the calibration button."
 			}
 
 			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
@@ -315,6 +313,7 @@ func Run() (err error) {
 				"DeviceList":     template.JS(jsonDeviceList),
 				"LocationList":   template.JS(jsonLocationList),
 				"Scanners":       scannerList,
+				"PercentCorrect": percentFloat64,
 			})
 			err = nil
 			logger.Log.Debugf("[%s] rendered dashboard in %s", family, time.Since(startTime))
