@@ -36,11 +36,13 @@ $ docker build -t schollz/find3 .
 That's it! Now FIND3 should be installed and read to go. To start it, make a directory to store the data, say `/home/$USER/FIND_DATA` and then start the Docker process in the background.
 
 ```bash
-$ docker run -p 11883:1883 -p 8005:8003 \
+$ docker run -p 1884:1883 -p 8005:8003 \
 	-v /home/$USER/FIND_DATA:/data \
     -e MQTT_ADMIN=ADMIN \
     -e MQTT_PASS=PASSWORD \
     -e MQTT_SERVER='localhost:1883' \
+	-e MQTT_EXTERNAL='your public IP' \
+	-e MQTT_PORT=1884 \
 	--name find3server -d -t schollz/find3
 ```
 

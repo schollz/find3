@@ -240,7 +240,7 @@ POST /passive
 POST /api/v1/settings/passive
 ```
 >
-> There are a few parameters to specify. You must always specify "`family`". When you want to toggle learning on/off you must include "`device`", and if you include "`location`" it will automatically toggle learning.
+> There are a few parameters to specify. You must always specify "`family`". When you want to toggle learning on/off you must include "`device`", and if you include "`location`" it will automatically toggle learning. **Important note**: The `device` you include must be prefixed by the sensor type. For example, if you are using the WiFi for a phone with mac address `xx:yy:zz` then you must name the device `wifi-xx:yy:zz`. If you are using the bluetooth of a device, similarly it must be `bluetooth-xx:yy:zz`.
 >
 > The "`minimum_passive`" will create a threshold that will then only accept fingerprints that are collected with at least that many scanners. So if you have three scanning computers and you want to make sure that any device gets data from all three scanners, you can set it to 3.
 >
