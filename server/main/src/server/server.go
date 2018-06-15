@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -314,6 +315,9 @@ func Run() (err error) {
 				"LocationList":   template.JS(jsonLocationList),
 				"Scanners":       scannerList,
 				"PercentCorrect": percentFloat64,
+				"UseMQTT":        UseMQTT,
+				"MQTTServer":     os.Getenv("MQTT_EXTERNAL"),
+				"MQTTPort":       os.Getenv("MQTT_PORT"),
 			})
 			err = nil
 			logger.Log.Debugf("[%s] rendered dashboard in %s", family, time.Since(startTime))
