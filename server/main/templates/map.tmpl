@@ -1,0 +1,193 @@
+{{ template "header" . }}
+<!-- Left Panel -->
+<!-- Right Panel -->
+<div id="right-panel" class="right-panel">
+    <div class="breadcrumbs">
+        <div class="col-sm-4">
+            <div class="page-header float-left">
+                <div class="page-title">
+                    <h1>Map</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            <div class="page-header float-right">
+                <div class="page-title">
+                    <ol class="breadcrumb text-right">
+                        <li class="active" style="text-transform:none;">{{ .Family }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content mt-3">
+        {{ with .Message }}
+        <div class="col-sm-12">
+            <div class="alert  alert-success alert-dismissible fade show" role="alert">
+                {{.}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        {{ end }} {{ with .ErrorMessage }}
+        <div class="col-sm-12">
+            <div class="alert  alert-danger alert-dismissible fade show" role="alert">
+                {{.}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        {{ end }}
+
+
+
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <h4 class="card-title mb-0">Last updated TIME</h4>
+                        </div>
+                    </div>
+                    
+                    <div class="content mt-3">
+                        <div id="map" style="height:500px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <!-- .content -->
+</div>
+<!-- /#right-panel -->
+<!-- Right Panel -->
+<script src="/static/js/lib/data-table/datatables.min.js"></script>
+<script src="/static/js/lib/data-table/dataTables.bootstrap.min.js"></script>
+<script src="/static/js/lib/data-table/dataTables.buttons.min.js"></script>
+<script src="/static/js/lib/data-table/buttons.bootstrap.min.js"></script>
+<script src="/static/js/lib/data-table/jszip.min.js"></script>
+<script src="/static/js/lib/data-table/pdfmake.min.js"></script>
+<script src="/static/js/lib/data-table/vfs_fonts.js"></script>
+<script src="/static/js/lib/data-table/buttons.html5.min.js"></script>
+<script src="/static/js/lib/data-table/buttons.print.min.js"></script>
+<script src="/static/js/lib/data-table/buttons.colVis.min.js"></script>
+<script src="/static/js/lib/data-table/datatables-init.js"></script>
+<script src="/static/js/jquery.autocomplete.js"></script>
+<script type="text/javascript">
+(function($) {
+
+    toastr.options = {
+        "closeButton": false,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+
+    $('#bootstrap-data-table-export').DataTable();
+    $('#passive-table').DataTable();
+    $("#locationInput").autocomplete({
+        lookup: {{.LocationList }},
+    });
+
+    $("#deviceInput").autocomplete({
+        lookup: {{.DeviceList }},
+    });
+    $("#recalibration").click(function() {
+        $("#recalibrating").fadeIn("slow");
+        $.get("/api/v1/calibrate/{{.Family}}", function(data) {
+            console.log(data);
+            setTimeout(function() {
+                window.location.reload(1);
+            }, 10000);
+        });
+    });
+    $(".stopScan").click(function(event) {
+        $.post("/api/v1/settings/passive", JSON.stringify({ family: "{{.Family}}", device: event.target.id }))
+            .done(function(data) {
+                $("#passiveBanner").fadeIn();
+                $("#passiveMessage").text("Stopped learning on " + event.target.id);
+                console.log(data);
+            });
+    });
+    $("#startLearning2").click(function(e) {
+        e.preventDefault();
+        console.log("pressed learning")
+        device = $("#deviceInput").val();
+        loc = $("#locationInput").val();
+        if (loc == "" || device == "") {
+            $("#passiveBannerBad").show();
+            $("#passiveMessageBad").text("Must learn with location and device.");
+        }
+        console.log(device);
+        $.post("/api/v1/settings/passive", JSON.stringify({ family: "{{.Family}}", device: device, location: loc }))
+            .done(function(data) {
+                $("#passiveBanner").fadeIn();
+                $("#passiveMessage").text("Learning on " + device);
+                console.log(data);
+            });
+    });
+    var socket;
+
+    const socketMessageListener = (event) => {
+        console.log(event);
+        data = JSON.parse(event.data);
+        console.log(data);
+        idName = sha256.sha256(data.sensors.d);
+        console.log(idName);
+        var lastLocation = $("#location-" + idName).text();
+        $("#location-" + idName).text(data.guesses[0].location);
+        $("#probability-" + idName).text(Math.round(100 * data.guesses[0].probability) +
+            "%");
+
+
+        var date = new Date(0);
+        date.setUTCMilliseconds(data.sensors.t);
+        console.log(date);
+        $("#lastseen-" + idName).text(date.toUTCString().replace(" GMT", ""));
+        var entered = " entered ";
+        if (lastLocation == data.guesses[0].location) {
+            entered = " still at "
+        }
+        toastr["success"](data.sensors.d + entered + data.guesses[0].location + " (" + Math.round(100 * data.guesses[0].probability) +
+            "%)");
+    };
+
+    const socketOpenListener = (event) => {
+        console.log('Connected');
+        socket.send('hello');
+    };
+
+    const socketCloseListener = (event) => {
+        if (socket) {
+            console.error('Disconnected.');
+        }
+        var url = window.origin.replace("http", "ws") + '/ws?device=all&family={{.FamilyJS}}';
+        socket = new WebSocket(url);
+        socket.addEventListener('open', socketOpenListener);
+        socket.addEventListener('message', socketMessageListener);
+        socket.addEventListener('close', socketCloseListener);
+    };
+
+    socketCloseListener();
+
+})(jQuery);
+</script>
+
+<script src="/view/gps/{{.Family}}"></script>
+
+{{ template "footer" . }}

@@ -103,6 +103,12 @@ func Run() (err error) {
 			"DeviceJS": template.JS(device),
 		})
 	})
+	r.GET("/view/map/:family", func(c *gin.Context) {
+		family := c.Param("family")
+		c.HTML(http.StatusOK, "map.tmpl", gin.H{
+			"Family": family,
+		})
+	})
 	r.GET("/api/v1/database/:family", func(c *gin.Context) {
 		db, err := database.Open(c.Param("family"), true)
 		if err == nil {
