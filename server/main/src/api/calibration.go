@@ -376,6 +376,9 @@ func findBestAlgorithm(datas []models.SensorData) (algorithmEfficacy map[string]
 	if err != nil {
 		logger.Log.Error(err)
 	}
+
+	// insert wardriving GPS
+
 	return
 }
 
