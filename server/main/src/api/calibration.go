@@ -378,6 +378,24 @@ func findBestAlgorithm(datas []models.SensorData) (algorithmEfficacy map[string]
 	}
 
 	// insert wardriving GPS
+	locations, _ := db.GetLocations()
+	gpsData := make(map[string]models.SensorData)
+	for _, location := range locations {
+		lat, lon, errGet := db.GetAverageGPS(location)
+		if errGet != nil {
+			continue
+		}
+		gpsData[location] = models.SensorData{
+			GPS: models.GPS{
+				Latitude:  lat,
+				Longitude: lon,
+			},
+		}
+	}
+	err = db.Set("autoGPS", gpsData)
+	if err != nil {
+		logger.Log.Error(err)
+	}
 
 	return
 }

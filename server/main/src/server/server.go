@@ -134,12 +134,23 @@ func Run() (err error) {
 			// get GPS data from database
 			gpsData := make(map[string]models.SensorData)
 
-			// TODO:
 			// get automatic GPS data
+			var autoGPS map[string]models.SensorData
+			errGet := d.Get("autoGPS", &autoGPS)
+			if errGet == nil {
+				for location := range autoGPS {
+					gpsData[location] = models.SensorData{
+						GPS: models.GPS{
+							Latitude:  autoGPS[location].GPS.Latitude,
+							Longitude: autoGPS[location].GPS.Longitude,
+						},
+					}
+				}
+			}
 
-			// get custom GPS data
+			// get custom GPS data and override gpsdata
 			var customGPS map[string]models.SensorData
-			errGet := d.Get("customGPS", &customGPS)
+			errGet = d.Get("customGPS", &customGPS)
 			if errGet == nil {
 				for location := range customGPS {
 					gpsData[location] = models.SensorData{
