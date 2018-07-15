@@ -10,6 +10,7 @@
 
 > This version, 3.X, is a complete re-write of the [previous versions 2.x](https://github.com/schollz/find).
 
+
 # About the project
 
 This repository is a complete re-write of the previous version of FIND ([github.com/schollz/find](https://github.com/schollz/find)). There are notable improvements from the previous version:
