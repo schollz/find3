@@ -3,8 +3,8 @@ var tileLayer = new L.TileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/
 });
 
 var map = new L.Map('map', {
-  'center': [0, 0],
-  'zoom': 5,
+  'center': [{{.Center}}],
+  'zoom': 18,
   'layers': [tileLayer]
 });
 

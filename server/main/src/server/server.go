@@ -131,6 +131,27 @@ func Run() (err error) {
 				return
 			}
 
+			// get GPS data from database
+			gpsData := make(map[string]models.SensorData)
+
+			// TODO:
+			// get automatic GPS data
+
+			// get custom GPS data
+			var customGPS map[string]models.SensorData
+			errGet := d.Get("customGPS", &customGPS)
+			if errGet == nil {
+				for location := range customGPS {
+					gpsData[location] = models.SensorData{
+						GPS: models.GPS{
+							Latitude:  customGPS[location].GPS.Latitude,
+							Longitude: customGPS[location].GPS.Longitude,
+						},
+					}
+				}
+			}
+
+			// initialize GPS data
 			type gpsdata struct {
 				Hash      template.JS
 				Location  template.JS
@@ -138,15 +159,29 @@ func Run() (err error) {
 				Longitude template.JS
 			}
 			data := make([]gpsdata, len(locations))
+			avgLat := 0.0
+			avgLon := 0.0
 			for i, loc := range locations {
 				data[i].Hash = template.JS(utils.Md5Sum(loc))
 				data[i].Location = template.JS(loc)
-				data[i].Latitude = template.JS("0.0")
-				data[i].Longitude = template.JS("0.0")
+				latitude := 0.0
+				longitude := 0.0
+				if _, ok := gpsData[loc]; ok {
+					latitude = gpsData[loc].GPS.Latitude
+					longitude = gpsData[loc].GPS.Longitude
+				}
+				avgLat += latitude
+				avgLon += longitude
+				data[i].Latitude = template.JS(fmt.Sprintf("%2.10f", latitude))
+				data[i].Longitude = template.JS(fmt.Sprintf("%2.10f", longitude))
 			}
+			avgLat = avgLat / float64(len(locations))
+			avgLon = avgLon / float64(len(locations))
+
 			c.HTML(200, "gps.tmpl", gin.H{
 				"Family": family,
 				"Data":   data,
+				"Center": template.JS(fmt.Sprintf("%2.5f,%2.5f", avgLat, avgLon)),
 			})
 			return
 		}(c.Param("family"))
@@ -763,10 +798,25 @@ func handlerGPS(c *gin.Context) {
 			err = errors.New("need a location")
 			return
 		}
+		d.Location = strings.ToLower(d.Location)
 
-		// process data
+		// open database
+		db, err := database.Open(d.Family)
+		if err != nil {
+			return
+		}
+		defer db.Close()
+
+		// insert data
+		var gpsData map[string]models.SensorData
+		errGet := db.Get("customGPS", &gpsData)
+		if errGet != nil {
+			gpsData = make(map[string]models.SensorData)
+		}
+		gpsData[d.Location] = d
 		logger.Log.Debugf("[%s] /api/v1/gps %+v", d.Family, d)
-		message = "updated location"
+		err = db.Set("customGPS", gpsData)
+		message = "updated " + d.Location
 		return
 	}(c)
 
