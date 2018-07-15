@@ -1,10 +1,12 @@
 var tileLayer = new L.TileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',{
-  attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+  attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+  maxZoom: 22,
+   maxNativeZoom: 20
 });
 
 var map = new L.Map('map', {
   'center': [{{.Center}}],
-  'zoom': 18,
+  'zoom': 20,
   'layers': [tileLayer]
 });
 
