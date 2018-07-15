@@ -140,6 +140,7 @@ func Run() (err error) {
 			avgLon = avgLon / float64(len(gpsData))
 
 			c.HTML(200, "map.tmpl", gin.H{
+				"Map":    true,
 				"Family": family,
 				"Data":   data,
 				"Center": template.JS(fmt.Sprintf("%2.5f,%2.5f", avgLat, avgLon)),
@@ -400,6 +401,7 @@ func Run() (err error) {
 			}
 
 			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+				"Dashboard":      true,
 				"Family":         family,
 				"FamilyJS":       template.JS(family),
 				"Efficacy":       efficacy,

@@ -112,9 +112,13 @@
 
             <div id="main-menu" class="main-menu collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li class="active">
+                    <li {{if .Dashboard}}class="active"{{end}}>
                         <a href="/view/dashboard/{{.Family}}">
                             <i class="menu-icon fas fa-tachometer-alt fa-lg"></i>Dashboard </a>
+                    </li>
+                    <li {{if .Map}}class="active"{{end}}>
+                        <a href="/view/map/{{.Family}}">
+                            <i class="menu-icon fas fa-map fa-lg"></i>Map </a>
                     </li>
                     <li>
                         <a href="https://www.internalpositioning.com/doc/tracking_your_phone.md" target="_blank">
