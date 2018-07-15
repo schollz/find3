@@ -116,6 +116,44 @@ func Run() (err error) {
 		}
 		c.JSON(200, gin.H{"success": false, "message": err.Error()})
 	})
+	r.GET("/view/gps/:family", func(c *gin.Context) {
+		err := func(family string) (err error) {
+			d, err := database.Open(family, true)
+			if err != nil {
+				err = errors.Wrap(err, "You need to add learning data first")
+				return
+			}
+			defer d.Close()
+
+			locations, err := d.GetLocations()
+			if err != nil {
+				err = errors.Wrap(err, "problem getting locations")
+				return
+			}
+
+			type gpsdata struct {
+				Hash      template.JS
+				Location  template.JS
+				Latitude  template.JS
+				Longitude template.JS
+			}
+			data := make([]gpsdata, len(locations))
+			for i, loc := range locations {
+				data[i].Hash = template.JS(utils.Md5Sum(loc))
+				data[i].Location = template.JS(loc)
+				data[i].Latitude = template.JS("0.0")
+				data[i].Longitude = template.JS("0.0")
+			}
+			c.HTML(200, "gps.tmpl", gin.H{
+				"Family": family,
+				"Data":   data,
+			})
+			return
+		}(c.Param("family"))
+		if err != nil {
+			c.Data(403, "text/html", []byte(err.Error()))
+		}
+	})
 	r.GET("/view/dashboard/:family", func(c *gin.Context) {
 		type LocEff struct {
 			Name           string
