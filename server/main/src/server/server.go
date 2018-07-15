@@ -118,48 +118,9 @@ func Run() (err error) {
 	})
 	r.GET("/view/gps/:family", func(c *gin.Context) {
 		err := func(family string) (err error) {
-			d, err := database.Open(family, true)
+			gpsData, err := api.GetGPSData(family)
 			if err != nil {
-				err = errors.Wrap(err, "You need to add learning data first")
 				return
-			}
-			defer d.Close()
-
-			locations, err := d.GetLocations()
-			if err != nil {
-				err = errors.Wrap(err, "problem getting locations")
-				return
-			}
-
-			// get GPS data from database
-			gpsData := make(map[string]models.SensorData)
-
-			// get automatic GPS data
-			var autoGPS map[string]models.SensorData
-			errGet := d.Get("autoGPS", &autoGPS)
-			if errGet == nil {
-				for location := range autoGPS {
-					gpsData[location] = models.SensorData{
-						GPS: models.GPS{
-							Latitude:  autoGPS[location].GPS.Latitude,
-							Longitude: autoGPS[location].GPS.Longitude,
-						},
-					}
-				}
-			}
-
-			// get custom GPS data and override gpsdata
-			var customGPS map[string]models.SensorData
-			errGet = d.Get("customGPS", &customGPS)
-			if errGet == nil {
-				for location := range customGPS {
-					gpsData[location] = models.SensorData{
-						GPS: models.GPS{
-							Latitude:  customGPS[location].GPS.Latitude,
-							Longitude: customGPS[location].GPS.Longitude,
-						},
-					}
-				}
 			}
 
 			// initialize GPS data
@@ -169,10 +130,11 @@ func Run() (err error) {
 				Latitude  template.JS
 				Longitude template.JS
 			}
-			data := make([]gpsdata, len(locations))
+			data := make([]gpsdata, len(gpsData))
 			avgLat := 0.0
 			avgLon := 0.0
-			for i, loc := range locations {
+			i := 0
+			for loc := range gpsData {
 				data[i].Hash = template.JS(utils.Md5Sum(loc))
 				data[i].Location = template.JS(loc)
 				latitude := 0.0
@@ -185,9 +147,10 @@ func Run() (err error) {
 				avgLon += longitude
 				data[i].Latitude = template.JS(fmt.Sprintf("%2.10f", latitude))
 				data[i].Longitude = template.JS(fmt.Sprintf("%2.10f", longitude))
+				i++
 			}
-			avgLat = avgLat / float64(len(locations))
-			avgLon = avgLon / float64(len(locations))
+			avgLat = avgLat / float64(len(gpsData))
+			avgLon = avgLon / float64(len(gpsData))
 
 			c.HTML(200, "gps.tmpl", gin.H{
 				"Family": family,
