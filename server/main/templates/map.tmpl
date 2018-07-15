@@ -169,7 +169,7 @@ function update_position() {
                 devices.push(data['locations'][i]['devices'][j]['device']);
             }
             var popupContent = devices.join(", ");
-            var toolTipContent = data['locations'][i]['devices'].length + " devices";
+            var toolTipContent = locData + ': ' + data['locations'][i]['devices'].length + " devices";
 
             if (!marker.hasOwnProperty(locData)) {
                 marker[locData] = L.marker([
