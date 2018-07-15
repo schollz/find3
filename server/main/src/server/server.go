@@ -104,10 +104,51 @@ func Run() (err error) {
 		})
 	})
 	r.GET("/view/map/:family", func(c *gin.Context) {
-		family := c.Param("family")
-		c.HTML(http.StatusOK, "map.tmpl", gin.H{
-			"Family": family,
-		})
+		err := func(family string) (err error) {
+			gpsData, err := api.GetGPSData(family)
+			if err != nil {
+				return
+			}
+
+			// initialize GPS data
+			type gpsdata struct {
+				Hash      template.JS
+				Location  template.JS
+				Latitude  template.JS
+				Longitude template.JS
+			}
+			data := make([]gpsdata, len(gpsData))
+			avgLat := 0.0
+			avgLon := 0.0
+			i := 0
+			for loc := range gpsData {
+				data[i].Hash = template.JS(utils.Md5Sum(loc))
+				data[i].Location = template.JS(loc)
+				latitude := 0.0
+				longitude := 0.0
+				if _, ok := gpsData[loc]; ok {
+					latitude = gpsData[loc].GPS.Latitude
+					longitude = gpsData[loc].GPS.Longitude
+				}
+				avgLat += latitude
+				avgLon += longitude
+				data[i].Latitude = template.JS(fmt.Sprintf("%2.10f", latitude))
+				data[i].Longitude = template.JS(fmt.Sprintf("%2.10f", longitude))
+				i++
+			}
+			avgLat = avgLat / float64(len(gpsData))
+			avgLon = avgLon / float64(len(gpsData))
+
+			c.HTML(200, "map.tmpl", gin.H{
+				"Family": family,
+				"Data":   data,
+				"Center": template.JS(fmt.Sprintf("%2.5f,%2.5f", avgLat, avgLon)),
+			})
+			return
+		}(c.Param("family"))
+		if err != nil {
+			c.HTML(403, err.Error(), gin.H{})
+		}
 	})
 	r.GET("/api/v1/database/:family", func(c *gin.Context) {
 		db, err := database.Open(c.Param("family"), true)
@@ -122,6 +163,7 @@ func Run() (err error) {
 		}
 		c.JSON(200, gin.H{"success": false, "message": err.Error()})
 	})
+
 	r.GET("/view/gps/:family", func(c *gin.Context) {
 		err := func(family string) (err error) {
 			gpsData, err := api.GetGPSData(family)
