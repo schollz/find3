@@ -356,6 +356,7 @@ func Run() (err error) {
 	if UseMQTT {
 		r.GET("/api/v1/mqtt/:family", handlerMQTT) // handler for setting MQTT
 	}
+	r.POST("/api/v1/gps", handlerGPS)        // typical data handler
 	r.POST("/data", handlerData)             // typical data handler
 	r.POST("/classify", handlerDataClassify) // classify a fingerprint
 	r.POST("/passive", handlerReverse)       // typical data handler
@@ -695,6 +696,39 @@ func handlerData(c *gin.Context) {
 		message = "inserted data"
 
 		logger.Log.Debugf("[%s] /data %+v", d.Family, d)
+		return
+	}(c)
+
+	if err != nil {
+		logger.Log.Debugf("[%s] problem parsing: %s", message, err.Error())
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
+	}
+}
+
+func handlerGPS(c *gin.Context) {
+	message, err := func(c *gin.Context) (message string, err error) {
+		var d models.SensorData
+		err = c.BindJSON(&d)
+		if err != nil {
+			message = d.Family
+			err = errors.Wrap(err, "problem binding data")
+			return
+		}
+
+		if d.Family == "" {
+			err = errors.New("need a family")
+			return
+		}
+		if d.Location == "" {
+			err = errors.New("need a location")
+			return
+		}
+
+		// process data
+		logger.Log.Debugf("[%s] /api/v1/gps %+v", d.Family, d)
+		message = "updated location"
 		return
 	}(c)
 
