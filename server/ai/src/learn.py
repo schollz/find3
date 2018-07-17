@@ -191,21 +191,27 @@ class AI(object):
         with open(fname, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             for i, row in enumerate(reader):
+                self.logger.debug(row)
                 if i == 0:
                     self.header = row
                 else:
                     for j, val in enumerate(row):
+                        if j == 0:
+                            # this is a name of the location
+                            if val not in self.naming['from']:
+                                self.naming['from'][val] = naming_num
+                                self.naming['to'][naming_num] = val
+                                naming_num += 1
+                            row[j] = self.naming['from'][val]
+                            continue
                         if val == '':
                             row[j] = 0
                             continue
                         try:
                             row[j] = float(val)
                         except:
-                            if val not in self.naming['from']:
-                                self.naming['from'][val] = naming_num
-                                self.naming['to'][naming_num] = val
-                                naming_num += 1
-                            row[j] = self.naming['from'][val]
+                            self.logger.error(
+                                "problem parsing value " + str(val))
                     rows.append(row)
 
         # first column in row is the classification, Y

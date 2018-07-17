@@ -234,6 +234,7 @@ func findBestAlgorithm(datas []models.SensorData) (algorithmEfficacy map[string]
 			}
 			if len(aidata.LocationNames) == 0 {
 				err = errors.New("no location names")
+				logger.Log.Error(err)
 				return
 			}
 			guessedLocation := aidata.LocationNames[prediction.Locations[0]]
