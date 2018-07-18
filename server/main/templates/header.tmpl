@@ -120,6 +120,10 @@
                         <a href="/view/map/{{.Family}}">
                             <i class="menu-icon fas fa-map fa-lg"></i>Map </a>
                     </li>
+                    <li {{if .UserMap}}class="active"{{end}}>
+                        <a href="/view/map2/{{.Family}}">
+                            <i class="menu-icon fas fa-street-view fa-lg"></i>User Map </a>
+                    </li>
                     <li>
                         <a href="https://www.internalpositioning.com/doc/tracking_your_phone.md" target="_blank">
                             <i class="menu-icon fa fa-book fa-lg"></i>Getting started </a>
