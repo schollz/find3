@@ -10,29 +10,6 @@ var map = new L.Map('map', {
   'layers': [tileLayer]
 });
 
-// marker2 = L.marker([51.461767, 5.470247],{
-//   draggable: true
-// }).addTo(map).bindTooltip("desk", 
-//     {
-//         permanent: true, 
-//         direction: 'top'
-//     });
-// marker2.on('dragend', function (e) {
-//   console.log(marker2.getLatLng().lat,marker2.getLatLng().lng);
-//   $.ajax({
-//         type: "POST",
-//         //the url where you want to sent the userName and password to
-//         url: '/api/v1/gps',
-//         dataType: 'json',
-//         async: false,
-//         //json object to sent to the authentication url
-//         data: JSON.stringify({'f':'{{.Family}}','l':'desk','gps':{'lat':marker2.getLatLng().lat,'lon':marker2.getLatLng().lng}}),
-//         success: function (msg) {
-//             toastr["success"](msg['message']);
-//         }
-//     });
-// });
-
 {{ range .Data }} 
 marker{{.Hash}} = L.marker([{{.Latitude}}, {{.Longitude}}],{
   draggable: true
