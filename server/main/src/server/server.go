@@ -1178,13 +1178,30 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 		Sensors  models.SensorData           `json:"sensors"`
 		Guesses  []models.LocationPrediction `json:"guesses"`
 		Location string                      `json:"location"` // FIND backwards-compatability
-		Time     int64                       `json:"time"`     // FIND backwards-compatability
+		GPS      models.GPS                  `json:"gps"`
+		Time     int64                       `json:"time"` // FIND backwards-compatability
 	}
+
+	// determine GPS coordinates
+	gpsData, err := api.GetGPSData(p.Family)
+	latitude := 0.0
+	longitude := 0.0
+	if err == nil {
+		if _, ok := gpsData[analysis.Guesses[0].Location]; ok {
+			latitude = gpsData[analysis.Guesses[0].Location].GPS.Latitude
+			longitude = gpsData[analysis.Guesses[0].Location].GPS.Longitude
+		}
+	}
+
 	payload := Payload{
 		Sensors:  p,
 		Guesses:  analysis.Guesses,
 		Location: analysis.Guesses[0].Location,
 		Time:     p.Timestamp,
+		GPS: models.GPS{
+			Latitude:  latitude,
+			Longitude: longitude,
+		},
 	}
 	bTarget, err := json.Marshal(payload)
 	if err != nil {
