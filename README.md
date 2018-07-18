@@ -8,7 +8,6 @@
 
 **The Framework for Internal Navigation and Discovery** (_FIND_) is like indoor GPS for your house or business, using only a simple smartphone or laptop.
 
-
 > This version, 3.X, is a complete re-write of the [previous versions 2.x](https://github.com/schollz/find).
 
 # About the project
