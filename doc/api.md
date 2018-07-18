@@ -546,6 +546,10 @@ GET /api/v1/by_location/FAMILY
                 }
             ],
             "location": "desk",
+            "gps": {
+                "lat": 47.5675768678,
+                "lon": -122.79879696595,
+            },
             "total": 2
         },
         {
@@ -562,6 +566,10 @@ GET /api/v1/by_location/FAMILY
                 }
             ],
             "location": "kitchen",
+            "gps": {
+                "lat": 47.5675768678,
+                "lon": -122.79879696595,
+            },
             "total": 1
         }
     ],
@@ -593,6 +601,10 @@ GET /api/v1/location_basic/FAMILY/DEVICE
 {  
    "data":{  
       "loc":"zakhome floor 2 office",
+      "gps": {
+          "lat": 47.5675768678,
+          "lon": -122.79879696595,
+      },
       "prob":0.97,
       "seen":1387
    },

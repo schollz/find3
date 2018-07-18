@@ -734,17 +734,27 @@ func handlerApiV1LocationSimple(c *gin.Context) {
 				return
 			}
 		}
+
+		gpsData, err := api.GetGPSData(family)
+		if _, ok := gpsData[analysis.Guesses[0].Location]; ok {
+			s.GPS = models.GPS{
+				Latitude:  gpsData[analysis.Guesses[0].Location].GPS.Latitude,
+				Longitude: gpsData[analysis.Guesses[0].Location].GPS.Longitude,
+			}
+		}
 		return
 	}(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
 	} else {
 		simpleLocation := struct {
-			Location        string  `json:"loc"`
-			Probability     float64 `json:"prob"`
-			LastSeenTimeAgo int64   `json:"seen"`
+			Location        string     `json:"loc"`
+			GPS             models.GPS `json:"gps"`
+			Probability     float64    `json:"prob"`
+			LastSeenTimeAgo int64      `json:"seen"`
 		}{
 			Location:        analysis.Guesses[0].Location,
+			GPS:             s.GPS,
 			Probability:     analysis.Guesses[0].Probability,
 			LastSeenTimeAgo: time.Now().UTC().UnixNano()/int64(time.Second) - (s.Timestamp / 1000),
 		}
