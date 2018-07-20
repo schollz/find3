@@ -6,30 +6,36 @@ The command-line scanner provides a means for your laptop your computer to monit
 
 ## Install
 
-There are two ways to install - with Docker, or natively on Linux. If you are using OS X / Windows, I suggest to use Docker. If you are using a Raspberry Pi, I suggest to [install natively](#install-natively). Some of the instructions (namely getting WiFi RSSI values) are specific to the Ubuntu OS.
+There are two ways to install - with Docker, or natively on Linux. If you are using OS X / Windows, you must use Docker. If you are using a Linux / Raspberry Pi, I recommend [installing natively](#install-natively) (although you can also use Docker). The reaons is that some of the instructions (namely getting WiFi RSSI values) are specific to the Ubuntu OS.
 
 ### Install with Docker
 
-Install Docker:
+Installing with Docker is probably easier on most systems.
+
+#### Get the latest image
+
+First install Docker:
 
 ```
 $ curl -sSL https://get.docker.com | sh
 ```
 
-If *not* using a Raspberry Pi, fetch the latest image.
+Then, fetch the latest image. *Note: you cannot do this on a Raspberry Pi!, proceed to build the image yourself (see next step).*
 
 ```
 $ docker pull schollz/find3-cli-scanner
 ```
 
-If you are using a Raspberry Pi (`armf` arch), you need to build the image yourself.
+Instead of pulling the latest from Docker Hub, you can also build yourself (required for Raspberry Pis).
 
 ```
 $ wget https://raw.githubusercontent.com/schollz/find3-cli-scanner/master/Dockerfile
 $ docker build -t schollz/find3-cli-scanner .
 ```
 
-Now you can start the scanning image in the background.
+#### Running the scanner
+
+With Docker, you first will run a Docker container in the background and then execute commands from that. To start the container, do
 
 ```
 $ docker run --net="host" --privileged --name scanner -d -i -t schollz/find3-cli-scanner
@@ -38,10 +44,10 @@ $ docker run --net="host" --privileged --name scanner -d -i -t schollz/find3-cli
 To use the scanner, your syntax will be
 
 ```
-$ docker exec scanner sh -c "find3-cli-scanner ..."
+$ docker exec scanner sh -c "find3-cli-scanner -device DEVICE -family FAMILY -bluetooth -wifi -forever"
 ```
 
-where "`...`" are the flags. Use `-help` to see which flags are available.
+where `DEVICE` is the name of your device and `FAMILY` is the name of your family. The flags `-bluetooth/-wifi` specifiy whether or not to use bluetooth/wifi. Use `-help` to see other options.
 
 You can start/stop the image using
 
@@ -100,6 +106,10 @@ $ sudo mv $GOPATH/bin/find3-cli-scanner /usr/local/bin/
 
 ## Usage
 
+### Basic usage
+
+If you want to scan WiFi you include the wifi flag (`-wifi`) and if you want to scan Bluetooth you can include the Bluetooth flag (`-bluetooth`). You can scan either, or both.
+
 ### Active scanning 
 
 In *active scanning* the scanner will report the classified location of the device that is doing the scanning.
@@ -120,7 +130,7 @@ Finally, the basic command then becomes:
 $ nohup find3-cli-scanner -i YOURINTERFACE \
     -device YOURDEVICE -family YOURFAMILY \
     -server https://cloud.internalpositioning.com \
-    -scantime 10 -bluetooth -forever &
+    -scantime 10 -wifi -bluetooth -forever &
 ```
 
 ### Passive scanning 
@@ -143,7 +153,7 @@ You can simply run the command above with the flag `-passive` added to enable pa
 $ nohup find3-cli-scanner -i YOURINTERFACE \
     -device YOURDEVICE -family YOURFAMILY \
     -server https://cloud.internalpositioning.com \
-    -scantime 10 -bluetooth -forever -passive &
+    -scantime 10 -wifi -bluetooth -forever -passive &
 ```
 
 The above command will start by enabling monitor mode of the specified interface, then run the scan (using `tshark` and the bluetooth adapter), and then it will disable monitor mode so that the scan can be uploaded to the server. The enabling/disabling of monitor mode requires about 10 seconds each time. To remove this step you can enable monitor mode permanently.
@@ -158,7 +168,7 @@ After enabling monitor moe permanently you need to add a flag `-no-modify` to te
 $ nohup find3-cli-scanner -i YOURINTERFACE \
     -device YOURDEVICE -family YOURFAMILY \
     -server https://cloud.internalpositioning.com \
-    -scantime 10 -bluetooth -forever -passive -no-modify &
+    -scantime 10 -wifi -bluetooth -forever -passive -no-modify &
 ```
 
 ## Issues?
