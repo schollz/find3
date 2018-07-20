@@ -122,7 +122,7 @@ After computing this for each algorithm, then a total value can be assigned to e
 </div>
 
 <div>
-$$\sum_{i=1}^{N} Q_{w,y}(location_y) = Q_{y}$$
+$$\sum_{w=1}^{N} Q_{w,y}(location_y) = Q_{y}$$
 </div>
 
 <div>
