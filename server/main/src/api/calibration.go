@@ -27,6 +27,7 @@ func Calibrate(family string, crossValidation ...bool) (err error) {
 	if err != nil {
 		return
 	}
+	logger.Log.Debugf("[%s] getting all for classification", family)
 	datas, err := db.GetAllForClassification()
 	if err != nil {
 		return

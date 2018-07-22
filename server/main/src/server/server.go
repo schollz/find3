@@ -17,6 +17,7 @@ import (
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/models"
 	"github.com/schollz/find3/server/main/src/mqtt"
+	"github.com/schollz/find3/server/main/src/wigle"
 	"github.com/schollz/utils"
 )
 
@@ -1010,6 +1011,26 @@ func handlerFIND(c *gin.Context) {
 }
 
 func processSensorData(p models.SensorData, justSave ...bool) (err error) {
+
+	// if learning, try to get GPS from wigle.net
+	logger.Log.Debug(p.GPS.Latitude == 0 && p.GPS.Longitude == 0 && p.Location != "")
+	if p.GPS.Latitude == 0 && p.GPS.Longitude == 0 && p.Location != "" {
+		if _, ok := p.Sensors["wifi"]; ok {
+			macs := make([]string, len(p.Sensors["wifi"]))
+			i := 0
+			for mac := range p.Sensors["wifi"] {
+				macs[i] = mac
+				i++
+			}
+			lat, lon := wigle.GetLocation(macs)
+			if lat != 0 && lon != 0 {
+				p.GPS.Latitude = lat
+				p.GPS.Longitude = lon
+				logger.Log.Debugf("[%s] added GPS to fingerprint: %+v", p.Family, p.GPS)
+			}
+		}
+	}
+
 	err = api.SaveSensorData(p)
 	if err != nil {
 		return

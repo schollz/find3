@@ -15,6 +15,7 @@ import (
 	"github.com/schollz/find3/server/main/src/database"
 	"github.com/schollz/find3/server/main/src/mqtt"
 	"github.com/schollz/find3/server/main/src/server"
+	"github.com/schollz/find3/server/main/src/wigle"
 )
 
 func main() {
@@ -41,11 +42,13 @@ func main() {
 	// setup folders
 	database.DataFolder = dataFolder
 	api.DataFolder = dataFolder
+	wigle.DataFolder = dataFolder
 
 	// setup debugging
 	database.Debug(*debug)
 	api.Debug(*debug)
 	server.Debug(*debug)
+	wigle.Debug(*debug)
 	mqtt.Debug = *debug
 
 	if os.Getenv("MQTT_ADMIN") != "" {
