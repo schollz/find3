@@ -1113,9 +1113,18 @@ func (d *Database) SetGPS(p models.SensorData) (err error) {
 	}
 	defer stmt.Close()
 
+	// only set the GPS for the highest value
 	for sensorType := range p.Sensors {
+		closestMac := ""
+		closestValue := -10000.0
 		for mac := range p.Sensors[sensorType] {
-			_, err = stmt.Exec(p.Timestamp, sensorType+"-"+mac, p.Location, p.GPS.Latitude, p.GPS.Longitude, p.GPS.Altitude)
+			if p.Sensors[sensorType][mac].(float64) > closestValue {
+				closestValue = p.Sensors[sensorType][mac].(float64)
+				closestMac = mac
+			}
+		}
+		if closestMac != "" {
+			_, err = stmt.Exec(p.Timestamp, sensorType+"-"+closestMac, p.Location, p.GPS.Latitude, p.GPS.Longitude, p.GPS.Altitude)
 			if err != nil {
 				return errors.Wrap(err, "SetGPS")
 			}
@@ -1129,36 +1138,59 @@ func (d *Database) SetGPS(p models.SensorData) (err error) {
 	return
 }
 
-// // GetGPS will return a GPS for a given mac, if it exists
-// // if it doesn't exist it will return an error
-// func (d *Database) GetGPS(mac string) (gps models.GPS, err error) {
-// 	query := "SELECT mac,lat,lon,alt,timestamp FROM gps WHERE mac == ?"
-// 	stmt, err := d.db.Prepare(query)
-// 	if err != nil {
-// 		err = errors.Wrap(err, query)
-// 		return
-// 	}
-// 	defer stmt.Close()
-// 	rows, err := stmt.Query(mac)
-// 	if err != nil {
-// 		err = errors.Wrap(err, query)
-// 		return
-// 	}
-// 	defer rows.Close()
+// SetGPS will set a GPS value in the GPS database
+func (d *Database) SetGPSForMac(loc, mac string, lat, lon float64) (err error) {
+	tx, err := d.db.Begin()
+	if err != nil {
+		return errors.Wrap(err, "SetGPSForMac")
+	}
+	stmt, err := tx.Prepare("insert or replace into gps(timestamp,mac, loc,lat, lon,alt) values (?, ?, ?, ?, ?, 0)")
+	if err != nil {
+		return errors.Wrap(err, "SetGPSForMac")
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(time.Now(), "wifi-"+mac, loc, lat, lon)
+	if err != nil {
+		return errors.Wrap(err, "SetGPSForMac")
+	}
 
-// 	for rows.Next() {
-// 		err = rows.Scan(&gps.Mac, &gps.Latitude, &gps.Longitude, &gps.Altitude, &gps.Timestamp)
-// 		if err != nil {
-// 			err = errors.Wrap(err, "scanning")
-// 			return
-// 		}
-// 	}
-// 	err = rows.Err()
-// 	if err != nil {
-// 		err = errors.Wrap(err, "rows")
-// 	}
-// 	if gps.Mac == "" {
-// 		err = errors.New(mac + " does not exist in gps table")
-// 	}
-// 	return
-// }
+	err = tx.Commit()
+	if err != nil {
+		return errors.Wrap(err, "SetGPSForMac")
+	}
+	return
+}
+
+// GetGPS will return a GPS for a given mac, if it exists
+// if it doesn't exist it will return an error
+func (d *Database) GetGPS(mac string) (gps models.GPS, err error) {
+	query := "SELECT lat,lon,alt FROM gps WHERE mac == ?"
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(mac)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&gps.Latitude, &gps.Longitude, &gps.Altitude)
+		if err != nil {
+			err = errors.Wrap(err, "GetGPS scanning")
+			return
+		}
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "GetGPS rows")
+	}
+	if gps.Latitude == 0 && gps.Longitude == 0 {
+		err = errors.New(mac + " does not exist in gps table")
+	}
+	return
+}
