@@ -274,7 +274,8 @@ func Run() (err error) {
 
 			d.Close()
 
-			logger.Log.Debugf("[%s] getting by_locations", family)
+			logger.Log.Debugf("[%s] getting by_locations for %d devices", family, len(deviceCounts))
+			// logger.Log.Debug(deviceCounts)
 			byLocations, err := api.GetByLocation(family, 15, false, 3, 0, 0, deviceCounts)
 			if err != nil {
 				logger.Log.Warn(err)

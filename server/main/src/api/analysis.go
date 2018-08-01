@@ -348,11 +348,11 @@ func GetByLocation(family string, minutesAgoInt int, showRandomized bool, active
 			continue
 		}
 		if _, ok := deviceCounts[s.Device]; !ok {
-			logger.Log.Warnf("missing device counts for %s", s.Device)
+			// logger.Log.Warnf("missing device counts for %s", s.Device)
 			continue
 		}
 		if _, ok := deviceFirstTime[s.Device]; !ok {
-			logger.Log.Warnf("missing deviceFirstTime for %s", s.Device)
+			// logger.Log.Warnf("missing deviceFirstTime for %s", s.Device)
 			continue
 		}
 		if errGotRollingData == nil {

@@ -420,7 +420,8 @@ func (d *Database) GetSensorFromGreaterTime(timeBlockInMilliseconds int64) (sens
 		return
 	}
 	minimumTimestamp := latestTime - timeBlockInMilliseconds
-	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM (SELECT * FROM sensors WHERE timestamp > ? GROUP BY deviceid ORDER BY timestamp DESC)", minimumTimestamp)
+	logger.Log.Debugf("using minimum timestamp of %d", minimumTimestamp)
+	sensors, err = d.GetAllFromPreparedQuery("SELECT * FROM sensors WHERE timestamp > ? GROUP BY deviceid ORDER BY timestamp DESC", minimumTimestamp)
 	return
 }
 
@@ -512,7 +513,6 @@ func (d *Database) GetDeviceFirstTime() (firstTime map[string]time.Time, err err
 }
 
 func (d *Database) GetDeviceCountsFromDevices(devices []string) (counts map[string]int, err error) {
-
 	counts = make(map[string]int)
 	query := fmt.Sprintf("select devices.name,count(sensors.timestamp) as num from sensors inner join devices on sensors.deviceid=devices.id WHERE devices.name in ('%s') group by sensors.deviceid", strings.Join(devices, "','"))
 	stmt, err := d.db.Prepare(query)
@@ -829,6 +829,19 @@ func (d *Database) GetID(table string, name string) (id string, err error) {
 	return
 }
 
+// GetID will get the name of an element in a table (devices/locations) and return an error if it doesn't exist
+func (d *Database) GetName(table string, id string) (name string, err error) {
+	// first check to see if it has already been added
+	stmt, err := d.db.Prepare("SELECT name FROM " + table + " WHERE id = ?")
+	defer stmt.Close()
+	if err != nil {
+		err = errors.Wrap(err, "problem preparing SQL")
+		return
+	}
+	err = stmt.QueryRow(id).Scan(&name)
+	return
+}
+
 // AddName will add a name to a table (devices/locations) and return the ID. If the device already exists it will just return it.
 func (d *Database) AddName(table string, name string) (deviceID string, err error) {
 	// first check to see if it has already been added
@@ -1032,12 +1045,14 @@ func (d *Database) GetAllFromPreparedQuery(query string, args ...interface{}) (s
 
 func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 	// first get the columns
+	logger.Log.Debug("getting columns")
 	columnList, err := d.Columns()
 	if err != nil {
 		return
 	}
 
 	// get the string sizer for the sensor data
+	logger.Log.Debug("getting sensorstringsizer")
 	var sensorDataStringSizerString string
 	err = d.Get("sensorDataStringSizer", &sensorDataStringSizerString)
 	if err != nil {
@@ -1048,11 +1063,13 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 		return
 	}
 
-	deviceIDToName, err := d.GetIDToName("devices")
-	if err != nil {
-		return
-	}
+	// logger.Log.Debug("getting devices")
+	// deviceIDToName, err := d.GetIDToName("devices")
+	// if err != nil {
+	// 	return
+	// }
 
+	logger.Log.Debug("getting locations")
 	locationIDToName, err := d.GetIDToName("locations")
 	if err != nil {
 		return
@@ -1070,11 +1087,12 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 			err = errors.Wrap(err, "getRows")
 			return
 		}
+		deviceID := string((*arr[1].(*interface{})).([]uint8))
 		s0 := models.SensorData{
 			// the underlying value of the interface pointer and cast it to a pointer interface to cast to a byte to cast to a string
 			Timestamp: int64((*arr[0].(*interface{})).(int64)),
 			Family:    d.family,
-			Device:    deviceIDToName[string((*arr[1].(*interface{})).([]uint8))],
+			Device:    deviceID,
 			Location:  locationIDToName[string((*arr[2].(*interface{})).([]uint8))],
 			Sensors:   make(map[string]map[string]interface{}),
 		}
@@ -1097,6 +1115,16 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 	err = rows.Err()
 	if err != nil {
 		err = errors.Wrap(err, "getRows")
+	}
+
+	for i := range s {
+		deviceName, errFind := d.GetName("devices", s[i].Device)
+		if errFind != nil {
+			err = errors.Wrap(errFind, "can't get name of "+s[i].Device)
+			logger.Log.Error(err)
+			continue
+		}
+		s[i].Device = deviceName
 	}
 	return
 }
