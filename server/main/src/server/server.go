@@ -120,6 +120,7 @@ func Run() (err error) {
 		var sensors []models.SensorData
 		var message string
 		db, err := database.Open(c.Param("family"), true)
+		defer db.Close()
 		if err == nil {
 			sensors, err = db.GetAllFingerprints()
 		}
