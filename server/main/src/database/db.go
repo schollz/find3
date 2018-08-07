@@ -715,7 +715,8 @@ func (d *Database) GetDevices() (devices []string, err error) {
 }
 
 func (d *Database) GetLocations() (locations []string, err error) {
-	query := "SELECT name FROM locations"
+	// get only the active locations
+	query := "SELECT locations.name FROM sensors INNER JOIN locations ON sensors.locationid=locations.id GROUP BY locations.name"
 	stmt, err := d.db.Prepare(query)
 	if err != nil {
 		err = errors.Wrap(err, query)
