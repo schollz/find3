@@ -29,7 +29,7 @@ $ brew install libpcap
 Now download and install the scanner with *go get*:
 
 ```
-$ go get -u -v -d github.com/schollz/find3-cli-scanner
+$ go get -u -v github.com/schollz/find3-cli-scanner
 ```
 
 If you are on Linux, then you should move it to a path that is available with sudo:
