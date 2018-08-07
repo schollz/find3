@@ -7,6 +7,8 @@ import random
 import requests
 import randomcolor
 import numpy
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot
 from scipy.stats import gaussian_kde
 from sklearn.decomposition import PCA
