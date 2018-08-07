@@ -26,12 +26,29 @@ app = Flask(__name__)
 
 
 from learn import AI
-
+from plot_locations import plot_data
 ai_cache = ExpiringDict(max_len=100000, max_age_seconds=60)
 
 
 def to_base58(family):
     return base58.b58encode(family.encode('utf-8')).decode('utf-8')
+
+@app.route('/plot', methods=['POST'])
+def plotdata():
+    t = time.time()
+
+    payload = request.get_json()
+    if 'url' not in payload:
+        return jsonify({'success': False, 'message': 'must provide callback url'})
+    if 'data_folder' not in payload:
+        return jsonify({'success': False, 'message': 'must provide data folder'})
+
+    try:
+        os.makedirs(payload['data_folder'])
+    except:
+        pass
+    plot_data(payload['url'],payload['data_folder'])
+    return jsonify({'success': True, 'message': 'generated data'})
 
 
 @app.route('/classify', methods=['POST'])

@@ -17,7 +17,7 @@ def getcolor(s):
     return randomcolor.RandomColor().generate()[0]
 
 
-r = requests.get("http://localhost:8003/api/v1/data/testdb")
+r = requests.get("https://cloud.internalpositioning.com/api/v1/data/testdb")
 if 'data' not in r.json():
     raise
 
