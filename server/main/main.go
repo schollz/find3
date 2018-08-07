@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"runtime/pprof"
 	"time"
@@ -37,6 +38,10 @@ func main() {
 		dataFolder, _ = os.Getwd()
 		dataFolder = path.Join(dataFolder, "data")
 	}
+	dataFolder, err := filepath.Abs(dataFolder)
+	if err != nil {
+		panic(err)
+	}
 	os.MkdirAll(dataFolder, 0775)
 
 	// setup folders
@@ -67,6 +72,7 @@ func main() {
 	mqtt.MosquittoConfigDirectory = *mqttDir
 
 	api.AIPort = *aiPort
+	api.MainPort = *port
 	server.Port = *port
 	server.UseMQTT = mqtt.Server != ""
 
@@ -109,7 +115,6 @@ func main() {
 			log.Println("finished profiling")
 		}()
 	}
-	var err error
 	if *dump != "" {
 		err = api.Dump(*dump)
 	} else {
