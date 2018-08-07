@@ -8,7 +8,7 @@ ENV GOLANG_VERSION 1.10.3
 ENV PATH="/usr/local/go/bin:/usr/local/work/bin:${PATH}"
 ENV GOPATH /usr/local/work
 # RUN apt-get update && apt-get -y upgrade && \
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y wget git libc6-dev make pkg-config g++ gcc mosquitto-clients mosquitto python3 python3-dev python3-pip python3-setuptools python3-scipy python3-ujson python3-flask python3-sklearn python3-numpy python3-matplotlib python3-requests supervisor && \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y wget git libc6-dev make pkg-config g++ gcc mosquitto-clients mosquitto python3 python3-dev python3-pip python3-setuptools python3-scipy python3-ujson python3-flask python3-sklearn python3-tk python3-numpy python3-matplotlib python3-requests supervisor && \
 	python3 -m pip install wheel && \
 	python3 -m pip install base58 tqdm expiringdict randomcolor && \
 	mkdir /usr/local/work && \
