@@ -2,7 +2,7 @@
 # mkdir /tmp/find3
 # docker run -p 11883:1883 -p 8003:8003 -v /tmp/find3:/data -t find3
 
-FROM ubuntu:17.10
+FROM ubuntu:18.04
 
 ENV GOLANG_VERSION 1.10.3
 ENV PATH="/usr/local/go/bin:/usr/local/work/bin:${PATH}"
