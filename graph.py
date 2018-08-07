@@ -3,6 +3,7 @@ import hashlib
 import sys
 import random
 
+import requests
 import randomcolor
 import numpy
 from matplotlib import pyplot
@@ -15,27 +16,26 @@ def getcolor(s):
     random.seed(int(hashlib.sha256(s.encode('utf-8')).hexdigest(), 16) % 10**8)
     return randomcolor.RandomColor().generate()[0]
 
-locationSensors = {}
-with open('data2.csv', 'r') as f:
-    for line in f:
-        line = line.strip()
-        if len(line) == 0:
-            continue
-        location, sensors = line.split(',', 1)
-        if location not in locationSensors:
-            locationSensors[location] = {}
-        sensorData = {}
-        for _, s in enumerate(sensors[1:-1].split(",")):
-            sensorID, value = s.split(":")
-            sensorID = sensorID[2:-2]
-            value = int(value)
-            if sensorID not in locationSensors[location]:
-                locationSensors[location][sensorID] = []
-            locationSensors[location][sensorID].append(value)
-            locationSensors[location]['mm'] = [-1,-2]
-            locationSensors[location]['mn'] = [-2,-3]
-            locationSensors[location]['am'] = [-50,-50,-52]
 
+r = requests.get("http://localhost:8003/api/v1/data/testdb")
+if 'data' not in r.json():
+    raise
+
+locationSensors = {}
+for d in r.json()['data']:
+    if 'l' not in d or d['l'] == '':
+        continue
+    loc = d['l']
+    if loc not in locationSensors:
+        locationSensors[loc] = {}
+    for s in d['s']:
+        for mac in d['s'][s]:
+            sensorName = s+'-'+mac
+            if sensorName not in locationSensors[loc]:
+                 locationSensors[loc][sensorName] = []
+            locationSensors[loc][sensorName].append(d['s'][s][mac])
+
+print(locationSensors)
 
 # find largest variance
 sensorIndex = []
@@ -89,7 +89,8 @@ for location in locationSensors:
         print(location,sensorID,locationSensors[location][sensorID])
         try:
             density = gaussian_kde(locationSensors[location][sensorID])
-        except:
+        except Exception as e:
+            print(e)
             continue
         density.covariance_factor = lambda : .5
         density._compute_covariance()
