@@ -96,11 +96,11 @@ func Run() (err error) {
 	r.GET("/view/analysis/:family", func(c *gin.Context) {
 		family := c.Param("family")
 		d, err := database.Open(family, true)
+		defer d.Close()
 		if err != nil {
 			c.String(200, err.Error())
 			return
 		}
-		defer d.Close()
 		locationList, err := d.GetLocations()
 		if err != nil {
 			logger.Log.Warn("could not get locations")
@@ -148,7 +148,7 @@ func Run() (err error) {
 		db, err := database.Open(c.Param("family"), true)
 		defer db.Close()
 		if err == nil {
-			sensors, err = db.GetAllFingerprints()
+			sensors, err = db.GetAllForClassification()
 		}
 		if err != nil {
 			message = err.Error()

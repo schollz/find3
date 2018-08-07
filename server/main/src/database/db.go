@@ -1080,6 +1080,7 @@ func (d *Database) getRows(rows *sql.Rows) (s []models.SensorData, err error) {
 	if err != nil {
 		return
 	}
+	logger.Log.Debug("got locations")
 
 	s = []models.SensorData{}
 	// loop through rows
