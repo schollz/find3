@@ -189,6 +189,11 @@ func (d *Database) Dump() (dumped string, err error) {
 	return
 }
 
+// GetAllFingerprints returns all the fingerprints
+func (d *Database) GetAllFingerprints() (s []models.SensorData, err error) {
+	return d.GetAllFromQuery("SELECT * FROM sensors ORDER BY timestamp")
+}
+
 // AddPrediction will insert or update a prediction in the database
 func (d *Database) AddPrediction(timestamp int64, aidata []models.LocationPrediction) (err error) {
 	// make sure we have a prediction

@@ -116,6 +116,20 @@ func Run() (err error) {
 		}
 		c.JSON(200, gin.H{"success": false, "message": err.Error()})
 	})
+	r.GET("/api/v1/data/:family", func(c *gin.Context) {
+		var sensors []models.SensorData
+		var message string
+		db, err := database.Open(c.Param("family"), true)
+		if err == nil {
+			sensors, err = db.GetAllFingerprints()
+		}
+		if err != nil {
+			message = err.Error()
+		} else {
+			message = fmt.Sprintf("got %d data", len(sensors))
+		}
+		c.JSON(200, gin.H{"success": err == nil, "message": message, "data": sensors})
+	})
 	r.GET("/view/dashboard/:family", func(c *gin.Context) {
 		type LocEff struct {
 			Name           string
