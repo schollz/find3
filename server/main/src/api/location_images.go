@@ -21,7 +21,7 @@ func GenerateImages(family string) {
 
 	data := Payload{
 		URL:        "http://localhost:" + MainPort + "/api/v1/data/" + family,
-		DataFolder: path.Join(DataFolder, base58.FastBase58Encoding([]byte(family))),
+		DataFolder: path.Join(DataFolder, "images", base58.FastBase58Encoding([]byte(family))),
 	}
 	payloadBytes, err := json.Marshal(data)
 	if err != nil {
@@ -49,7 +49,7 @@ func GenerateImages(family string) {
 		Success bool
 	}
 	var target responseStruct
-	err = json.NewDecoder(resp.Body).Decode(target)
+	err = json.NewDecoder(resp.Body).Decode(&target)
 	if err != nil {
 		logger.Log.Error(err)
 		return
