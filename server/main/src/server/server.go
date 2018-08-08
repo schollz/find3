@@ -121,13 +121,15 @@ func Run() (err error) {
 			c.Data(200, "image/png", img)
 		}
 	})
-	r.GET("/view/location/:family/:location", func(c *gin.Context) {
-		img, err := api.GetImage(c.Param("family"), c.Param("location"))
-		if err != nil {
-			c.String(http.StatusBadRequest, fmt.Sprintf("unable to locate image for '%s' for '%s'", c.Param("location"), c.Param("family")))
-		} else {
-			c.Data(200, "image/png", img)
-		}
+	r.GET("/view/location/:family/:device", func(c *gin.Context) {
+		family := c.Param("family")
+		device := c.Param("device")
+		c.HTML(http.StatusOK, "location.tmpl", gin.H{
+			"Family":   family,
+			"Device":   device,
+			"FamilyJS": template.JS(family),
+			"DeviceJS": template.JS(device),
+		})
 	})
 	r.GET("/api/v1/database/:family", func(c *gin.Context) {
 		db, err := database.Open(c.Param("family"), true)
