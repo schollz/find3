@@ -96,12 +96,12 @@ func Run() (err error) {
 	r.GET("/view/analysis/:family", func(c *gin.Context) {
 		family := c.Param("family")
 		d, err := database.Open(family, true)
-		defer d.Close()
 		if err != nil {
 			c.String(200, err.Error())
 			return
 		}
 		locationList, err := d.GetLocations()
+		d.Close()
 		if err != nil {
 			logger.Log.Warn("could not get locations")
 			c.String(200, err.Error())
@@ -148,9 +148,9 @@ func Run() (err error) {
 		var sensors []models.SensorData
 		var message string
 		db, err := database.Open(c.Param("family"), true)
-		defer db.Close()
 		if err == nil {
 			sensors, err = db.GetAllForClassification()
+			db.Close()
 		}
 		if err != nil {
 			message = err.Error()
