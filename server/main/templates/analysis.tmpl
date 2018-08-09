@@ -1,3 +1,70 @@
-{{ range .Locations }}
+{{ template "header" . }}
+<!-- Left Panel -->
+<!-- Right Panel -->
+<div id="right-panel" class="right-panel">
+    <div class="breadcrumbs">
+        <div class="col-sm-4">
+            <div class="page-header float-left">
+                <div class="page-title">
+                    <h1>Accuracy analysis</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            <div class="page-header float-right">
+                <div class="page-title">
+                    <ol class="breadcrumb text-right">
+                        <li class="active" style="text-transform:none;">{{ .Family }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content mt-3">
+        {{ with .Message }}
+        <div class="col-sm-12">
+            <div class="alert  alert-success alert-dismissible fade show" role="alert">
+                {{.}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        {{ end }} {{ with .ErrorMessage }}
+        <div class="col-sm-12">
+            <div class="alert  alert-danger alert-dismissible fade show" role="alert">
+                {{.}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+        {{ end }}
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+<div class="col-sm-12">
+<h4 class="card-title mb-0">About</h4>
+</div>
+<div class="col-sm-12">
+                            <p>These graphs show the raw RSSI value (X-axis) and the probability (Y-axis) for each location for the top 10 most important access points. The most important access points have the most variance across the location set, thus are the most distinguishing.</p>
+                            <p>If you see two graphs with very similar patterns, then likely those two locations are too close together to be able to distinguish them correctly.</p>
+                        </div>
+                        </div></div></div></div>
+
+                                        {{ range .Locations }}
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
 <img src="/view/location_analysis/{{$.Family}}/{{.}}">
+</div></div></div></div>
 {{end}}
+
+    </div>
+    <!-- .content -->
+</div>
+<!-- /#right-panel -->
+{{ template "footer" . }}
+
