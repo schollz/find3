@@ -14,16 +14,7 @@ To get started, read the documentation and take a look at the repo. The easiest 
 
 ## Introduction
 
-- The [FIND3 Overview](/doc/overview.md) document provides a high-level
-  introduction to FIND3.
-  It is a good place to start to learn about the motivation for the project
-  and overall design.
-  It also has introductions to many of the other topics explored in more
-  detail in the other documents.
-
-- The [FAQ](/doc/faq.md) answers common questions about FIND3.
-
-- The [Machine learning guide](/doc/overview.md#machine-learning) explains how the machine learning works in FIND3.
+- To start understanding FIND and get basic question answered, see the [FAQ](/doc/faq.md).
 
 ## User guide
 
