@@ -124,8 +124,8 @@
                         <a href="/view/map2/{{.Family}}">
                             <i class="menu-icon fas fa-street-view fa-lg"></i>User Map </a>
                     </li>
-                    <li>
-                        <a href="/view/analysis/{{.Family}}" target="_blank">
+                    <li {{if .LocationAnalysis}}class="active"{{end}}>
+                        <a href="/view/analysis/{{.Family}}">
                             <i class="menu-icon fa fa-chart-bar fa-lg"></i>Location analysis </a>
                     </li>
                     <li>

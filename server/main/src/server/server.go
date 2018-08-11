@@ -108,9 +108,10 @@ func Run() (err error) {
 			return
 		}
 		c.HTML(http.StatusOK, "analysis.tmpl", gin.H{
-			"Family":    family,
-			"Locations": locationList,
-			"FamilyJS":  template.JS(family),
+			"LocationAnalysis": true,
+			"Family":           family,
+			"Locations":        locationList,
+			"FamilyJS":         template.JS(family),
 		})
 	})
 	r.GET("/view/location_analysis/:family/:location", func(c *gin.Context) {
@@ -180,7 +181,15 @@ func Run() (err error) {
 			return
 		}(c.Param("family"))
 		if err != nil {
-			c.HTML(403, err.Error(), gin.H{})
+			logger.Log.Warn(err)
+			c.HTML(200, "map2.tmpl", gin.H{
+				"UserMap":      true,
+				"ErrorMessage": err.Error(),
+				"Family":       c.Param("family"),
+				"Device":       "all",
+				"FamilyJS":     template.JS(c.Param("family")),
+				"DeviceJS":     template.JS("all"),
+			})
 		}
 	})
 	r.GET("/view/map/:family", func(c *gin.Context) {
@@ -228,7 +237,12 @@ func Run() (err error) {
 			return
 		}(c.Param("family"))
 		if err != nil {
-			c.HTML(403, err.Error(), gin.H{})
+			logger.Log.Warn(err)
+			c.HTML(200, "map.tmpl", gin.H{
+				"Map":          true,
+				"ErrorMessage": err.Error(),
+				"Family":       c.Param("family"),
+			})
 		}
 	})
 	r.GET("/api/v1/database/:family", func(c *gin.Context) {

@@ -44,27 +44,30 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-<div class="col-sm-12">
-<h4 class="card-title mb-0">About</h4>
-</div>
-<div class="col-sm-12">
+                        <div class="col-sm-12">
+                            <h4 class="card-title mb-0">About</h4>
+                        </div>
+                        <div class="col-sm-12">
                             <p>These graphs show the raw RSSI value (X-axis) and the probability (Y-axis) for each location for the top 10 most important access points. The most important access points have the most variance across the location set, thus are the most distinguishing.</p>
                             <p>If you see two graphs with very similar patterns, then likely those two locations are too close together to be able to distinguish them correctly.</p>
                         </div>
-                        </div></div></div></div>
-
-                                        {{ range .Locations }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{ range .Locations }}
         <div class="col-sm-12">
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-<img src="/view/location_analysis/{{$.Family}}/{{.}}">
-</div></div></div></div>
-{{end}}
-
+                        <img src="/view/location_analysis/{{$.Family}}/{{.}}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{end}}
     </div>
     <!-- .content -->
 </div>
 <!-- /#right-panel -->
 {{ template "footer" . }}
-
