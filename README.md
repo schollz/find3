@@ -6,6 +6,7 @@
 [![Donate](https://img.shields.io/badge/donate-$-brown.svg?style=for-the-badge)](https://www.paypal.me/ZackScholl/5.00)
 [![Say Thanks](https://img.shields.io/badge/Say%20Thanks-!-yellow.svg?style=for-the-badge)](https://saythanks.io/to/schollz)
 
+
 **The Framework for Internal Navigation and Discovery** (_FIND_) is like indoor GPS for your house or business, using only a simple smartphone or laptop.
 
 > This version, 3.X, is a complete re-write of the [previous versions 2.x](https://github.com/schollz/find).

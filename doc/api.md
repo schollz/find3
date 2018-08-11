@@ -352,6 +352,7 @@ GET /api/v1/efficacy/FAMILY
 >
 
 
+
 ## Tracking and getting information {#tracking}
 
 The following API calls are useful for getting information after the server has been taught about locations.
@@ -545,6 +546,10 @@ GET /api/v1/by_location/FAMILY
                 }
             ],
             "location": "desk",
+            "gps": {
+                "lat": 47.5675768678,
+                "lon": -122.79879696595,
+            },
             "total": 2
         },
         {
@@ -561,6 +566,10 @@ GET /api/v1/by_location/FAMILY
                 }
             ],
             "location": "kitchen",
+            "gps": {
+                "lat": 47.5675768678,
+                "lon": -122.79879696595,
+            },
             "total": 1
         }
     ],
@@ -592,6 +601,10 @@ GET /api/v1/location_basic/FAMILY/DEVICE
 {  
    "data":{  
       "loc":"zakhome floor 2 office",
+      "gps": {
+          "lat": 47.5675768678,
+          "lon": -122.79879696595,
+      },
       "prob":0.97,
       "seen":1387
    },
@@ -600,6 +613,41 @@ GET /api/v1/location_basic/FAMILY/DEVICE
 }
 ```
 >>
+
+
+## GPS 
+
+> ### Post GPS coordinate information  {#post-gps}
+> 
+> This endpoint is used for specifying the GPS coordinates of learned locations.
+> 
+> **Request**
+```
+POST /api/v1/gps
+```
+```
+{  
+   "f":"FAMILY",
+   "l":"LOCATION",
+   "gps":{
+       "lat":12.1,
+       "lon":10.1,
+       "alt":54
+   }
+}
+```
+> Requires family and a location.
+> 
+> **Response**
+> 
+```
+{
+    "message": "posted data",
+    "success": true
+}
+```
+>
+
 
 ## API requests?
 

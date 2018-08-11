@@ -131,6 +131,106 @@ func Run() (err error) {
 			"DeviceJS": template.JS(device),
 		})
 	})
+	r.GET("/view/map2/:family", func(c *gin.Context) {
+
+		err := func(family string) (err error) {
+			gpsData, err := api.GetGPSData(family)
+			if err != nil {
+				return
+			}
+
+			// initialize GPS data
+			type gpsdata struct {
+				Hash      template.JS
+				Location  template.JS
+				Latitude  template.JS
+				Longitude template.JS
+			}
+			data := make([]gpsdata, len(gpsData))
+			avgLat := 0.0
+			avgLon := 0.0
+			i := 0
+			for loc := range gpsData {
+				data[i].Hash = template.JS(utils.Md5Sum(loc))
+				data[i].Location = template.JS(loc)
+				latitude := 0.0
+				longitude := 0.0
+				if _, ok := gpsData[loc]; ok {
+					latitude = gpsData[loc].GPS.Latitude
+					longitude = gpsData[loc].GPS.Longitude
+				}
+				avgLat += latitude
+				avgLon += longitude
+				data[i].Latitude = template.JS(fmt.Sprintf("%2.10f", latitude))
+				data[i].Longitude = template.JS(fmt.Sprintf("%2.10f", longitude))
+				i++
+			}
+			avgLat = avgLat / float64(len(gpsData))
+			avgLon = avgLon / float64(len(gpsData))
+
+			c.HTML(200, "map2.tmpl", gin.H{
+				"UserMap":  true,
+				"Family":   family,
+				"Device":   "all",
+				"FamilyJS": template.JS(family),
+				"DeviceJS": template.JS("all"),
+				"Data":     data,
+				"Center":   template.JS(fmt.Sprintf("%2.5f,%2.5f", avgLat, avgLon)),
+			})
+			return
+		}(c.Param("family"))
+		if err != nil {
+			c.HTML(403, err.Error(), gin.H{})
+		}
+	})
+	r.GET("/view/map/:family", func(c *gin.Context) {
+		err := func(family string) (err error) {
+			gpsData, err := api.GetGPSData(family)
+			if err != nil {
+				return
+			}
+
+			// initialize GPS data
+			type gpsdata struct {
+				Hash      template.JS
+				Location  template.JS
+				Latitude  template.JS
+				Longitude template.JS
+			}
+			data := make([]gpsdata, len(gpsData))
+			avgLat := 0.0
+			avgLon := 0.0
+			i := 0
+			for loc := range gpsData {
+				data[i].Hash = template.JS(utils.Md5Sum(loc))
+				data[i].Location = template.JS(loc)
+				latitude := 0.0
+				longitude := 0.0
+				if _, ok := gpsData[loc]; ok {
+					latitude = gpsData[loc].GPS.Latitude
+					longitude = gpsData[loc].GPS.Longitude
+				}
+				avgLat += latitude
+				avgLon += longitude
+				data[i].Latitude = template.JS(fmt.Sprintf("%2.10f", latitude))
+				data[i].Longitude = template.JS(fmt.Sprintf("%2.10f", longitude))
+				i++
+			}
+			avgLat = avgLat / float64(len(gpsData))
+			avgLon = avgLon / float64(len(gpsData))
+
+			c.HTML(200, "map.tmpl", gin.H{
+				"Map":    true,
+				"Family": family,
+				"Data":   data,
+				"Center": template.JS(fmt.Sprintf("%2.5f,%2.5f", avgLat, avgLon)),
+			})
+			return
+		}(c.Param("family"))
+		if err != nil {
+			c.HTML(403, err.Error(), gin.H{})
+		}
+	})
 	r.GET("/api/v1/database/:family", func(c *gin.Context) {
 		db, err := database.Open(c.Param("family"), true)
 		if err == nil {
@@ -158,6 +258,54 @@ func Run() (err error) {
 			message = fmt.Sprintf("got %d data", len(sensors))
 		}
 		c.JSON(200, gin.H{"success": err == nil, "message": message, "data": sensors})
+	})
+	r.GET("/view/gps/:family", func(c *gin.Context) {
+		err := func(family string) (err error) {
+			logger.Log.Debugf("[%s] getting gps", family)
+			gpsData, err := api.GetGPSData(family)
+			if err != nil {
+				return
+			}
+
+			// initialize GPS data
+			type gpsdata struct {
+				Hash      template.JS
+				Location  template.JS
+				Latitude  template.JS
+				Longitude template.JS
+			}
+			data := make([]gpsdata, len(gpsData))
+			avgLat := 0.0
+			avgLon := 0.0
+			i := 0
+			for loc := range gpsData {
+				data[i].Hash = template.JS(utils.Md5Sum(loc))
+				data[i].Location = template.JS(loc)
+				latitude := 0.0
+				longitude := 0.0
+				if _, ok := gpsData[loc]; ok {
+					latitude = gpsData[loc].GPS.Latitude
+					longitude = gpsData[loc].GPS.Longitude
+				}
+				avgLat += latitude
+				avgLon += longitude
+				data[i].Latitude = template.JS(fmt.Sprintf("%2.10f", latitude))
+				data[i].Longitude = template.JS(fmt.Sprintf("%2.10f", longitude))
+				i++
+			}
+			avgLat = avgLat / float64(len(gpsData))
+			avgLon = avgLon / float64(len(gpsData))
+
+			c.HTML(200, "gps.tmpl", gin.H{
+				"Family": family,
+				"Data":   data,
+				"Center": template.JS(fmt.Sprintf("%2.5f,%2.5f", avgLat, avgLon)),
+			})
+			return
+		}(c.Param("family"))
+		if err != nil {
+			c.String(403, err.Error())
+		}
 	})
 	r.GET("/view/dashboard/:family", func(c *gin.Context) {
 		type LocEff struct {
@@ -349,6 +497,7 @@ func Run() (err error) {
 			}
 
 			c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+				"Dashboard":      true,
 				"Family":         family,
 				"FamilyJS":       template.JS(family),
 				"Efficacy":       efficacy,
@@ -400,6 +549,7 @@ func Run() (err error) {
 	if UseMQTT {
 		r.GET("/api/v1/mqtt/:family", handlerMQTT) // handler for setting MQTT
 	}
+	r.POST("/api/v1/gps", handlerGPS)        // typical data handler
 	r.POST("/data", handlerData)             // typical data handler
 	r.POST("/classify", handlerDataClassify) // classify a fingerprint
 	r.POST("/passive", handlerReverse)       // typical data handler
@@ -628,17 +778,27 @@ func handlerApiV1LocationSimple(c *gin.Context) {
 				return
 			}
 		}
+
+		gpsData, err := api.GetGPSData(family)
+		if _, ok := gpsData[analysis.Guesses[0].Location]; ok {
+			s.GPS = models.GPS{
+				Latitude:  gpsData[analysis.Guesses[0].Location].GPS.Latitude,
+				Longitude: gpsData[analysis.Guesses[0].Location].GPS.Longitude,
+			}
+		}
 		return
 	}(c)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": err == nil})
 	} else {
 		simpleLocation := struct {
-			Location        string  `json:"loc"`
-			Probability     float64 `json:"prob"`
-			LastSeenTimeAgo int64   `json:"seen"`
+			Location        string     `json:"loc"`
+			GPS             models.GPS `json:"gps"`
+			Probability     float64    `json:"prob"`
+			LastSeenTimeAgo int64      `json:"seen"`
 		}{
 			Location:        analysis.Guesses[0].Location,
+			GPS:             s.GPS,
 			Probability:     analysis.Guesses[0].Probability,
 			LastSeenTimeAgo: time.Now().UTC().UnixNano()/int64(time.Second) - (s.Timestamp / 1000),
 		}
@@ -739,6 +899,54 @@ func handlerData(c *gin.Context) {
 		message = "inserted data"
 
 		logger.Log.Debugf("[%s] /data %+v", d.Family, d)
+		return
+	}(c)
+
+	if err != nil {
+		logger.Log.Debugf("[%s] problem parsing: %s", message, err.Error())
+		c.JSON(http.StatusOK, gin.H{"message": err.Error(), "success": false})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": message, "success": true})
+	}
+}
+
+func handlerGPS(c *gin.Context) {
+	message, err := func(c *gin.Context) (message string, err error) {
+		var d models.SensorData
+		err = c.BindJSON(&d)
+		if err != nil {
+			message = d.Family
+			err = errors.Wrap(err, "problem binding data")
+			return
+		}
+
+		if d.Family == "" {
+			err = errors.New("need a family")
+			return
+		}
+		if d.Location == "" {
+			err = errors.New("need a location")
+			return
+		}
+		d.Location = strings.ToLower(d.Location)
+
+		// open database
+		db, err := database.Open(d.Family)
+		if err != nil {
+			return
+		}
+		defer db.Close()
+
+		// insert data
+		var gpsData map[string]models.SensorData
+		errGet := db.Get("customGPS", &gpsData)
+		if errGet != nil {
+			gpsData = make(map[string]models.SensorData)
+		}
+		gpsData[d.Location] = d
+		logger.Log.Debugf("[%s] /api/v1/gps %+v", d.Family, d)
+		err = db.Set("customGPS", gpsData)
+		message = "updated " + d.Location
 		return
 	}(c)
 
@@ -1078,12 +1286,25 @@ func sendOutData(p models.SensorData) (analysis models.LocationAnalysis, err err
 		Location string                      `json:"location"` // FIND backwards-compatability
 		Time     int64                       `json:"time"`     // FIND backwards-compatability
 	}
+
+	// determine GPS coordinates
+	gpsData, err := api.GetGPSData(p.Family)
+	_, hasLoc := gpsData[analysis.Guesses[0].Location]
+	if err == nil && hasLoc {
+		p.GPS.Latitude = gpsData[analysis.Guesses[0].Location].GPS.Latitude
+		p.GPS.Longitude = gpsData[analysis.Guesses[0].Location].GPS.Longitude
+	} else {
+		p.GPS.Latitude = -1
+		p.GPS.Longitude = -1
+	}
+
 	payload := Payload{
 		Sensors:  p,
 		Guesses:  analysis.Guesses,
 		Location: analysis.Guesses[0].Location,
 		Time:     p.Timestamp,
 	}
+
 	bTarget, err := json.Marshal(payload)
 	if err != nil {
 		return

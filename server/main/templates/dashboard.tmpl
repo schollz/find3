@@ -236,6 +236,29 @@
         </div>
         <!-- .content -->
 
+        <div class="content mt-3">
+            <div class="animated fadeIn">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-sm-8">
+                                        <h4 class="card-title mb-0" id="update_gps">Update GPS locations</h4>
+                                        <div class="small text-muted">Move around markers to determine where the locations represent.</div>
+                                    </div>
+                                </div>
+                                <div class="pt-3 container">
+                                    <div id="map"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- .animated -->
+        </div>
+        <!-- .content -->
 
         <div class="col-lg-12">
             <div class="card">
@@ -488,4 +511,7 @@
 
 })(jQuery);
 </script>
+
+<script src="/view/gps/{{.Family}}"></script>
+
 {{ template "footer" . }}

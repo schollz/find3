@@ -1164,6 +1164,37 @@ func (d *Database) SetGPS(p models.SensorData) (err error) {
 	return
 }
 
+// GetAverageGPS will return an average wardrived GPS
+// for a given location
+func (d *Database) GetAverageGPS(location string) (lat float64, lon float64, err error) {
+	query := "SELECT avg(lat),avg(lon) FROM gps WHERE loc == ?"
+	stmt, err := d.db.Prepare(query)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(location)
+	if err != nil {
+		err = errors.Wrap(err, query)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&lat, &lon)
+		if err != nil {
+			err = errors.Wrap(err, "scanning")
+			return
+		}
+	}
+	err = rows.Err()
+	if err != nil {
+		err = errors.Wrap(err, "rows")
+	}
+	return
+}
+
 // // GetGPS will return a GPS for a given mac, if it exists
 // // if it doesn't exist it will return an error
 // func (d *Database) GetGPS(mac string) (gps models.GPS, err error) {
