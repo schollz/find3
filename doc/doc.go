@@ -159,7 +159,7 @@ func (s *server) parseDocs(dir string) error {
 		if err != nil {
 			return err
 		}
-		html[fn] = blackfriday.MarkdownCommon(b)
+		html[fn] = blackfriday.Run(b)
 		title[fn] = docTitle(b)
 	}
 	s.docHTML = html
