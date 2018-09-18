@@ -12,7 +12,6 @@ kiwisolver==1.0.1
 MarkupSafe==1.0
 matplotlib==2.2.3
 numpy==1.15.1
-pkg-resources==0.0.0
 pyparsing==2.2.1
 python-dateutil==2.7.3
 pytz==2018.5
