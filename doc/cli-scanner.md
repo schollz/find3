@@ -14,10 +14,16 @@ First make sure you have [downloaded Go](https://golang.org/dl/).
 
 Then, install the dependencies. 
 
-*Linux*
+*Ubuntu Linux*
 
 ```
 $ sudo apt-get install wireless-tools net-tools libpcap-dev bluetooth
+```
+
+*Fedora Linux*
+
+```
+$ sudo dnf install golang wireless-tools net-tools libpcap-devel bluez bluez-tools
 ```
 
 *OS X*
