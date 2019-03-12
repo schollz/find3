@@ -388,7 +388,7 @@ func (d *Database) GetSensorFromTime(timestamp interface{}) (s models.SensorData
 	return
 }
 
-// Get will retrieve the value associated with a key.
+// GetLastSensorTimestamp gets will retrieve the value associated with a key.
 func (d *Database) GetLastSensorTimestamp() (timestamp int64, err error) {
 	stmt, err := d.db.Prepare("SELECT timestamp FROM sensors ORDER BY timestamp DESC LIMIT 1")
 	if err != nil {
@@ -403,7 +403,7 @@ func (d *Database) GetLastSensorTimestamp() (timestamp int64, err error) {
 	return
 }
 
-// Get will retrieve the value associated with a key.
+// TotalLearnedCount gets will retrieve the value associated with a key.
 func (d *Database) TotalLearnedCount() (count int64, err error) {
 	stmt, err := d.db.Prepare("SELECT count(timestamp) FROM sensors WHERE locationid != ''")
 	if err != nil {
@@ -626,7 +626,7 @@ func (d *Database) GetAllForClassification() (s []models.SensorData, err error) 
 	return d.GetAllFromQuery("SELECT * FROM sensors WHERE sensors.locationid !='' ORDER BY timestamp")
 }
 
-// GetAllForClassification will return a sensor data for classifying
+// GetAllNotForClassification will return a sensor data for classifying
 func (d *Database) GetAllNotForClassification() (s []models.SensorData, err error) {
 	return d.GetAllFromQuery("SELECT * FROM sensors WHERE sensors.locationid =='' ORDER BY timestamp")
 }
@@ -835,7 +835,7 @@ func (d *Database) GetID(table string, name string) (id string, err error) {
 	return
 }
 
-// GetID will get the name of an element in a table (devices/locations) and return an error if it doesn't exist
+// GetName will get the name of an element in a table (devices/locations) and return an error if it doesn't exist
 func (d *Database) GetName(table string, id string) (name string, err error) {
 	// first check to see if it has already been added
 	stmt, err := d.db.Prepare("SELECT name FROM " + table + " WHERE id = ?")
