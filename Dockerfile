@@ -9,7 +9,9 @@ ENV PATH="/usr/local/go/bin:/usr/local/work/bin:${PATH}"
 ENV GOPATH /usr/local/work
 ENV GO111MODULE=on
 # RUN apt-get update && apt-get -y upgrade && \
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y wget git libc6-dev make pkg-config g++ gcc mosquitto-clients mosquitto python3 python3-dev python3-pip python3-setuptools python3-wheel supervisor libfreetype6-dev python3-matplotlib python3-scipy python3-numpy libopenblas-dev libblas-dev liblapack-dev gfortran && \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y wget git libc6-dev make pkg-config g++ gcc mosquitto-clients mosquitto python3 python3-dev python3-pip python3-setuptools python3-wheel supervisor libfreetype6-dev python3-matplotlib libopenblas-dev libblas-dev liblapack-dev gfortran
+RUN python3 -m pip install Cython --install-option="--no-cython-compile" && \
+	apt-get install --no-install-recommends -y python3-scipy python3-numpy && \
 	mkdir /usr/local/work && \
 	rm -rf /var/lib/apt/lists/* && \
 	set -eux; \
@@ -97,4 +99,3 @@ pid_file /data/mosquitto_config/pid\n'\
 
 WORKDIR /app
 CMD ["/app/startup.sh"]
-
