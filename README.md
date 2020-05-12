@@ -35,7 +35,7 @@ The API for sending fingerprints (`/track` and `/learn`) and MQTT endpoints are 
 - Data storage server [(this repo)](https://github.com/schollz/find3/tree/master/server/main)
 - Machine learning server [(this repo)](https://github.com/schollz/find3/tree/master/server/ai)
 - Command-line tool for gathering fingerprints [(schollz/find3-cli-scanner)](https://github.com/schollz/find3-cli-scanner)
-- Shell based package for submitting fingerprints [from an OpenWrt router](https://github.com/jekkos/find3-openwrt-scanner)
+- Shell based package for submitting fingerprints from an OpenWrt router [(jekkos/find3-openwrt-scanner)](https://github.com/jekkos/find3-openwrt-scanner)
 - Android app for gathering fingerprints [(schollz/find3-android-scanner)](https://github.com/schollz/find3-android-scanner)
 - ESP code for gathering fingerprints with ESP8266/ESP32 [(DatanoiseTV/esp-find3-client)](https://github.com/DatanoiseTV/esp-find3-client)
 
