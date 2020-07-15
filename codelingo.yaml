@@ -1,0 +1,3 @@
+tenets:
+  - import: codelingo/code-review-comments/avoid-renaming-imports
+  - import: codelingo/code-review-comments/go-error-fmt
