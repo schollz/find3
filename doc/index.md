@@ -1,6 +1,6 @@
 # Framework for Internal Navigation and Discovery (FIND3)
 
-<img src="/images/find_logo.png" width="180px" alt="Home"/>
+<img src="/doc/images/find_logo.png" width="180px" alt="Home"/>
 
 Have you ever wanted to...
 

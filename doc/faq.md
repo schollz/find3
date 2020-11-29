@@ -156,17 +156,17 @@ It depends. This system harnesses the available WiFi routers and Bluetooth devic
 To see whether your fingerprints are resolving well, you should do learning and then check the "Location analysis" at https://cloud.internalpositioning.com. This location analysis shows charts of access point raw data, and if two charts are very similar looking then they are likely too close together to resolve. For example, here is learning data for my desk and my kitchen - which are only about 10 feet apart and there is no wall between them.. You can see that there is little difference between the graphs:
 
 <center>
-<img src="/images/desk.png">
+<img src="/doc/images/desk.png">
 </center>
 
 <center>
-<img src="/images/kitchen.png">
+<img src="/doc/images/kitchen.png">
 </center>
 
 This indicates that these two places are probably too close together. Compare this to another room that is 10 feet away but is separated by a wall - you can see that its analysis looks very different from the other two so it will resolve well.
 
 <center>
-<img src="/images/guest room.png">
+<img src="/doc/images/guest room.png">
 </center>
 
 
@@ -179,7 +179,7 @@ Yes, because floors tend to attenuate the signal, so there is a noticeable diffe
 At a minimum you you should do learning in each location for about 5 minutes. After that, you can go to the dashboard to see the results of your training. To see the dashboard, goto [cloud.internalpositioning.com](https://cloud.internalpositioning.com) and sign in with your family name. At the dashboard you will the results from the last calibration, which may look like:
 
 <center>
-<img src="/images/accuracy2.png">
+<img src="/doc/images/accuracy2.png">
 </center>
 
 The **Overall** gives the average accuracy, while the accuracy for other locations are also shown. These accuracies are determined by cross-validation, so they their representation of reality will correlate with the amount of data available.
@@ -187,19 +187,19 @@ The **Overall** gives the average accuracy, while the accuracy for other locatio
 If you see that one of the locations has low accuracy, then you should do more learning. To do more learning, simply take your device and send sensor data with the given location. Then, when you are done you can re-calibrate by hitting the calibrate button.
 
 <center>
-<img src="/images/calibrate.png">
+<img src="/doc/images/calibrate.png">
 </center>
 
 As an example, when starting learning I noticed I had low accuracy for the "Bathroom" location. I opened the dashboard to see that the accuracy was 50% (not very good).
 
 <center>
-<img src="/images/accuracy50_ss.png" width="70%">
+<img src="/doc/images/accuracy50_ss.png" width="70%">
 </center>
 
 To amend this I did more learning at that location and then I reloaded the browser with the dashboard again to see the results. After inserting about 70 more data, I had increased the accuracy to 87%.
 
 <center>
-<img src="/images/accuracy87.png" width="70%">
+<img src="/doc/images/accuracy87.png" width="70%">
 </center>
 
 At this point, the accuracy had improved enough for me to move on to learn other locations. *Note:* as you learn new locations, they might end up being too similar to previous locations which could decrease the accuracy of previously learned locations. This is dependent on the number of available sensor points in the vicinity.
