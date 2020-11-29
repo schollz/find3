@@ -1,6 +1,6 @@
-# FIND Documentation 
+# FIND Documentation
 
-<img src="/images/find_logo.png" width="180px" alt="Home"/>
+<img src="/doc/images/find_logo.png" width="180px" alt="Home"/>
 
 Have you ever wanted to...
 
@@ -35,7 +35,7 @@ To get started, read the documentation and take a look at the repo. The easiest 
 
 - The [`find3-server`](/doc/server_setup.md) document explains how
   to set up your own FIND3 installation on a Linux server.
-  
+
 - The [`esp-client`](https://github.com/DatanoiseTV/esp-find3-client) is a repo that can be used to setup a scanner using ESP8266/ESP32.
 
 ## Applications
@@ -60,5 +60,3 @@ mailing lists, user forums, and so on.
     a low-traffic list for important announcements about the project;
     all FIND3 users should subscribe.
 - [Contribution guidelines](https://github.com/schollz/find3/blob/master/CONTRIBUTING.md)
-
-
